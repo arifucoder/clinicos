@@ -1,0 +1,34 @@
+{
+	"compilerOptions": {
+		// Bundler mode: import-এ extension লাগবে না
+		"module": "preserve",
+		"moduleResolution": "bundler",
+		"target": "es2024",
+		"lib": ["es2024"],
+		"types": ["node"],
+		"noEmit": true, // tsc শুধু check করবে, build করবে tsdown
+
+		// Path alias
+		"paths": {
+			"@/*": ["./src/*"]
+		},
+
+		// Strictness
+		"strict": true,
+		"noUncheckedIndexedAccess": true,
+		"noImplicitReturns": true,
+		"noImplicitOverride": true,
+		"noFallthroughCasesInSwitch": true,
+
+		// Module behavior
+		"verbatimModuleSyntax": true,
+		"isolatedModules": true,
+		"moduleDetection": "force",
+		"resolveJsonModule": true,
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"skipLibCheck": true
+	},
+	"include": ["src/**/*", "tsdown.config.ts"],
+	"exclude": ["node_modules", "dist"]
+}

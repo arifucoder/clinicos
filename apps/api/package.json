@@ -1,14 +1,18 @@
 {
 	"name": "clinicos-api",
 	"version": "1.0.0",
-	"description": "",
-	"main": "index.js",
+	"private": true,
+	"description": "ClinicOS API — 24/7 hospital booking, live queue, consultation, prescription and billing backend (Express, Prisma, PostgreSQL)",
+	"main": "dist/server.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
+	"engines": {
+		"node": ">=24 <25"
+	},
 	"devEngines": {
 		"packageManager": {
 			"name": "pnpm",
@@ -17,5 +21,11 @@
 		}
 	},
 	"packageManager": "pnpm@12.18.0",
-	"type": "module"
+	"type": "module",
+	"devDependencies": {
+		"@types/node": "^24.19.2",
+		"tsdown": "^0.23.7",
+		"tsx": "^4.23.15",
+		"typescript": "^7.0.2"
+	}
 }
