@@ -1,0 +1,19 @@
+# ── Dependencies ────────────────────────
+node_modules/
+
+# ── Build output ────────────────────────
+dist/
+*.tsbuildinfo
+
+# ── Prisma generated client ─────────────
+src/generated/
+
+# ── Tests ───────────────────────────────
+coverage/
+
+# ── Uploads / generated PDFs (local dev) ─
+uploads/
+tmp/
+
+# ── vscode ───────────────────────────────
+.vscode
