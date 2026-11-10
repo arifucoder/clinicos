@@ -5,6 +5,13 @@
 	"description": "ClinicOS API — 24/7 hospital booking, live queue, consultation, prescription and billing backend (Express, Prisma, PostgreSQL)",
 	"main": "dist/server.js",
 	"scripts": {
+		"dev": "tsx watch --env-file=.env src/server.ts",
+		"typecheck": "tsc",
+		"lint": "oxlint --type-aware",
+		"lint:fix": "oxlint --type-aware --fix",
+		"check": "pnpm typecheck && pnpm lint",
+		"build": "tsdown",
+		"start": "node --enable-source-maps dist/server.js",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"keywords": [],
@@ -24,6 +31,8 @@
 	"type": "module",
 	"devDependencies": {
 		"@types/node": "^24.19.2",
+		"oxlint": "^1.92.0",
+		"oxlint-tsgolint": "^7.0.2006",
 		"tsdown": "^0.23.7",
 		"tsx": "^4.23.15",
 		"typescript": "^7.0.2"
