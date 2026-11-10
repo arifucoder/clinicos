@@ -1,0 +1,25 @@
+# ── OS / Editor ─────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+
+# ── Secrets (never commit) ──────────────
+.env
+.env.*
+!.env.example
+
+# ── Dependencies (safety net) ───────────
+node_modules/
+
+# ── Logs ────────────────────────────────
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# ── Database backups (patient data!) ────
+backups/
+*.dump
+*.sql.gz
