@@ -1,5 +1,8 @@
 import type { Request, Response } from "express";
 import express from "express";
+import { globalErrorHandler } from "./app/middleware/globalErrorHandler";
+import { notFound } from "./app/middleware/notFound";
+import { AppRoutes } from "./app/routes";
 
 const app = express();
 
@@ -17,5 +20,10 @@ app.get("/api/v1/health", (_req: Request, res: Response) => {
 		timestamp: new Date().toISOString(),
 	});
 });
+
+app.use("/api/v1", AppRoutes);
+
+app.use(notFound);
+app.use(globalErrorHandler);
 
 export default app;
