@@ -9,10 +9,16 @@
 		"typecheck": "tsc",
 		"lint": "oxlint --type-aware",
 		"lint:fix": "oxlint --type-aware --fix",
-		"check": "pnpm typecheck && pnpm lint",
+		"check": "pnpm validate && pnpm typecheck && pnpm lint",
 		"build": "tsdown",
 		"start": "node --enable-source-maps dist/server.js",
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"generate": "prisma generate",
+		"migrate": "prisma migrate dev",
+		"migrate:reset": "prisma migrate reset",
+		"validate": "prisma validate",
+		"format": "prisma format",
+		"seed": "tsx prisma/schema/seed.ts",
+		"studio": "prisma studio"
 	},
 	"keywords": [],
 	"author": "",
