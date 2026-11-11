@@ -17,3 +17,4 @@ tmp/
 
 # ── vscode ───────────────────────────────
 .vscode
+/src/generated/prisma
