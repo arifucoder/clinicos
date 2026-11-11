@@ -1,9 +1,11 @@
 import type { NextFunction, Request, RequestHandler, Response } from "express";
 
-type TAsyncHandler = (req: Request, res: Response, next: NextFunction) => Promise<void>;
-
-export const catchAsync =
-	(fn: TAsyncHandler): RequestHandler =>
-	(req, res, next) => {
-		fn(req, res, next).catch(next);
+export const catchAsync = (fn: RequestHandler): RequestHandler => {
+	return async (req: Request, res: Response, next: NextFunction) => {
+		try {
+			await fn(req, res, next);
+		} catch (error) {
+			next(error);
+		}
 	};
+};
