@@ -1,10 +1,56 @@
 import * as z from "zod";
 
-const envSchema = z.object({
-	NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
-	PORT: z.coerce.number().int().min(1).max(65535).default(5000),
-	DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }),
-});
+const DURATION_REGEX = /^\d+(?:\.\d+)?\s?(?:ms|s|m|h|d|w|y)$/i;
+
+const isValidTimeZone = (timeZone: string): boolean => {
+	try {
+		new Intl.DateTimeFormat("en-US", { timeZone }).format();
+		return true;
+	} catch {
+		return false;
+	}
+};
+
+const secret = z.string().min(32, "Must be at least 32 characters (generate: openssl rand -base64 32)");
+const duration = z.string().regex(DURATION_REGEX, 'Must be a duration like "15m", "1d" or "7d"');
+
+const envSchema = z
+	.object({
+		NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
+		PORT: z.coerce.number().int().min(1).max(65535).default(5000),
+		DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }),
+
+		CLINIC_TIME_ZONE: z.string().refine(isValidTimeZone, "Must be a valid IANA time zone, e.g. Asia/Dhaka"),
+		CLINIC_NAME: z.string().trim().min(1).default("ClinicOS"),
+
+		BETTER_AUTH_SECRET: secret,
+		BETTER_AUTH_URL: z.url({ protocol: /^https?$/ }),
+		ACCESS_TOKEN_SECRET: secret,
+		ACCESS_TOKEN_EXPIRES_IN: duration,
+		REFRESH_TOKEN_SECRET: secret,
+		REFRESH_TOKEN_EXPIRES_IN: duration,
+
+		COOKIE_DOMAIN: z
+			.string()
+			.regex(/^\.?[a-z0-9-]+(\.[a-z0-9-]+)+$/i, 'Must be a domain like ".yourdomain.com"')
+			.optional(),
+	})
+	.superRefine((env, ctx) => {
+		if (env.ACCESS_TOKEN_SECRET === env.REFRESH_TOKEN_SECRET) {
+			ctx.addIssue({
+				code: "custom",
+				path: ["REFRESH_TOKEN_SECRET"],
+				message: "Must be different from ACCESS_TOKEN_SECRET",
+			});
+		}
+		if (env.NODE_ENV === "production" && !env.BETTER_AUTH_URL.startsWith("https://")) {
+			ctx.addIssue({
+				code: "custom",
+				path: ["BETTER_AUTH_URL"],
+				message: "Must use https in production",
+			});
+		}
+	});
 
 const rawEnv = Object.fromEntries(Object.entries(process.env).filter(([, value]) => value !== ""));
 
