@@ -1,7 +1,8 @@
 import type { Server } from "node:http";
 import app from "./app";
+import { envVars } from "./app/config/env";
 
-const PORT = Number(process.env.PORT) || 5000;
+const PORT = envVars.PORT || 5000;
 const SHUTDOWN_TIMEOUT_MS = 10_000;
 
 let server: Server | undefined;

@@ -6,8 +6,9 @@ import { Prisma } from "@/generated/prisma/client";
 import type { ErrorRequestHandler } from "express";
 import httpStatus from "http-status";
 import { ZodError } from "zod";
+import { envVars } from "../config/env";
 
-const isDev = process.env.NODE_ENV === "development";
+const isDev = envVars.NODE_ENV === "development";
 
 export const globalErrorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
 	let errorResponse: TGenericErrorResponse = {
