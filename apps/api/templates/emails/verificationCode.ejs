@@ -1,0 +1,82 @@
+<h1
+	class="h1"
+	style="
+		margin: 0 0 12px 0;
+		font-family: Arial, Helvetica, sans-serif;
+		font-size: 26px;
+		line-height: 32px;
+		font-weight: bold;
+		color: #0f172a;
+	"
+>
+	Verify your email
+</h1>
+
+<p style="margin: 0 0 24px 0">
+	Hi <%= name %>, use this code to finish creating your patient account. Enter it on the screen where you signed up.
+</p>
+
+<!-- code box -->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse: separate">
+	<tr>
+		<td
+			align="center"
+			style="padding: 24px 16px; background-color: #eff4ff; border: 1px solid #c7d7fe; border-radius: 12px"
+		>
+			<div
+				style="
+					font-family: Arial, Helvetica, sans-serif;
+					font-size: 12px;
+					line-height: 16px;
+					font-weight: bold;
+					letter-spacing: 2px;
+					color: #2563eb;
+				"
+			>
+				YOUR VERIFICATION CODE
+			</div>
+			<div
+				class="code"
+				style="
+					padding: 10px 0 6px 10px;
+					font-family: Arial, Helvetica, sans-serif;
+					font-size: 40px;
+					line-height: 48px;
+					font-weight: bold;
+					letter-spacing: 10px;
+					color: #0f172a;
+				"
+			>
+				<%= code %>
+			</div>
+			<div style="font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 20px; color: #334155">
+				Expires in <strong><%= expiresInMinutes %> minutes</strong> &middot; at <%= expiresAtLabel %>
+			</div>
+		</td>
+	</tr>
+</table>
+
+<p style="margin: 24px 0">
+	Code not working? Go back to the sign-up screen and tap <strong style="color: #0f172a">Resend code</strong>. Each new
+	code replaces the old one.
+</p>
+
+<!-- security note -->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse: separate">
+	<tr>
+		<td
+			style="
+				padding: 14px 16px;
+				background-color: #f8fafc;
+				border-radius: 10px;
+				font-family: Arial, Helvetica, sans-serif;
+				font-size: 14px;
+				line-height: 21px;
+				color: #475569;
+			"
+		>
+			<strong style="color: #0f172a">Didn't ask for this?</strong> You can ignore this email &mdash; no account is
+			created without the code. <%= clinicName %> staff will never ask you for this code by phone or message.
+		</td>
+	</tr>
+</table>
