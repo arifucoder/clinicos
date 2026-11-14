@@ -5,12 +5,6 @@ enum Role {
   PATIENT
 }
 
-enum UserStatus {
-  BLOCKED
-  DELETED
-  ACTIVE
-}
-
 enum Gender {
   MALE
   FEMALE
