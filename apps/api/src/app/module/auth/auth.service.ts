@@ -4,7 +4,7 @@ import { prisma } from "@/app/lib/prisma";
 import { Role } from "@/generated/prisma/enums";
 import { hashPassword } from "better-auth/crypto";
 import httpStatus from "http-status";
-import type { TRegisterPayload, TVerifyEmailPayload } from "./auth.interface";
+import type { TRegisterPayload, TResendOtpPayload, TVerifyEmailPayload } from "./auth.interface";
 
 const registerPatient = async (payload: TRegisterPayload) => {
 	const { name, email, password } = payload;
@@ -66,7 +66,16 @@ const verifyEmail = async (payload: TVerifyEmailPayload) => {
 	return { email: user.email, emailVerified: user.emailVerified };
 };
 
+const resendOtp = async (payload: TResendOtpPayload) => {
+	const { email } = payload;
+
+	await auth.api.sendVerificationOTP({
+		body: { email, type: "email-verification" },
+	});
+};
+
 export const AuthService = {
 	registerPatient,
 	verifyEmail,
+	resendOtp,
 };

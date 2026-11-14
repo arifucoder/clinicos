@@ -13,7 +13,12 @@ const verifyEmailSchema = z.object({
 	otp: z.string().regex(/^\d{6}$/, "Code must be exactly 6 digits"),
 });
 
+const resendOtpSchema = z.object({
+	email: emailSchema,
+});
+
 export const AuthValidation = {
 	registerSchema,
 	verifyEmailSchema,
+	resendOtpSchema,
 };

@@ -23,7 +23,18 @@ const verifyEmail = catchAsync(async (req, res) => {
 	});
 });
 
+const resendOtp = catchAsync(async (req, res) => {
+	await AuthService.resendOtp(req.body);
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		message: "If an account exists for this email, a new code has been sent",
+		data: null,
+	});
+});
+
 export const AuthController = {
 	registerPatient,
 	verifyEmail,
+	resendOtp,
 };

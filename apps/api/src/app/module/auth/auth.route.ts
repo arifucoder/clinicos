@@ -18,5 +18,6 @@ router.post(
 	validateRequest(AuthValidation.verifyEmailSchema),
 	AuthController.verifyEmail,
 );
+router.post("/resend-otp", authRateLimiter, validateRequest(AuthValidation.resendOtpSchema), AuthController.resendOtp);
 
 export const AuthRoutes = router;
