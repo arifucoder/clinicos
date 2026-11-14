@@ -6,7 +6,7 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { emailOTP } from "better-auth/plugins";
 
-const OTP_EXPIRES_MINUTES = 2;
+const OTP_EXPIRES_MINUTES = 5;
 
 const formatClinicTime = (date: Date) =>
 	new Intl.DateTimeFormat("en-GB", {
@@ -49,9 +49,9 @@ export const auth = betterAuth({
 
 				const user = await prisma.user.findUnique({
 					where: { email },
-					select: { name: true },
+					select: { name: true, emailVerified: true },
 				});
-
+				if (user?.emailVerified) return;
 				const expiresAt = new Date(Date.now() + OTP_EXPIRES_MINUTES * 60_000);
 
 				// await নেই: response-এর সময় দেখে যেন বোঝা না যায় email-টা আছে কিনা
