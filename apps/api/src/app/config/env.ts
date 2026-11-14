@@ -22,6 +22,8 @@ const envSchema = z
 
 		CLINIC_TIME_ZONE: z.string().refine(isValidTimeZone, "Must be a valid IANA time zone, e.g. Asia/Dhaka"),
 		CLINIC_NAME: z.string().trim().min(1).default("ClinicOS"),
+		CLINIC_ADDRESS: z.string().trim().min(1).default("123 Health Avenue, Dhaka"),
+		CLINIC_PHONE: z.string().trim().min(1).default("(555) 010-0100"),
 
 		BETTER_AUTH_SECRET: secret,
 		BETTER_AUTH_URL: z.url({ protocol: /^https?$/ }),
