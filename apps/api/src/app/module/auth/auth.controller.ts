@@ -8,7 +8,7 @@ const registerPatient = catchAsync(async (req, res) => {
 
 	sendResponse(res, {
 		statusCode: httpStatus.CREATED,
-		message: "Account created successfully",
+		message: "Account created. Check your email for the verification code",
 		data: result,
 	});
 });

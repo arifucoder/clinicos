@@ -1,4 +1,5 @@
 import { AppError } from "@/app/errorHelpers/AppError";
+import { auth } from "@/app/lib/auth";
 import { prisma } from "@/app/lib/prisma";
 import { Role } from "@/generated/prisma/enums";
 import { hashPassword } from "better-auth/crypto";
@@ -17,11 +18,10 @@ const registerPatient = async (payload: TRegisterPayload) => {
 		throw new AppError(httpStatus.CONFLICT, "An account with this email already exists");
 	}
 
-	// hash করা ধীর কাজ, তাই transaction-এর বাইরে
 	const hashedPassword = await hashPassword(password);
 	const userId = crypto.randomUUID();
 
-	return prisma.$transaction(async (tx) => {
+	const result = await prisma.$transaction(async (tx) => {
 		const user = await tx.user.create({
 			data: { id: userId, name, email, role: Role.PATIENT },
 			select: { id: true, name: true, email: true, role: true, emailVerified: true },
@@ -44,6 +44,16 @@ const registerPatient = async (payload: TRegisterPayload) => {
 
 		return { user, patient };
 	});
+
+	try {
+		await auth.api.sendVerificationOTP({
+			body: { email, type: "email-verification" },
+		});
+	} catch (error) {
+		console.error("Failed to send verification OTP", error);
+	}
+
+	return result;
 };
 
 export const AuthService = {
