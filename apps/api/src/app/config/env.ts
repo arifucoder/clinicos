@@ -34,6 +34,15 @@ const envSchema = z
 			.string()
 			.regex(/^\.?[a-z0-9-]+(\.[a-z0-9-]+)+$/i, 'Must be a domain like ".yourdomain.com"')
 			.optional(),
+
+		SMTP_HOST: z.string().trim().min(1),
+		SMTP_PORT: z.coerce.number().int().min(1).max(65535),
+		SMTP_USER: z.string().min(1),
+		SMTP_PASS: z.string().min(1),
+		EMAIL_FROM: z
+			.string()
+			.trim()
+			.regex(/^.+ <[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+>$/, 'Must look like "ClinicOS <no-reply@yourdomain.com>"'),
 	})
 	.superRefine((env, ctx) => {
 		if (env.ACCESS_TOKEN_SECRET === env.REFRESH_TOKEN_SECRET) {
