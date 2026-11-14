@@ -12,8 +12,10 @@ model User {
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
-  sessions Session[]
-  accounts Account[]
+  sessions           Session[]
+  accounts           Account[]
+  patientProfile     Patient?  @relation("PatientAccount")
+  registeredPatients Patient[] @relation("PatientRegisteredBy")
 
   @@unique([email])
   @@map("user")
