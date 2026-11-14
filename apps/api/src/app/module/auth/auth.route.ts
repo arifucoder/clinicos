@@ -12,5 +12,11 @@ router.post(
 	validateRequest(AuthValidation.registerSchema),
 	AuthController.registerPatient,
 );
+router.post(
+	"/verify-email",
+	authRateLimiter,
+	validateRequest(AuthValidation.verifyEmailSchema),
+	AuthController.verifyEmail,
+);
 
 export const AuthRoutes = router;

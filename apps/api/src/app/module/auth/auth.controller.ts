@@ -13,6 +13,17 @@ const registerPatient = catchAsync(async (req, res) => {
 	});
 });
 
+const verifyEmail = catchAsync(async (req, res) => {
+	const result = await AuthService.verifyEmail(req.body);
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		message: "Email verified successfully",
+		data: result,
+	});
+});
+
 export const AuthController = {
 	registerPatient,
+	verifyEmail,
 };
