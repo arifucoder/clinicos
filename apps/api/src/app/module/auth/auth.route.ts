@@ -25,4 +25,11 @@ router.post("/login", authRateLimiter, validateRequest(AuthValidation.loginSchem
 router.get("/me", checkAuth(), AuthController.getMe);
 router.post("/refresh-token", AuthController.refreshTokens);
 router.post("/logout", AuthController.logout);
+router.post(
+	"/change-password",
+	checkAuth(),
+	authRateLimiter,
+	validateRequest(AuthValidation.changePasswordSchema),
+	AuthController.changePassword,
+);
 export const AuthRoutes = router;

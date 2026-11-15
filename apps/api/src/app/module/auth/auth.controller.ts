@@ -96,6 +96,19 @@ const logout = catchAsync(async (req, res) => {
 	});
 });
 
+const changePassword = catchAsync(async (req, res) => {
+	const { userId } = getAuthUser(req);
+	const sessionToken = cookieUtils.getCookie(req, COOKIE_NAMES.session);
+
+	await AuthService.changePassword(userId, sessionToken, req.body);
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		message: "Password changed successfully",
+		data: null,
+	});
+});
+
 export const AuthController = {
 	registerPatient,
 	verifyEmail,
@@ -104,4 +117,5 @@ export const AuthController = {
 	getMe,
 	refreshTokens,
 	logout,
+	changePassword,
 };
