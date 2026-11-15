@@ -4,9 +4,15 @@ import { prisma } from "@/app/lib/prisma";
 import { REFRESH_TOKEN_MAX_AGE } from "@/app/utils/cookie";
 import { tokenUtils } from "@/app/utils/token";
 import { Role } from "@/generated/prisma/enums";
-import { hashPassword } from "better-auth/crypto";
+import { hashPassword, verifyPassword } from "better-auth/crypto";
 import httpStatus from "http-status";
-import type { TLoginPayload, TRegisterPayload, TResendOtpPayload, TVerifyEmailPayload } from "./auth.interface";
+import type {
+	TChangePasswordPayload,
+	TLoginPayload,
+	TRegisterPayload,
+	TResendOtpPayload,
+	TVerifyEmailPayload,
+} from "./auth.interface";
 
 const registerPatient = async (payload: TRegisterPayload) => {
 	const { name, email, password } = payload;
@@ -186,6 +192,42 @@ const logout = async (sessionToken: string | undefined) => {
 	await prisma.session.deleteMany({ where: { token: sessionToken } });
 };
 
+const changePassword = async (userId: string, sessionToken: string | undefined, payload: TChangePasswordPayload) => {
+	const { currentPassword, newPassword } = payload;
+
+	const account = await prisma.account.findFirst({
+		where: { userId, providerId: "credential" },
+		select: { id: true, password: true },
+	});
+
+	if (!account?.password) {
+		throw new AppError(httpStatus.BAD_REQUEST, "Password login is not set up for this account");
+	}
+
+	const isMatch = await verifyPassword({ hash: account.password, password: currentPassword });
+
+	if (!isMatch) {
+		throw new AppError(httpStatus.BAD_REQUEST, "Current password is incorrect");
+	}
+
+	const hashedPassword = await hashPassword(newPassword);
+
+	await prisma.$transaction([
+		prisma.account.update({
+			where: { id: account.id },
+			data: { password: hashedPassword },
+		}),
+		prisma.user.update({
+			where: { id: userId },
+			data: { needPasswordChange: false },
+		}),
+
+		prisma.session.deleteMany({
+			where: { userId, ...(sessionToken && { token: { not: sessionToken } }) },
+		}),
+	]);
+};
+
 export const AuthService = {
 	registerPatient,
 	verifyEmail,
@@ -194,4 +236,5 @@ export const AuthService = {
 	getMe,
 	refreshTokens,
 	logout,
+	changePassword,
 };
