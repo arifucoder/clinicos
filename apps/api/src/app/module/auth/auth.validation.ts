@@ -1,11 +1,12 @@
 import * as z from "zod";
 
 const emailSchema = z.string().trim().toLowerCase().pipe(z.email("Invalid email address"));
+const passwordSchema = z.string().min(8, "Password must be at least 8 characters").max(128);
 
 const registerSchema = z.object({
 	name: z.string().trim().min(2, "Name must be at least 2 characters").max(100),
 	email: emailSchema,
-	password: z.string().min(8, "Password must be at least 8 characters").max(128),
+	password: passwordSchema,
 });
 
 const verifyEmailSchema = z.object({
@@ -22,9 +23,20 @@ const loginSchema = z.object({
 	password: z.string().min(1, "Password is required").max(128),
 });
 
+const changePasswordSchema = z
+	.object({
+		currentPassword: z.string().min(1, "Current password is required").max(128),
+		newPassword: passwordSchema,
+	})
+	.refine((data) => data.currentPassword !== data.newPassword, {
+		path: ["newPassword"],
+		message: "New password must be different from the current password",
+	});
+
 export const AuthValidation = {
 	registerSchema,
 	verifyEmailSchema,
 	resendOtpSchema,
 	loginSchema,
+	changePasswordSchema,
 };
