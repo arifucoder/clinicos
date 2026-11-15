@@ -1,5 +1,6 @@
 import { catchAsync } from "@/app/shared/catchAsync";
 import { sendResponse } from "@/app/shared/sendResponse";
+import { cookieUtils } from "@/app/utils/cookie";
 import httpStatus from "http-status";
 import { AuthService } from "./auth.service";
 
@@ -33,8 +34,23 @@ const resendOtp = catchAsync(async (req, res) => {
 	});
 });
 
+const login = catchAsync(async (req, res) => {
+	const { accessToken, refreshToken, sessionToken, user } = await AuthService.login(req.body);
+
+	cookieUtils.setAccessTokenCookie(res, accessToken);
+	cookieUtils.setRefreshTokenCookie(res, refreshToken);
+	cookieUtils.setSessionCookie(res, sessionToken);
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		message: "Logged in successfully",
+		data: user,
+	});
+});
+
 export const AuthController = {
 	registerPatient,
 	verifyEmail,
 	resendOtp,
+	login,
 };

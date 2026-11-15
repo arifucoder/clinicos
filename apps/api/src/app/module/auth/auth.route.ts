@@ -20,4 +20,6 @@ router.post(
 );
 router.post("/resend-otp", authRateLimiter, validateRequest(AuthValidation.resendOtpSchema), AuthController.resendOtp);
 
+router.post("/login", authRateLimiter, validateRequest(AuthValidation.loginSchema), AuthController.login);
+
 export const AuthRoutes = router;
