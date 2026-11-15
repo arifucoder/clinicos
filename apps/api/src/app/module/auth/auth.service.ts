@@ -116,9 +116,39 @@ const login = async (payload: TLoginPayload) => {
 	};
 };
 
+const getMe = async (userId: string) => {
+	return prisma.user.findUniqueOrThrow({
+		where: { id: userId },
+		select: {
+			id: true,
+			name: true,
+			email: true,
+			emailVerified: true,
+			image: true,
+			role: true,
+			needPasswordChange: true,
+			patientProfile: {
+				select: {
+					id: true,
+					fullName: true,
+					phone: true,
+					dateOfBirth: true,
+					gender: true,
+					address: true,
+					bloodGroup: true,
+					allergies: true,
+					emergencyContactName: true,
+					emergencyContactPhone: true,
+				},
+			},
+		},
+	});
+};
+
 export const AuthService = {
 	registerPatient,
 	verifyEmail,
 	resendOtp,
 	login,
+	getMe,
 };
