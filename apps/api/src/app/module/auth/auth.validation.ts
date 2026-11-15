@@ -17,8 +17,14 @@ const resendOtpSchema = z.object({
 	email: emailSchema,
 });
 
+const loginSchema = z.object({
+	email: emailSchema,
+	password: z.string().min(1, "Password is required").max(128),
+});
+
 export const AuthValidation = {
 	registerSchema,
 	verifyEmailSchema,
 	resendOtpSchema,
+	loginSchema,
 };
