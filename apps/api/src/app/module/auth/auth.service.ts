@@ -1,6 +1,7 @@
 import { AppError } from "@/app/errorHelpers/AppError";
 import { auth } from "@/app/lib/auth";
 import { prisma } from "@/app/lib/prisma";
+import { REFRESH_TOKEN_MAX_AGE } from "@/app/utils/cookie";
 import { tokenUtils } from "@/app/utils/token";
 import { Role } from "@/generated/prisma/enums";
 import { hashPassword } from "better-auth/crypto";
@@ -145,10 +146,45 @@ const getMe = async (userId: string) => {
 	});
 };
 
+const refreshTokens = async (refreshToken: string, sessionToken: string) => {
+	const payload = tokenUtils.verifyRefreshToken(refreshToken);
+
+	const session = await prisma.session.findUnique({
+		where: { token: sessionToken },
+		select: {
+			userId: true,
+			expiresAt: true,
+			user: { select: { role: true, isActive: true, isDeleted: true } },
+		},
+	});
+
+	if (!session || session.expiresAt <= new Date() || session.userId !== payload.userId) {
+		throw new AppError(httpStatus.UNAUTHORIZED, "Session expired. Please log in again");
+	}
+
+	if (!session.user.isActive || session.user.isDeleted) {
+		throw new AppError(httpStatus.FORBIDDEN, "Your account is disabled. Contact the clinic");
+	}
+
+	const tokenPayload = { userId: session.userId, role: session.user.role };
+
+	await prisma.session.update({
+		where: { token: sessionToken },
+		data: { expiresAt: new Date(Date.now() + REFRESH_TOKEN_MAX_AGE) },
+	});
+
+	return {
+		accessToken: tokenUtils.getAccessToken(tokenPayload),
+		refreshToken: tokenUtils.getRefreshToken(tokenPayload),
+		sessionToken,
+	};
+};
+
 export const AuthService = {
 	registerPatient,
 	verifyEmail,
 	resendOtp,
 	login,
 	getMe,
+	refreshTokens,
 };
