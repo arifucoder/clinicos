@@ -1,10 +1,11 @@
 import { AppError } from "@/app/errorHelpers/AppError";
 import { auth } from "@/app/lib/auth";
 import { prisma } from "@/app/lib/prisma";
+import { tokenUtils } from "@/app/utils/token";
 import { Role } from "@/generated/prisma/enums";
 import { hashPassword } from "better-auth/crypto";
 import httpStatus from "http-status";
-import type { TRegisterPayload, TResendOtpPayload, TVerifyEmailPayload } from "./auth.interface";
+import type { TLoginPayload, TRegisterPayload, TResendOtpPayload, TVerifyEmailPayload } from "./auth.interface";
 
 const registerPatient = async (payload: TRegisterPayload) => {
 	const { name, email, password } = payload;
@@ -74,8 +75,50 @@ const resendOtp = async (payload: TResendOtpPayload) => {
 	});
 };
 
+const login = async (payload: TLoginPayload) => {
+	const { email, password } = payload;
+
+	const { token: sessionToken, user: signedInUser } = await auth.api.signInEmail({
+		body: { email, password },
+	});
+
+	const user = await prisma.user.findUniqueOrThrow({
+		where: { id: signedInUser.id },
+		select: {
+			id: true,
+			name: true,
+			email: true,
+			role: true,
+			isActive: true,
+			isDeleted: true,
+			needPasswordChange: true,
+		},
+	});
+
+	if (!user.isActive || user.isDeleted) {
+		await prisma.session.deleteMany({ where: { token: sessionToken } });
+		throw new AppError(httpStatus.FORBIDDEN, "Your account is disabled. Contact the clinic");
+	}
+
+	const tokenPayload = { userId: user.id, role: user.role };
+
+	return {
+		accessToken: tokenUtils.getAccessToken(tokenPayload),
+		refreshToken: tokenUtils.getRefreshToken(tokenPayload),
+		sessionToken,
+		user: {
+			id: user.id,
+			name: user.name,
+			email: user.email,
+			role: user.role,
+			needPasswordChange: user.needPasswordChange,
+		},
+	};
+};
+
 export const AuthService = {
 	registerPatient,
 	verifyEmail,
 	resendOtp,
+	login,
 };
