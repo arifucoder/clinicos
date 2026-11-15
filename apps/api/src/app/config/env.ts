@@ -18,6 +18,8 @@ const envSchema = z
 	.object({
 		NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
 		PORT: z.coerce.number().int().min(1).max(65535).default(5000),
+		FRONTEND_URL: z.url({ protocol: /^https?$/ }),
+
 		DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }),
 
 		CLINIC_TIME_ZONE: z.string().refine(isValidTimeZone, "Must be a valid IANA time zone, e.g. Asia/Dhaka"),

@@ -1,10 +1,20 @@
+import cors from "cors";
 import type { Request, Response } from "express";
 import express from "express";
+import { envVars } from "./app/config/env";
 import { globalErrorHandler } from "./app/middleware/globalErrorHandler";
 import { notFound } from "./app/middleware/notFound";
 import { AppRoutes } from "./app/routes";
 
 const app = express();
+
+app.use(
+	cors({
+		origin: envVars.FRONTEND_URL,
+		credentials: true,
+		exposedHeaders: ["X-Session-Refresh", "X-Session-Expires-At", "X-Time-Remaining"],
+	}),
+);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
