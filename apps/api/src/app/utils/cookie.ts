@@ -1,5 +1,5 @@
 import { envVars, isProduction } from "@/app/config/env";
-import type { CookieOptions, Response } from "express";
+import type { CookieOptions, Request, Response } from "express";
 
 export const COOKIE_NAMES = {
 	accessToken: "accessToken",
@@ -58,9 +58,15 @@ const clearAuthCookies = (res: Response) => {
 	res.clearCookie(COOKIE_NAMES.session, baseCookieOptions);
 };
 
+const getCookie = (req: Request, name: string): string | undefined => {
+	const value: unknown = req.cookies?.[name];
+	return typeof value === "string" && value.length > 0 ? value : undefined;
+};
+
 export const cookieUtils = {
 	setAccessTokenCookie,
 	setRefreshTokenCookie,
 	setSessionCookie,
 	clearAuthCookies,
+	getCookie,
 };
