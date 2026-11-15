@@ -1,7 +1,8 @@
+import { AppError } from "@/app/errorHelpers/AppError";
 import { catchAsync } from "@/app/shared/catchAsync";
 import { getAuthUser } from "@/app/shared/getAuthUser";
 import { sendResponse } from "@/app/shared/sendResponse";
-import { cookieUtils } from "@/app/utils/cookie";
+import { COOKIE_NAMES, cookieUtils } from "@/app/utils/cookie";
 import httpStatus from "http-status";
 import { AuthService } from "./auth.service";
 
@@ -60,10 +61,32 @@ const getMe = catchAsync(async (req, res) => {
 	});
 });
 
+const refreshTokens = catchAsync(async (req, res) => {
+	const refreshToken = cookieUtils.getCookie(req, COOKIE_NAMES.refreshToken);
+	const sessionToken = cookieUtils.getCookie(req, COOKIE_NAMES.session);
+
+	if (!refreshToken || !sessionToken) {
+		throw new AppError(httpStatus.UNAUTHORIZED, "You are not logged in");
+	}
+
+	const result = await AuthService.refreshTokens(refreshToken, sessionToken);
+
+	cookieUtils.setAccessTokenCookie(res, result.accessToken);
+	cookieUtils.setRefreshTokenCookie(res, result.refreshToken);
+	cookieUtils.setSessionCookie(res, result.sessionToken);
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		message: "Session refreshed successfully",
+		data: null,
+	});
+});
+
 export const AuthController = {
 	registerPatient,
 	verifyEmail,
 	resendOtp,
 	login,
 	getMe,
+	refreshTokens,
 };
