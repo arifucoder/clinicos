@@ -82,6 +82,20 @@ const refreshTokens = catchAsync(async (req, res) => {
 	});
 });
 
+const logout = catchAsync(async (req, res) => {
+	const sessionToken = cookieUtils.getCookie(req, COOKIE_NAMES.session);
+
+	await AuthService.logout(sessionToken);
+
+	cookieUtils.clearAuthCookies(res);
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		message: "Logged out successfully",
+		data: null,
+	});
+});
+
 export const AuthController = {
 	registerPatient,
 	verifyEmail,
@@ -89,4 +103,5 @@ export const AuthController = {
 	login,
 	getMe,
 	refreshTokens,
+	logout,
 };

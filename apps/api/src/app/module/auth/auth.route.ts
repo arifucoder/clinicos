@@ -24,5 +24,5 @@ router.post("/resend-otp", authRateLimiter, validateRequest(AuthValidation.resen
 router.post("/login", authRateLimiter, validateRequest(AuthValidation.loginSchema), AuthController.login);
 router.get("/me", checkAuth(), AuthController.getMe);
 router.post("/refresh-token", AuthController.refreshTokens);
-
+router.post("/logout", AuthController.logout);
 export const AuthRoutes = router;

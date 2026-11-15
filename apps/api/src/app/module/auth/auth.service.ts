@@ -180,6 +180,12 @@ const refreshTokens = async (refreshToken: string, sessionToken: string) => {
 	};
 };
 
+const logout = async (sessionToken: string | undefined) => {
+	if (!sessionToken) return;
+
+	await prisma.session.deleteMany({ where: { token: sessionToken } });
+};
+
 export const AuthService = {
 	registerPatient,
 	verifyEmail,
@@ -187,4 +193,5 @@ export const AuthService = {
 	login,
 	getMe,
 	refreshTokens,
+	logout,
 };
