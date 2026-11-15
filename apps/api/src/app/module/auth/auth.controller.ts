@@ -1,4 +1,5 @@
 import { catchAsync } from "@/app/shared/catchAsync";
+import { getAuthUser } from "@/app/shared/getAuthUser";
 import { sendResponse } from "@/app/shared/sendResponse";
 import { cookieUtils } from "@/app/utils/cookie";
 import httpStatus from "http-status";
@@ -48,9 +49,21 @@ const login = catchAsync(async (req, res) => {
 	});
 });
 
+const getMe = catchAsync(async (req, res) => {
+	const { userId } = getAuthUser(req);
+	const result = await AuthService.getMe(userId);
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		message: "Profile retrieved successfully",
+		data: result,
+	});
+});
+
 export const AuthController = {
 	registerPatient,
 	verifyEmail,
 	resendOtp,
 	login,
+	getMe,
 };
