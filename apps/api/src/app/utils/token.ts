@@ -3,7 +3,8 @@ import { AppError } from "@/app/errorHelpers/AppError";
 import { Role } from "@/generated/prisma/enums";
 import httpStatus from "http-status";
 import * as z from "zod";
-import { jwtUtils, type TExpiresIn } from "./jwt";
+import { durationToSeconds } from "./duration";
+import { jwtUtils } from "./jwt";
 
 const authPayloadSchema = z.object({
 	userId: z.uuid(),
@@ -12,8 +13,8 @@ const authPayloadSchema = z.object({
 
 export type TAuthPayload = z.infer<typeof authPayloadSchema>;
 
-const ACCESS_TOKEN_EXPIRES_IN = envVars.ACCESS_TOKEN_EXPIRES_IN as TExpiresIn;
-const REFRESH_TOKEN_EXPIRES_IN = envVars.REFRESH_TOKEN_EXPIRES_IN as TExpiresIn;
+const ACCESS_TOKEN_EXPIRES_IN = durationToSeconds(envVars.ACCESS_TOKEN_EXPIRES_IN);
+const REFRESH_TOKEN_EXPIRES_IN = durationToSeconds(envVars.REFRESH_TOKEN_EXPIRES_IN);
 
 const getAccessToken = ({ userId, role }: TAuthPayload): string => {
 	return jwtUtils.createToken({ userId, role }, envVars.ACCESS_TOKEN_SECRET, ACCESS_TOKEN_EXPIRES_IN);
