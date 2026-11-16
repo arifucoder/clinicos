@@ -18,7 +18,8 @@
 		"validate": "prisma validate",
 		"format": "prisma format",
 		"seed": "tsx prisma/schema/seed.ts",
-		"studio": "prisma studio"
+		"studio": "prisma studio",
+		"seed:superadmin": "tsx --env-file=.env prisma/seed.ts"
 	},
 	"keywords": [],
 	"author": "",
