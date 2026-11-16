@@ -5,6 +5,7 @@ model User {
   emailVerified      Boolean   @default(false)
   image              String?
   role               Role      @default(PATIENT)
+  phone              String?
   isActive           Boolean   @default(true)
   needPasswordChange Boolean   @default(false)
   isDeleted          Boolean   @default(false)
