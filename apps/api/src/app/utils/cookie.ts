@@ -1,33 +1,12 @@
 import { envVars, isProduction } from "@/app/config/env";
 import type { CookieOptions, Request, Response } from "express";
+import { durationToMs } from "./duration";
 
 export const COOKIE_NAMES = {
 	accessToken: "accessToken",
 	refreshToken: "refreshToken",
 	session: "better-auth.session_token",
 } as const;
-
-const UNIT_MS = {
-	ms: 1,
-	s: 1000,
-	m: 60_000,
-	h: 3_600_000,
-	d: 86_400_000,
-	w: 604_800_000,
-	y: 31_557_600_000,
-} as const;
-
-const durationToMs = (duration: string): number => {
-	const match = /^(\d+(?:\.\d+)?)\s?(ms|s|m|h|d|w|y)$/i.exec(duration);
-	const value = Number(match?.[1]);
-	const unit = match?.[2]?.toLowerCase() as keyof typeof UNIT_MS | undefined;
-
-	if (!unit || Number.isNaN(value)) {
-		throw new Error(`Invalid duration: ${duration}`);
-	}
-
-	return Math.round(value * UNIT_MS[unit]);
-};
 
 const ACCESS_TOKEN_MAX_AGE = durationToMs(envVars.ACCESS_TOKEN_EXPIRES_IN);
 export const REFRESH_TOKEN_MAX_AGE = durationToMs(envVars.REFRESH_TOKEN_EXPIRES_IN);
