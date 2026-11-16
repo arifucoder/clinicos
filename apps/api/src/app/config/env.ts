@@ -22,6 +22,10 @@ const envSchema = z
 
 		DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }),
 
+		SUPER_ADMIN_NAME: z.string().trim().min(1).default("Super Admin"),
+		SUPER_ADMIN_EMAIL: z.email().optional(),
+		SUPER_ADMIN_PASSWORD: z.string().min(8).optional(),
+
 		CLINIC_TIME_ZONE: z.string().refine(isValidTimeZone, "Must be a valid IANA time zone, e.g. Asia/Dhaka"),
 		CLINIC_NAME: z.string().trim().min(1).default("ClinicOS"),
 		CLINIC_ADDRESS: z.string().trim().min(1).default("123 Health Avenue, Dhaka"),
