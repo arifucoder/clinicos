@@ -1,4 +1,4 @@
-import { checkAuth } from "@/app/middleware/checkAuth";
+import { ADMINS, checkAuth } from "@/app/middleware/checkAuth";
 import { validateRequest } from "@/app/middleware/validateRequest";
 import { Role } from "@/generated/prisma/enums";
 import { Router } from "express";
@@ -13,5 +13,10 @@ router.post(
 	validateRequest(UserValidation.createAdminSchema),
 	UserController.createAdmin,
 );
-
+router.post(
+	"/doctors",
+	checkAuth(...ADMINS),
+	validateRequest(UserValidation.createDoctorSchema),
+	UserController.createDoctor,
+);
 export const UserRoutes = router;

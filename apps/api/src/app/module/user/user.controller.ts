@@ -15,6 +15,19 @@ const createAdmin = catchAsync(async (req, res) => {
 	});
 });
 
+const createDoctor = catchAsync(async (req, res) => {
+	const result = await UserService.createDoctor(req.body);
+
+	sendResponse(res, {
+		statusCode: httpStatus.CREATED,
+		message: result.emailSent
+			? "Doctor created. Login details have been sent to their email"
+			: "Doctor created, but the welcome email could not be sent. Reset their password to send it again",
+		data: result,
+	});
+});
+
 export const UserController = {
 	createAdmin,
+	createDoctor,
 };
