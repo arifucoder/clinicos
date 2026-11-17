@@ -24,7 +24,18 @@ const updateDoctorStatusSchema = z.object({
 	isActive: z.boolean(),
 });
 
+const updateMyProfileSchema = z
+	.object({
+		name: personNameSchema.optional(),
+		phone: phoneSchema.nullable().optional(),
+		bio: z.string().trim().max(1000).nullable().optional(),
+	})
+	.refine((data) => Object.keys(data).length > 0, {
+		error: "Provide at least one field to update",
+	});
+
 export const DoctorValidation = {
 	updateDoctorSchema,
 	updateDoctorStatusSchema,
+	updateMyProfileSchema,
 };
