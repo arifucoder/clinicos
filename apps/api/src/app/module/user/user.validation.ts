@@ -11,8 +11,12 @@ const createDoctorSchema = z.object({
 	name: personNameSchema,
 	email: emailSchema,
 	phone: phoneSchema.optional(),
-	specialtyId: z.uuid("Invalid specialty id"),
-	licenseNumber: z.string().trim().min(3, "License number is too short").max(50),
+	specialtyIds: z
+		.array(z.uuid("Invalid specialty id"))
+		.min(1, "Select at least one specialty")
+		.max(5, "A doctor can have at most 5 specialties")
+		.transform((ids) => [...new Set(ids)]),
+	licenseNumber: z.string().trim().toUpperCase().min(3, "License number is too short").max(50),
 	consultationFeeCents: z.number().int("Fee must be in whole cents").min(0).max(10_000_000),
 	roomNumber: z.string().trim().max(20).optional(),
 	bio: z.string().trim().max(1000).optional(),

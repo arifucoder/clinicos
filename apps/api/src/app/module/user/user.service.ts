@@ -26,7 +26,9 @@ const doctorProfileSelect = {
 	roomNumber: true,
 	bio: true,
 	photoUrl: true,
-	specialty: { select: { id: true, name: true, slug: true } },
+	doctorSpecialties: {
+		select: { specialty: { select: { id: true, name: true, slug: true } } },
+	},
 } as const;
 
 const createAdmin = async (payload: TCreateAdminPayload) => {
@@ -97,7 +99,7 @@ const createAdmin = async (payload: TCreateAdminPayload) => {
 };
 
 const createDoctor = async (payload: TCreateDoctorPayload) => {
-	const { name, email, phone, specialtyId, licenseNumber, consultationFeeCents, roomNumber, bio } = payload;
+	const { name, email, phone, specialtyIds, licenseNumber, consultationFeeCents, roomNumber, bio } = payload;
 
 	const existingUser = await prisma.user.findUnique({
 		where: { email },
@@ -108,13 +110,12 @@ const createDoctor = async (payload: TCreateDoctorPayload) => {
 		throw new AppError(httpStatus.CONFLICT, "An account with this email already exists");
 	}
 
-	const specialty = await prisma.specialty.findFirst({
-		where: { id: specialtyId, isDeleted: false, isActive: true },
-		select: { id: true },
+	const validSpecialtyCount = await prisma.specialty.count({
+		where: { id: { in: specialtyIds }, isDeleted: false, isActive: true },
 	});
 
-	if (!specialty) {
-		throw new AppError(httpStatus.BAD_REQUEST, "Specialty not found or inactive");
+	if (validSpecialtyCount !== specialtyIds.length) {
+		throw new AppError(httpStatus.BAD_REQUEST, "One or more specialties are not found or inactive");
 	}
 
 	const licenseTaken = await prisma.doctorProfile.findUnique({
@@ -157,11 +158,15 @@ const createDoctor = async (payload: TCreateDoctorPayload) => {
 		const createdProfile = await tx.doctorProfile.create({
 			data: {
 				userId,
-				specialtyId,
 				licenseNumber,
 				consultationFeeCents,
 				roomNumber: roomNumber ?? null,
 				bio: bio ?? null,
+				doctorSpecialties: {
+					createMany: {
+						data: specialtyIds.map((specialtyId) => ({ specialtyId })),
+					},
+				},
 			},
 			select: doctorProfileSelect,
 		});
@@ -190,7 +195,16 @@ const createDoctor = async (payload: TCreateDoctorPayload) => {
 		emailSent = false;
 	}
 
-	return { user, doctorProfile, emailSent };
+	const { doctorSpecialties, ...profile } = doctorProfile;
+
+	return {
+		user,
+		doctorProfile: {
+			...profile,
+			specialties: doctorSpecialties.map(({ specialty }) => specialty),
+		},
+		emailSent,
+	};
 };
 
 export const UserService = {
