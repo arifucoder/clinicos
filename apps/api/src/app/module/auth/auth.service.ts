@@ -8,9 +8,11 @@ import { hashPassword, verifyPassword } from "better-auth/crypto";
 import httpStatus from "http-status";
 import type {
 	TChangePasswordPayload,
+	TForgetPasswordPayload,
 	TLoginPayload,
 	TRegisterPayload,
 	TResendOtpPayload,
+	TResetPasswordPayload,
 	TVerifyEmailPayload,
 } from "./auth.interface";
 
@@ -228,6 +230,43 @@ const changePassword = async (userId: string, sessionToken: string | undefined, 
 	]);
 };
 
+type TResetCheckUser = { isActive: boolean; isDeleted: boolean; emailVerified: boolean } | null;
+
+const canResetPassword = (user: TResetCheckUser) =>
+	user !== null && user.isActive && !user.isDeleted && user.emailVerified;
+
+const forgetPassword = async (payload: TForgetPasswordPayload) => {
+	const { email } = payload;
+
+	const user = await prisma.user.findUnique({
+		where: { email },
+		select: { isActive: true, isDeleted: true, emailVerified: true },
+	});
+
+	if (!canResetPassword(user)) return;
+
+	await auth.api.requestPasswordResetEmailOTP({
+		body: { email },
+	});
+};
+
+const resetPassword = async (payload: TResetPasswordPayload) => {
+	const { email, otp, newPassword } = payload;
+
+	const user = await prisma.user.findUnique({
+		where: { email },
+		select: { isActive: true, isDeleted: true, emailVerified: true },
+	});
+
+	if (!canResetPassword(user)) {
+		throw new AppError(httpStatus.BAD_REQUEST, "Invalid verification code");
+	}
+
+	await auth.api.resetPasswordEmailOTP({
+		body: { email, otp, password: newPassword },
+	});
+};
+
 export const AuthService = {
 	registerPatient,
 	verifyEmail,
@@ -237,4 +276,6 @@ export const AuthService = {
 	refreshTokens,
 	logout,
 	changePassword,
+	forgetPassword,
+	resetPassword,
 };
