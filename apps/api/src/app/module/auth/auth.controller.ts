@@ -109,6 +109,28 @@ const changePassword = catchAsync(async (req, res) => {
 	});
 });
 
+const forgetPassword = catchAsync(async (req, res) => {
+	await AuthService.forgetPassword(req.body);
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		message: "If an account exists for this email, a reset code has been sent",
+		data: null,
+	});
+});
+
+const resetPassword = catchAsync(async (req, res) => {
+	await AuthService.resetPassword(req.body);
+
+	cookieUtils.clearAuthCookies(res);
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		message: "Password reset successfully. Please log in with your new password",
+		data: null,
+	});
+});
+
 export const AuthController = {
 	registerPatient,
 	verifyEmail,
@@ -118,4 +140,6 @@ export const AuthController = {
 	refreshTokens,
 	logout,
 	changePassword,
+	forgetPassword,
+	resetPassword,
 };
