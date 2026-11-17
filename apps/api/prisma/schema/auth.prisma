@@ -15,8 +15,9 @@ model User {
 
   sessions           Session[]
   accounts           Account[]
-  patientProfile     Patient?  @relation("PatientAccount")
-  registeredPatients Patient[] @relation("PatientRegisteredBy")
+  patientProfile     Patient?       @relation("PatientAccount")
+  registeredPatients Patient[]      @relation("PatientRegisteredBy")
+  doctorProfile      DoctorProfile?
 
   @@unique([email])
   @@map("user")
