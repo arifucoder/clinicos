@@ -4,7 +4,7 @@ import { buildListQuery, buildMeta } from "@/app/shared/query/queryBuilder";
 import type { Prisma } from "@/generated/prisma/client";
 import httpStatus from "http-status";
 import { doctorListConfig } from "./doctor.constant";
-import type { TUpdateDoctorPayload, TUpdateDoctorStatusPayload } from "./doctor.interface";
+import type { TUpdateDoctorPayload, TUpdateDoctorStatusPayload, TUpdateMyProfilePayload } from "./doctor.interface";
 
 const doctorSelect = {
 	id: true,
@@ -148,10 +148,42 @@ const deleteDoctor = async (id: string) => {
 	]);
 };
 
+// id client থেকে না, session-এর userId থেকে
+const updateMyProfile = async (userId: string, payload: TUpdateMyProfilePayload) => {
+	const { name, phone, bio } = payload;
+
+	const doctor = await prisma.doctorProfile.findFirst({
+		where: { userId, ...notDeleted },
+		select: { id: true },
+	});
+
+	if (!doctor) {
+		throw new AppError(httpStatus.NOT_FOUND, "Doctor profile not found");
+	}
+
+	const updated = await prisma.$transaction(async (tx) => {
+		if (name !== undefined || phone !== undefined) {
+			await tx.user.update({
+				where: { id: userId },
+				data: { name, phone },
+			});
+		}
+
+		return tx.doctorProfile.update({
+			where: { id: doctor.id },
+			data: { bio },
+			select: doctorSelect,
+		});
+	});
+
+	return toDoctorResponse(updated);
+};
+
 export const DoctorService = {
 	getAllDoctors,
 	getDoctorById,
 	updateDoctor,
 	updateDoctorStatus,
 	deleteDoctor,
+	updateMyProfile,
 };
