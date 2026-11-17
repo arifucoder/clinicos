@@ -2,6 +2,7 @@ import { emailSchema, personNameSchema } from "@/app/shared/commonValidation";
 import * as z from "zod";
 
 const passwordSchema = z.string().min(8, "Password must be at least 8 characters").max(128);
+const otpSchema = z.string().regex(/^\d{6}$/, "Code must be exactly 6 digits");
 
 const registerSchema = z.object({
 	name: personNameSchema,
@@ -11,7 +12,7 @@ const registerSchema = z.object({
 
 const verifyEmailSchema = z.object({
 	email: emailSchema,
-	otp: z.string().regex(/^\d{6}$/, "Code must be exactly 6 digits"),
+	otp: otpSchema,
 });
 
 const resendOtpSchema = z.object({
@@ -33,10 +34,22 @@ const changePasswordSchema = z
 		message: "New password must be different from the current password",
 	});
 
+const forgetPasswordSchema = z.object({
+	email: emailSchema,
+});
+
+const resetPasswordSchema = z.object({
+	email: emailSchema,
+	otp: otpSchema,
+	newPassword: passwordSchema,
+});
+
 export const AuthValidation = {
 	registerSchema,
 	verifyEmailSchema,
 	resendOtpSchema,
 	loginSchema,
 	changePasswordSchema,
+	forgetPasswordSchema,
+	resetPasswordSchema,
 };
