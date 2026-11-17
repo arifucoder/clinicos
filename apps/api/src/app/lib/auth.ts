@@ -26,6 +26,13 @@ export const auth = betterAuth({
 	emailAndPassword: {
 		enabled: true,
 		requireEmailVerification: true,
+		revokeSessionsOnPasswordReset: true,
+		async onPasswordReset({ user }) {
+			await prisma.user.updateMany({
+				where: { id: user.id, needPasswordChange: true },
+				data: { needPasswordChange: false },
+			});
+		},
 	},
 
 	user: {
@@ -45,29 +52,42 @@ export const auth = betterAuth({
 			overrideDefaultEmailVerification: true,
 
 			async sendVerificationOTP({ email, otp, type }) {
-				if (type !== "email-verification") return;
+				if (type !== "email-verification" && type !== "forget-password") return;
 
 				const user = await prisma.user.findUnique({
 					where: { email },
 					select: { name: true, emailVerified: true },
 				});
-				if (user?.emailVerified) return;
-				const expiresAt = new Date(Date.now() + OTP_EXPIRES_MINUTES * 60_000);
+				if (!user) return;
+				if (type === "email-verification" && user.emailVerified) return;
 
-				// await নেই: response-এর সময় দেখে যেন বোঝা না যায় email-টা আছে কিনা
-				void sendEmail({
-					to: email,
-					subject: `${otp} is your ${envVars.CLINIC_NAME} verification code`,
-					previewText: `Use this code to verify your email. It expires in ${OTP_EXPIRES_MINUTES} minutes.`,
-					template: "verificationCode",
-					data: {
-						name: user?.name ?? "there",
-						code: otp,
-						expiresInMinutes: OTP_EXPIRES_MINUTES,
-						expiresAtLabel: formatClinicTime(expiresAt),
-					},
-				}).catch((error: unknown) => {
-					console.error("Failed to send verification email", error);
+				const expiresAt = new Date(Date.now() + OTP_EXPIRES_MINUTES * 60_000);
+				const data = {
+					name: user.name,
+					code: otp,
+					expiresInMinutes: OTP_EXPIRES_MINUTES,
+					expiresAtLabel: formatClinicTime(expiresAt),
+				};
+
+				const sending =
+					type === "email-verification"
+						? sendEmail({
+								to: email,
+								subject: `${otp} is your ${envVars.CLINIC_NAME} verification code`,
+								previewText: `Use this code to verify your email. It expires in ${OTP_EXPIRES_MINUTES} minutes.`,
+								template: "verificationCode",
+								data,
+							})
+						: sendEmail({
+								to: email,
+								subject: `${otp} is your ${envVars.CLINIC_NAME} password reset code`,
+								previewText: `Use this code to reset your password. It expires in ${OTP_EXPIRES_MINUTES} minutes.`,
+								template: "passwordResetCode",
+								data,
+							});
+
+				void sending.catch((error: unknown) => {
+					console.error(`Failed to send ${type} email`, error);
 				});
 			},
 		}),
