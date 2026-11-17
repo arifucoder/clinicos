@@ -11,6 +11,12 @@ export type TEmailTemplates = {
 		expiresInMinutes: number;
 		expiresAtLabel: string;
 	};
+	passwordResetCode: {
+		name: string;
+		code: string;
+		expiresInMinutes: number;
+		expiresAtLabel: string;
+	};
 	staffWelcome: {
 		name: string;
 		roleLabel: string;
