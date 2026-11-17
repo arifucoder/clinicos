@@ -10,6 +10,6 @@ export const specialtyListConfig = defineListConfig<
 		isActive: { path: "isActive", type: "boolean" },
 	},
 	sortableFields: ["name", "createdAt"],
-	defaultSortBy: "name",
-	defaultSortOrder: "asc",
+	defaultSortBy: "createdAt",
+	defaultSortOrder: "desc",
 });
