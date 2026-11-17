@@ -11,6 +11,13 @@ export type TEmailTemplates = {
 		expiresInMinutes: number;
 		expiresAtLabel: string;
 	};
+	staffWelcome: {
+		name: string;
+		roleLabel: string;
+		email: string;
+		temporaryPassword: string;
+		loginUrl: string;
+	};
 };
 
 type TLayoutData = {
