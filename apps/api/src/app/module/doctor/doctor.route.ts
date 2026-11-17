@@ -1,10 +1,18 @@
 import { ADMINS, checkAuth } from "@/app/middleware/checkAuth";
 import { validateRequest } from "@/app/middleware/validateRequest";
+import { Role } from "@/generated/prisma/enums";
 import { Router } from "express";
 import { DoctorController } from "./doctor.controller";
 import { DoctorValidation } from "./doctor.validation";
 
 const router = Router();
+
+router.patch(
+	"/me",
+	checkAuth(Role.DOCTOR),
+	validateRequest(DoctorValidation.updateMyProfileSchema),
+	DoctorController.updateMyProfile,
+);
 
 router.use(checkAuth(...ADMINS));
 

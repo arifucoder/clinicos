@@ -1,5 +1,6 @@
 import { catchAsync } from "@/app/shared/catchAsync";
 import { idParamSchema } from "@/app/shared/commonValidation";
+import { getAuthUser } from "@/app/shared/getAuthUser";
 import { sendResponse } from "@/app/shared/sendResponse";
 import httpStatus from "http-status";
 import { DoctorService } from "./doctor.service";
@@ -59,10 +60,22 @@ const deleteDoctor = catchAsync(async (req, res) => {
 	});
 });
 
+const updateMyProfile = catchAsync(async (req, res) => {
+	const { userId } = getAuthUser(req);
+	const result = await DoctorService.updateMyProfile(userId, req.body);
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		message: "Profile updated successfully",
+		data: result,
+	});
+});
+
 export const DoctorController = {
 	getAllDoctors,
 	getDoctorById,
 	updateDoctor,
 	updateDoctorStatus,
 	deleteDoctor,
+	updateMyProfile,
 };
