@@ -148,7 +148,6 @@ const deleteDoctor = async (id: string) => {
 	]);
 };
 
-// id client থেকে না, session-এর userId থেকে
 const updateMyProfile = async (userId: string, payload: TUpdateMyProfilePayload) => {
 	const { name, phone, bio } = payload;
 
