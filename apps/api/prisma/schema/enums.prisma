@@ -21,3 +21,8 @@ enum BloodGroup {
   O_POSITIVE
   O_NEGATIVE
 }
+
+enum SlotStatus {
+  OPEN
+  BLOCKED
+}
