@@ -19,7 +19,9 @@
 		"format": "prisma format",
 		"seed": "tsx prisma/schema/seed.ts",
 		"studio": "prisma studio",
-		"seed:superadmin": "tsx --env-file=.env prisma/seed.ts"
+		"seed:superadmin": "tsx --env-file=.env prisma/seed.ts",
+		"test": "vitest run",
+		"test:watch": "vitest"
 	},
 	"keywords": [],
 	"author": "",
