@@ -1,11 +1,6 @@
-import { emailSchema, personNameSchema, phoneSchema } from "@/app/shared/commonValidation";
+import { dateOfBirthSchema, emailSchema, personNameSchema, phoneSchema } from "@/app/shared/commonValidation";
 import { BloodGroup, Gender } from "@/generated/prisma/enums";
 import * as z from "zod";
-
-const dateOfBirthSchema = z.iso
-	.date("Date of birth must be in YYYY-MM-DD format")
-	.refine((value) => new Date(value) <= new Date(), { error: "Date of birth cannot be in the future" })
-	.transform((value) => new Date(value));
 
 const addressSchema = z.string().trim().max(300);
 const allergiesSchema = z.string().trim().max(500);
