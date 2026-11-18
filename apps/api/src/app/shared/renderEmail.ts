@@ -24,6 +24,12 @@ export type TEmailTemplates = {
 		temporaryPassword: string;
 		loginUrl: string;
 	};
+	temporaryPasswordReset: {
+		name: string;
+		email: string;
+		temporaryPassword: string;
+		loginUrl: string;
+	};
 };
 
 type TLayoutData = {
