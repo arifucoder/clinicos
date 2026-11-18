@@ -35,8 +35,9 @@ model Patient {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user         User  @relation("PatientAccount", fields: [userId], references: [id], onDelete: Cascade)
-  registeredBy User? @relation("PatientRegisteredBy", fields: [registeredById], references: [id])
+  user         User          @relation("PatientAccount", fields: [userId], references: [id], onDelete: Cascade)
+  registeredBy User?         @relation("PatientRegisteredBy", fields: [registeredById], references: [id])
+  appointments Appointment[]
 
   @@index([phone])
   @@index([fullName])
@@ -60,6 +61,7 @@ model DoctorProfile {
   user              User              @relation(fields: [userId], references: [id])
   doctorSpecialties DoctorSpecialty[]
   slots             DoctorSlot[]
+  appointments      Appointment[]
 
   @@map("doctor_profiles")
 }

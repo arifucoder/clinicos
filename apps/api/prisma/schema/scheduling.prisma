@@ -11,9 +11,43 @@ model DoctorSlot {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
-  doctor DoctorProfile @relation(fields: [doctorId], references: [id])
+  doctor       DoctorProfile @relation(fields: [doctorId], references: [id])
+  appointments Appointment[]
 
   @@unique([doctorId, startAt])
   @@index([status, startAt])
   @@map("doctor_slots")
+}
+
+model Appointment {
+  id                String                 @id @default(uuid())
+  appointmentNumber String                 @unique
+  patientId         String
+  doctorId          String
+  slotId            String
+  startAt           DateTime
+  endAt             DateTime
+  status            AppointmentStatus
+  source            AppointmentSource
+  paymentMode       AppointmentPaymentMode
+  feeCents          Int
+  holdExpiresAt     DateTime?
+  reason            String?
+  bookedById        String
+  cancelledAt       DateTime?
+  cancelReason      String?
+  cancelledById     String?
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+
+  patient  Patient       @relation(fields: [patientId], references: [id])
+  doctor   DoctorProfile @relation(fields: [doctorId], references: [id])
+  slot     DoctorSlot    @relation(fields: [slotId], references: [id])
+  payments Payment[]
+
+  @@index([slotId])
+  @@index([patientId, startAt])
+  @@index([doctorId, startAt])
+  @@index([status, holdExpiresAt])
+  @@map("appointments")
 }

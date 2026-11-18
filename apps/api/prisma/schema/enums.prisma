@@ -26,3 +26,41 @@ enum SlotStatus {
   OPEN
   BLOCKED
 }
+
+enum AppointmentStatus {
+  PENDING_PAYMENT
+  CONFIRMED
+  CHECKED_IN
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+  EXPIRED
+}
+
+enum AppointmentSource {
+  ONLINE
+  STAFF
+}
+
+enum AppointmentPaymentMode {
+  AT_DESK
+  ONLINE
+}
+
+enum PaymentProvider {
+  STRIPE
+  DESK
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  MOBILE
+}
