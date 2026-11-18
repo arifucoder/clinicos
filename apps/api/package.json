@@ -21,7 +21,8 @@
 		"studio": "prisma studio",
 		"seed:superadmin": "tsx --env-file=.env prisma/seed.ts",
 		"test": "vitest run",
-		"test:watch": "vitest"
+		"test:watch": "vitest",
+		"stripe:webhook": "stripe listen --forward-to localhost:5000/api/v1/payments/stripe/webhook"
 	},
 	"keywords": [],
 	"author": "",
