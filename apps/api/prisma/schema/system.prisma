@@ -1,0 +1,6 @@
+model Counter {
+  key   String @id
+  value Int
+
+  @@map("counters")
+}
