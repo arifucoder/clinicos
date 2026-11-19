@@ -1,6 +1,7 @@
 import { SpecialtyRoutes } from "@/app/module/specialty/specialty.route";
 import { Router } from "express";
 import { AdminRoutes } from "../module/admin/admin.route";
+import { AppointmentRoutes, PatientAppointmentRoutes } from "../module/appointment/appointment.route";
 import { AuthRoutes } from "../module/auth/auth.route";
 import { DoctorRoutes } from "../module/doctor/doctor.route";
 import { PatientRecordRoutes } from "../module/patient-record/patient-record.route";
@@ -18,6 +19,8 @@ const moduleRoutes = [
 	{ path: "/doctors/:doctorId/slots", route: SlotRoutes },
 	{ path: "/doctors", route: DoctorRoutes },
 	{ path: "/patient-records", route: PatientRecordRoutes },
+	{ path: "/appointments", route: AppointmentRoutes },
+	{ path: "/patient/appointments", route: PatientAppointmentRoutes },
 	{ path: "/patient", route: PatientRoutes },
 ];
 

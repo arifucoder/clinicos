@@ -1,25 +1,30 @@
+import type { ScheduledTask } from "node-cron";
 import type { Server } from "node:http";
 import app from "./app";
 import { envVars } from "./app/config/env";
+import { startPaymentJobs } from "./app/module/payment/payment.job";
 
 const PORT = envVars.PORT;
 const SHUTDOWN_TIMEOUT_MS = 10_000;
 
 let server: Server | undefined;
-
+let cronTasks: ScheduledTask[] = [];
 const startServer = () => {
 	server = app.listen(PORT, (error) => {
 		if (error) {
 			console.error("Failed to start server:", error);
 			process.exit(1);
 		}
+		cronTasks = startPaymentJobs();
 		console.info(`ClinicOS API running on http://localhost:${PORT}`);
 	});
 };
 
 const shutdown = (signal: NodeJS.Signals) => {
 	console.info(`${signal} received, shutting down gracefully...`);
-
+	for (const task of cronTasks) {
+		void task.stop();
+	}
 	if (!server) {
 		process.exit(0);
 	}
