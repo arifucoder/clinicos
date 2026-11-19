@@ -6,6 +6,11 @@ import type { TAuthPayload } from "@/app/utils/token";
 import type { Prisma } from "@/generated/prisma/client";
 import { Role, SlotStatus } from "@/generated/prisma/enums";
 import httpStatus from "http-status";
+import {
+	activeAppointmentWhere,
+	cancelActiveAppointments,
+	finalizeCancellations,
+} from "../appointment/appointment.helpers";
 import type {
 	TBlockSlotsPayload,
 	TManageSlotQuery,
@@ -158,8 +163,15 @@ const getPublicSlots = async (doctorId: string, query: TPublicSlotQuery) => {
 	const earliest = new Date(now.getTime() + SLOT_CONFIG.minLeadMinutes * 60_000);
 
 	const slots = await prisma.doctorSlot.findMany({
-		where: { doctorId, AND: [{ startAt: range }, { startAt: { gte: earliest } }] },
-		// দিন ৩: OPEN slot-এ active appointment থাকলে (booked) বাদ দিতে হবে
+		where: {
+			doctorId,
+			AND: [
+				{ startAt: range },
+				{ startAt: { gte: earliest } },
+				// booked slot (active appointment আছে) দেখানো হয় না; BLOCKED দেখায় কারণসহ
+				{ OR: [{ status: SlotStatus.BLOCKED }, { appointments: { none: activeAppointmentWhere(now) } }] },
+			],
+		},
 		select: { id: true, startAt: true, endAt: true, status: true, blockReason: true },
 		orderBy: { startAt: "asc" },
 	});
@@ -177,15 +189,34 @@ const getPublicSlots = async (doctorId: string, query: TPublicSlotQuery) => {
 const getManageSlots = async (authUser: TAuthPayload, doctorIdParam: string, query: TManageSlotQuery) => {
 	const doctorId = await resolveDoctorId(authUser, doctorIdParam);
 	const range = toUtcRange(query, SLOT_CONFIG.manageMaxRangeDays);
+	const now = new Date();
 
 	const slots = await prisma.doctorSlot.findMany({
 		where: { doctorId, startAt: range },
-		// দিন ৩: active appointment include করে BOOKED (রোগী + appointment number) দেখাবে
-		select: { id: true, startAt: true, endAt: true, status: true, blockReason: true, blockedAt: true },
+		select: {
+			id: true,
+			startAt: true,
+			endAt: true,
+			status: true,
+			blockReason: true,
+			blockedAt: true,
+			appointments: {
+				where: activeAppointmentWhere(now),
+				select: { id: true, appointmentNumber: true, status: true, patient: { select: { fullName: true } } },
+				take: 1,
+			},
+		},
 		orderBy: { startAt: "asc" },
 	});
 
-	return groupByClinicDate(slots, TZ);
+	// OPEN / BOOKED / BLOCKED — "booked" DB-তে রাখা হয় না, active appointment থেকে বের করা হয়
+	const items = slots.map(({ appointments, ...slot }) => {
+		const [booking] = appointments;
+		const state = slot.status === SlotStatus.BLOCKED ? "BLOCKED" : booking ? "BOOKED" : "OPEN";
+		return { ...slot, state, booking: booking ?? null };
+	});
+
+	return groupByClinicDate(items, TZ);
 };
 
 // Prisma-তে undefined মানে "filter নেই"। তাই range ফাঁকা থাকলে সব slot block হয়ে যেত — এখানে আটকানো হলো
@@ -216,13 +247,20 @@ const blockSlots = async (authUser: TAuthPayload, doctorIdParam: string, payload
 			throw new AppError(httpStatus.BAD_REQUEST, "No open future slots matched — they may be past or already blocked");
 		}
 
-		// দিন ৩: এই slot-গুলোর active appointment → CANCELLED (cancelReason = payload.reason),
-		//        কাদের email যাবে সেটা return করো; audit log-ও এখানে (একই tx)
-		return { blocked: blocked.length, cancelledAppointments: 0 };
+		// একই transaction-এ: এই slot-গুলোর active appointment → CANCELLED (cancelReason = block-এর কারণ)
+		const cancelled = await cancelActiveAppointments(
+			tx,
+			{ slotId: { in: blocked.map((slot) => slot.id) } },
+			{ reason: payload.reason, actorId: authUser.userId, now },
+		);
+
+		return { blocked: blocked.length, cancelled };
 	});
 
-	// দিন ৩: commit-এর পরে প্রতিটা রোগীকে appointment-cancelled email + SSE event
-	return result;
+	// Commit-এর পরে: Stripe refund + রোগীদের email (বাইরের call transaction-এ না)
+	await finalizeCancellations(result.cancelled, payload.reason);
+
+	return { blocked: result.blocked, cancelledAppointments: result.cancelled.length };
 };
 
 const unblockSlots = async (authUser: TAuthPayload, doctorIdParam: string, payload: TUnblockSlotsPayload) => {
@@ -251,7 +289,12 @@ const deleteSlot = async (authUser: TAuthPayload, doctorIdParam: string, slotId:
 		throw new AppError(httpStatus.BAD_REQUEST, "Past slots can't be deleted");
 	}
 
-	// দিন ৩: কোনো appointment থাকলে 409 "This slot has bookings — block it instead"
+	// একবার booking হয়েছে এমন slot মোছা যায় না (appointment-এর ইতিহাস থাকে) → block করতে হবে
+	const bookings = await prisma.appointment.count({ where: { slotId: slot.id } });
+	if (bookings > 0) {
+		throw new AppError(httpStatus.CONFLICT, "This slot has bookings — block it instead");
+	}
+
 	await prisma.doctorSlot.delete({ where: { id: slot.id } });
 };
 
