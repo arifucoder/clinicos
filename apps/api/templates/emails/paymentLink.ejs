@@ -1,0 +1,58 @@
+<h1
+	style="
+		margin: 0 0 12px 0;
+		font-family: Arial, Helvetica, sans-serif;
+		font-size: 26px;
+		line-height: 32px;
+		font-weight: bold;
+		color: #0f172a;
+	"
+>
+	Complete your payment
+</h1>
+
+<p style="margin: 0 0 24px 0">
+	Hi <%= name %>, the front desk booked <strong style="color: #0f172a"><%= appointmentNumber %></strong> with Dr. <%=
+	doctorName %> on <%= whenLabel %>. Pay the consultation fee of
+	<strong style="color: #0f172a"><%= amountLabel %></strong>
+	online to confirm it.
+</p>
+
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 24px 0">
+	<tr>
+		<td style="background-color: #2563eb; border-radius: 8px">
+			<a
+				href="<%= payUrl %>"
+				style="
+					display: inline-block;
+					padding: 12px 24px;
+					font-family: Arial, Helvetica, sans-serif;
+					font-size: 15px;
+					font-weight: bold;
+					color: #ffffff;
+					text-decoration: none;
+				"
+				>Pay <%= amountLabel %></a
+			>
+		</td>
+	</tr>
+</table>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse: separate">
+	<tr>
+		<td
+			style="
+				padding: 14px 16px;
+				background-color: #fffbeb;
+				border-radius: 10px;
+				font-family: Arial, Helvetica, sans-serif;
+				font-size: 14px;
+				line-height: 21px;
+				color: #475569;
+			"
+		>
+			<strong style="color: #0f172a">This link works until <%= expiresLabel %>.</strong> After that the time is released
+			for other patients. Payments are processed securely by Stripe.
+		</td>
+	</tr>
+</table>

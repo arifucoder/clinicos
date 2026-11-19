@@ -30,6 +30,32 @@ export type TEmailTemplates = {
 		temporaryPassword: string;
 		loginUrl: string;
 	};
+	appointmentConfirmed: {
+		name: string;
+		appointmentNumber: string;
+		doctorName: string;
+		whenLabel: string;
+		paymentLabel: string;
+		portalUrl: string;
+	};
+	appointmentCancelled: {
+		name: string;
+		appointmentNumber: string;
+		doctorName: string;
+		whenLabel: string;
+		reason: string;
+		refundNote: string | null;
+		bookUrl: string;
+	};
+	paymentLink: {
+		name: string;
+		appointmentNumber: string;
+		doctorName: string;
+		whenLabel: string;
+		amountLabel: string;
+		payUrl: string;
+		expiresLabel: string;
+	};
 };
 
 type TLayoutData = {
