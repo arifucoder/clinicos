@@ -1,0 +1,59 @@
+import { defineListConfig } from "@/app/shared/query/queryBuilder";
+import type { Prisma } from "@/generated/prisma/client";
+import { AppointmentPaymentMode, AppointmentSource, AppointmentStatus, PaymentStatus } from "@/generated/prisma/enums";
+
+export const appointmentSelect = {
+	id: true,
+	appointmentNumber: true,
+	startAt: true,
+	endAt: true,
+	status: true,
+	source: true,
+	paymentMode: true,
+	feeCents: true,
+	holdExpiresAt: true,
+	reason: true,
+	cancelledAt: true,
+	cancelReason: true,
+	createdAt: true,
+	patient: { select: { id: true, fullName: true, phone: true, user: { select: { email: true } } } },
+	doctor: { select: { id: true, roomNumber: true, user: { select: { name: true } } } },
+	payments: {
+		select: {
+			id: true,
+			provider: true,
+			status: true,
+			amountCents: true,
+			currency: true,
+			deskMethod: true,
+			paidAt: true,
+			refundedAt: true,
+			createdAt: true,
+		},
+		orderBy: { createdAt: "asc" },
+	},
+} satisfies Prisma.AppointmentSelect;
+
+export type TAppointmentRow = Prisma.AppointmentGetPayload<{ select: typeof appointmentSelect }>;
+
+export const toAppointmentResponse = (appointment: TAppointmentRow) => ({
+	...appointment,
+	isPaid: appointment.payments.some((payment) => payment.status === PaymentStatus.SUCCEEDED),
+});
+
+export const appointmentListConfig = defineListConfig<
+	Prisma.AppointmentWhereInput,
+	Prisma.AppointmentOrderByWithRelationInput
+>({
+	searchableFields: ["appointmentNumber", "patient.fullName", "patient.phone", "patient.user.email"],
+	filters: {
+		status: { path: "status", type: "enum", op: "in", values: Object.values(AppointmentStatus) },
+		source: { path: "source", type: "enum", values: Object.values(AppointmentSource) },
+		paymentMode: { path: "paymentMode", type: "enum", values: Object.values(AppointmentPaymentMode) },
+		doctorId: { path: "doctorId", type: "uuid" },
+		patientId: { path: "patientId", type: "uuid" },
+	},
+	sortableFields: ["startAt", "createdAt", "appointmentNumber"],
+	defaultSortBy: "startAt",
+	defaultSortOrder: "asc",
+});
