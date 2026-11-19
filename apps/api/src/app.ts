@@ -5,6 +5,7 @@ import express from "express";
 import { envVars } from "./app/config/env";
 import { globalErrorHandler } from "./app/middleware/globalErrorHandler";
 import { notFound } from "./app/middleware/notFound";
+import { PaymentController } from "./app/module/payment/payment.controller";
 import { AppRoutes } from "./app/routes";
 
 const app = express();
@@ -15,6 +16,12 @@ app.use(
 		credentials: true,
 		exposedHeaders: ["X-Session-Refresh", "X-Session-Expires-At", "X-Time-Remaining"],
 	}),
+);
+
+app.post(
+	"/api/v1/payments/stripe/webhook",
+	express.raw({ type: "application/json" }),
+	PaymentController.handleStripeWebhook,
 );
 
 app.use(express.json());
