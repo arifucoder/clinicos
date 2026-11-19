@@ -43,6 +43,9 @@ const envSchema = z
 			.regex(/^\.?[a-z0-9-]+(\.[a-z0-9-]+)+$/i, 'Must be a domain like ".yourdomain.com"')
 			.optional(),
 
+		STRIPE_SECRET_KEY: z.string().startsWith("sk_", 'Must start with "sk_" (Stripe → Developers → API keys)'),
+		STRIPE_WEBHOOK_SECRET: z.string().startsWith("whsec_", 'Must start with "whsec_" (shown by "stripe listen")'),
+
 		SMTP_HOST: z.string().trim().min(1),
 		SMTP_PORT: z.coerce.number().int().min(1).max(65535),
 		SMTP_USER: z.string().min(1),
