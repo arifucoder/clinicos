@@ -22,7 +22,7 @@
 		"seed:superadmin": "tsx --env-file=.env prisma/seed.ts",
 		"test": "vitest run",
 		"test:watch": "vitest",
-		"stripe:webhook": "stripe listen --forward-to localhost:5000/api/v1/payments/stripe/webhook"
+		"stripe:webhook": "stripe listen --events checkout.session.completed,checkout.session.async_payment_succeeded,checkout.session.expired,checkout.session.async_payment_failed --forward-to localhost:5000/api/v1/payments/stripe/webhook"
 	},
 	"keywords": [],
 	"author": "",
