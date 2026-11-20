@@ -13,10 +13,13 @@ export const appointmentSelect = {
 	feeCents: true,
 	holdExpiresAt: true,
 	reason: true,
+	checkedInAt: true,
+	completedAt: true,
 	cancelledAt: true,
 	cancelReason: true,
 	createdAt: true,
-	patient: { select: { id: true, fullName: true, phone: true, user: { select: { email: true } } } },
+	// allergies: doctor-এর screen-এ লাল করে দেখাতে
+	patient: { select: { id: true, fullName: true, phone: true, allergies: true, user: { select: { email: true } } } },
 	doctor: { select: { id: true, roomNumber: true, user: { select: { name: true } } } },
 	payments: {
 		select: {
@@ -31,6 +34,26 @@ export const appointmentSelect = {
 			createdAt: true,
 		},
 		orderBy: { createdAt: "asc" },
+	},
+	// Prescription (না থাকলে null) — staff detail আর রোগীর /patient/appointments/:id দুই জায়গাতেই আসে
+	prescription: {
+		select: {
+			symptoms: true,
+			diagnosis: true,
+			advice: true,
+			followUpDate: true,
+			updatedAt: true,
+			items: {
+				select: {
+					medicineName: true,
+					dosage: true,
+					frequency: true,
+					durationDays: true,
+					instructions: true,
+				},
+				orderBy: { sortOrder: "asc" },
+			},
+		},
 	},
 } satisfies Prisma.AppointmentSelect;
 
