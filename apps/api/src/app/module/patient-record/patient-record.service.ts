@@ -92,7 +92,6 @@ const createPatient = async (registeredById: string, payload: TCreatePatientPayl
 			},
 		});
 
-		// TODO: audit log (audit_logs table এলে, এই tx-এর ভেতরেই)
 		return tx.patient.create({
 			data: { userId, fullName, registeredById, ...profile },
 			select: patientSelect,
@@ -151,7 +150,6 @@ const updatePatient = async (id: string, payload: TUpdatePatientPayload) => {
 			});
 		}
 
-		// TODO: audit log
 		return tx.patient.update({
 			where: { id },
 			data: { fullName, ...profile },

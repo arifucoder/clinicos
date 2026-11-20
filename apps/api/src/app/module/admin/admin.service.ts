@@ -88,8 +88,6 @@ const deleteAdmin = async (id: string) => {
 		}),
 		prisma.session.deleteMany({ where: { userId: id } }),
 	]);
-
-	// TODO: deletedById + audit log (audit_logs table এলে)
 };
 
 export const AdminService = {
