@@ -3,6 +3,7 @@ import { SLOT_CONFIG } from "@/app/config/slot.config";
 import { AppError } from "@/app/errorHelpers/AppError";
 import { prisma } from "@/app/lib/prisma";
 import { buildListQuery, buildMeta } from "@/app/shared/query/queryBuilder";
+import { deleteImageQuietly, uploadImage } from "@/app/utils/storage";
 import type { Prisma } from "@/generated/prisma/client";
 import { SlotStatus } from "@/generated/prisma/enums";
 import httpStatus from "http-status";
@@ -190,6 +191,78 @@ const updateMyProfile = async (userId: string, payload: TUpdateMyProfilePayload)
 	return toDoctorResponse(updated);
 };
 
+// ---------- Photo ----------
+
+const DOCTOR_PHOTO_FOLDER = "clinicos/doctors";
+
+const findMyDoctorIdOrThrow = async (userId: string) => {
+	const doctor = await prisma.doctorProfile.findFirst({
+		where: { userId, ...notDeleted },
+		select: { id: true },
+	});
+
+	if (!doctor) {
+		throw new AppError(httpStatus.NOT_FOUND, "Doctor profile not found");
+	}
+
+	return doctor.id;
+};
+
+const findPhotoPublicIdOrThrow = async (id: string) => {
+	const doctor = await prisma.doctorProfile.findFirst({
+		where: { id, ...notDeleted },
+		select: { photoPublicId: true },
+	});
+
+	if (!doctor) {
+		throw new AppError(httpStatus.NOT_FOUND, "Doctor not found");
+	}
+
+	return doctor.photoPublicId;
+};
+
+// ক্রম: নতুন ছবি upload → DB update → পুরনো ছবি মোছা
+const setDoctorPhoto = async (id: string, photo: Buffer) => {
+	const oldPublicId = await findPhotoPublicIdOrThrow(id);
+
+	const uploaded = await uploadImage(photo, DOCTOR_PHOTO_FOLDER);
+
+	// DB update fail করলে নতুন ছবিটা অনাথ হয়ে থাকবে, তাই সেটা মুছে error ফেরত
+	const updated = await prisma.doctorProfile
+		.update({
+			where: { id },
+			data: { photoUrl: uploaded.url, photoPublicId: uploaded.publicId },
+			select: doctorSelect,
+		})
+		.catch(async (error: unknown) => {
+			await deleteImageQuietly(uploaded.publicId);
+			throw error;
+		});
+
+	await deleteImageQuietly(oldPublicId);
+
+	return toDoctorResponse(updated);
+};
+
+const removeDoctorPhoto = async (id: string) => {
+	const oldPublicId = await findPhotoPublicIdOrThrow(id);
+
+	const updated = await prisma.doctorProfile.update({
+		where: { id },
+		data: { photoUrl: null, photoPublicId: null },
+		select: doctorSelect,
+	});
+
+	await deleteImageQuietly(oldPublicId);
+
+	return toDoctorResponse(updated);
+};
+
+// Doctor নিজে: id session থেকে, client থেকে না (IDOR-safe)
+const setMyPhoto = async (userId: string, photo: Buffer) => setDoctorPhoto(await findMyDoctorIdOrThrow(userId), photo);
+
+const removeMyPhoto = async (userId: string) => removeDoctorPhoto(await findMyDoctorIdOrThrow(userId));
+
 // ---------- Public (login লাগে না) ----------
 
 // Public-এ শুধু এগুলো যাবে। email, phone, licenseNumber, isActive যাবে না
@@ -319,4 +392,8 @@ export const DoctorService = {
 	updateMyProfile,
 	getPublicDoctors,
 	getPublicDoctorById,
+	setDoctorPhoto,
+	removeDoctorPhoto,
+	setMyPhoto,
+	removeMyPhoto,
 };
