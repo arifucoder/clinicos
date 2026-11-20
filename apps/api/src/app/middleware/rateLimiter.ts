@@ -6,3 +6,10 @@ export const authRateLimiter = rateLimit({
 	standardHeaders: "draft-7",
 	legacyHeaders: false,
 });
+
+export const uploadRateLimiter = rateLimit({
+	windowMs: 15 * 60 * 1000,
+	limit: 20,
+	standardHeaders: "draft-7",
+	legacyHeaders: false,
+});
