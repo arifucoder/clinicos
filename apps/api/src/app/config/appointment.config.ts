@@ -9,4 +9,6 @@ export const APPOINTMENT_CONFIG = {
 	currency: "usd",
 	// Stripe-এ USD-র সর্বনিম্ন charge 50 cents
 	minOnlineAmountCents: 50,
+	// Appointment-এর কত মিনিট আগে থেকে check-in করা যায় (কালকের appointment আজ check-in যেন না হয়)
+	checkInOpensMinutesBefore: 120,
 };
