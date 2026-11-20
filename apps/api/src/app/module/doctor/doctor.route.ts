@@ -1,4 +1,6 @@
 import { ADMINS, checkAuth } from "@/app/middleware/checkAuth";
+import { uploadRateLimiter } from "@/app/middleware/rateLimiter";
+import { uploadPhoto } from "@/app/middleware/uploadPhoto";
 import { validateRequest } from "@/app/middleware/validateRequest";
 import { Role } from "@/generated/prisma/enums";
 import { Router } from "express";
@@ -13,6 +15,8 @@ router.patch(
 	validateRequest(DoctorValidation.updateMyProfileSchema),
 	DoctorController.updateMyProfile,
 );
+router.put("/me/photo", checkAuth(Role.DOCTOR), uploadRateLimiter, uploadPhoto, DoctorController.uploadMyPhoto);
+router.delete("/me/photo", checkAuth(Role.DOCTOR), DoctorController.removeMyPhoto);
 
 router.use(checkAuth(...ADMINS));
 
@@ -27,6 +31,8 @@ router.patch(
 );
 
 router.delete("/:id", DoctorController.deleteDoctor);
+router.put("/:id/photo", uploadRateLimiter, uploadPhoto, DoctorController.uploadDoctorPhoto);
+router.delete("/:id/photo", DoctorController.removeDoctorPhoto);
 
 export const DoctorRoutes = router;
 

@@ -1,6 +1,7 @@
 import { catchAsync } from "@/app/shared/catchAsync";
 import { idParamSchema } from "@/app/shared/commonValidation";
 import { getAuthUser } from "@/app/shared/getAuthUser";
+import { getValidatedPhoto } from "@/app/shared/getValidatedPhoto";
 import { sendResponse } from "@/app/shared/sendResponse";
 import httpStatus from "http-status";
 import { DoctorService } from "./doctor.service";
@@ -72,6 +73,36 @@ const updateMyProfile = catchAsync(async (req, res) => {
 	});
 });
 
+const uploadMyPhoto = catchAsync(async (req, res) => {
+	const { userId } = getAuthUser(req);
+	const photo = await getValidatedPhoto(req);
+	const result = await DoctorService.setMyPhoto(userId, photo);
+
+	sendResponse(res, { statusCode: httpStatus.OK, message: "Photo updated successfully", data: result });
+});
+
+const removeMyPhoto = catchAsync(async (req, res) => {
+	const { userId } = getAuthUser(req);
+	const result = await DoctorService.removeMyPhoto(userId);
+
+	sendResponse(res, { statusCode: httpStatus.OK, message: "Photo removed successfully", data: result });
+});
+
+const uploadDoctorPhoto = catchAsync(async (req, res) => {
+	const { id } = idParamSchema.parse(req.params);
+	const photo = await getValidatedPhoto(req);
+	const result = await DoctorService.setDoctorPhoto(id, photo);
+
+	sendResponse(res, { statusCode: httpStatus.OK, message: "Photo updated successfully", data: result });
+});
+
+const removeDoctorPhoto = catchAsync(async (req, res) => {
+	const { id } = idParamSchema.parse(req.params);
+	const result = await DoctorService.removeDoctorPhoto(id);
+
+	sendResponse(res, { statusCode: httpStatus.OK, message: "Photo removed successfully", data: result });
+});
+
 const getPublicDoctors = catchAsync(async (req, res) => {
 	const query = DoctorValidation.publicDoctorQuerySchema.parse(req.query);
 	const { meta, data } = await DoctorService.getPublicDoctors(req.query, query);
@@ -104,4 +135,8 @@ export const DoctorController = {
 	updateMyProfile,
 	getPublicDoctors,
 	getPublicDoctorById,
+	uploadMyPhoto,
+	removeDoctorPhoto,
+	uploadDoctorPhoto,
+	removeMyPhoto,
 };
