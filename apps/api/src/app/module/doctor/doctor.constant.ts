@@ -14,3 +14,19 @@ export const doctorListConfig = defineListConfig<
 	defaultSortBy: "createdAt",
 	defaultSortOrder: "desc",
 });
+
+export const publicDoctorListConfig = defineListConfig<
+	Prisma.DoctorProfileWhereInput,
+	Prisma.DoctorProfileOrderByWithRelationInput
+>({
+	// email/phone/license দিয়ে search করা যাবে না, কারণ public-এর জন্য এগুলো private
+	searchableFields: ["user.name", "doctorSpecialties.some.specialty.name"],
+	filters: {
+		specialty: { path: "doctorSpecialties.some.specialty.slug", type: "string" },
+	},
+	sortableFields: ["user.name", "consultationFeeCents"],
+	defaultSortBy: "user.name",
+	defaultSortOrder: "asc",
+	defaultLimit: 12,
+	maxLimit: 50,
+});
