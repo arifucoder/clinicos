@@ -6,7 +6,6 @@ import httpStatus from "http-status";
 import { specialtyListConfig } from "./specialty.constant";
 import type { TCreateSpecialtyPayload, TUpdateSpecialtyPayload } from "./specialty.interface";
 
-// ভেতরের field response-এ যাবে না
 const hiddenFields = { isDeleted: true, deletedAt: true } as const;
 
 const createSpecialty = async (payload: TCreateSpecialtyPayload) => {

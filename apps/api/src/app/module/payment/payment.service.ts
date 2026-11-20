@@ -9,7 +9,6 @@ import { expireCheckoutSession, getPaymentIntentId, refundStripePayment } from "
 
 type TWebhookResult = { message: string };
 
-// Hold শেষে EXPIRED হওয়া appointment-এ দেরিতে টাকা এলে: slot তখনও খালি থাকলে আবার CONFIRMED করা যায়
 const canReviveExpired = async (tx: Prisma.TransactionClient, slotId: string, now: Date) => {
 	await tx.$queryRaw`SELECT id FROM "doctor_slots" WHERE id = ${slotId} FOR UPDATE`;
 
@@ -30,9 +29,7 @@ type TPaidOutcome =
 	| { kind: "confirmed"; appointmentId: string }
 	| { kind: "refund"; appointmentId: string; paymentId: string; wasExpired: boolean };
 
-// checkout.session.completed: টাকা কেটেছে → payment SUCCEEDED + appointment CONFIRMED, নাহলে refund
 const handleCheckoutPaid = async (session: Stripe.Checkout.Session, eventId: string): Promise<TWebhookResult> => {
-	// Card ছাড়া ধীর পদ্ধতিতে (bank transfer) completed আসে কিন্তু টাকা পরে আসে
 	if (session.payment_status !== "paid") return { message: `Session ${session.id} is not paid yet` };
 
 	const paymentId = session.metadata?.paymentId;
@@ -45,11 +42,9 @@ const handleCheckoutPaid = async (session: Stripe.Checkout.Session, eventId: str
 		const payment = await tx.payment.findUnique({ where: { id: paymentId }, select: { appointmentId: true } });
 		if (!payment) return { kind: "ignored" };
 
-		// Appointment row lock → desk payment, cancel, cron এই মুহূর্তে একই appointment ছুঁতে পারবে না
 		await tx.$queryRaw`SELECT id FROM "appointments" WHERE id = ${payment.appointmentId} FOR UPDATE`;
 
 		const current = await tx.payment.findUniqueOrThrow({ where: { id: paymentId }, select: { status: true } });
-		// Idempotency: Stripe একই event আবার পাঠালে (retry) কিছুই বদলায় না
 		if (current.status === PaymentStatus.SUCCEEDED || current.status === PaymentStatus.REFUNDED) {
 			return { kind: "duplicate" };
 		}
@@ -64,7 +59,7 @@ const handleCheckoutPaid = async (session: Stripe.Checkout.Session, eventId: str
 			},
 		});
 
-		const alreadyPaid = appointment.payments.length > 0; // যেমন: desk-এ আগেই cash নেওয়া হয়েছে
+		const alreadyPaid = appointment.payments.length > 0;
 		let confirm = false;
 		if (!alreadyPaid) {
 			if (
@@ -94,7 +89,6 @@ const handleCheckoutPaid = async (session: Stripe.Checkout.Session, eventId: str
 			return { kind: "confirmed", appointmentId: appointment.id };
 		}
 
-		// টাকা নেওয়া যাবে না (cancelled / অন্য কেউ slot নিয়েছে / আগেই paid) → refund-এর জন্য তথ্য রেখে দেওয়া
 		await tx.payment.update({
 			where: { id: paymentId },
 			data: { stripeEventId: eventId, stripePaymentIntentId: paymentIntentId },
@@ -122,7 +116,6 @@ const handleCheckoutPaid = async (session: Stripe.Checkout.Session, eventId: str
 		return { message: `Appointment ${appointment.appointmentNumber} confirmed` };
 	}
 
-	// Refund — Stripe call transaction-এর বাইরে; fail করলে error → 500 → Stripe নিজেই webhook আবার পাঠাবে
 	if (!paymentIntentId) throw new Error(`Session ${session.id} has no payment intent to refund`);
 	await refundStripePayment(paymentIntentId, outcome.paymentId);
 	await prisma.payment.update({
@@ -143,7 +136,6 @@ const handleCheckoutPaid = async (session: Stripe.Checkout.Session, eventId: str
 	return { message: `Payment ${outcome.paymentId} refunded` };
 };
 
-// Session expire / async payment fail: শুধু এই payment FAILED। Appointment-এর hold সামলায় cron।
 const handleCheckoutFailed = async (session: Stripe.Checkout.Session): Promise<TWebhookResult> => {
 	const paymentId = session.metadata?.paymentId;
 	if (!paymentId) return { message: `Session ${session.id} has no paymentId in metadata` };
@@ -170,7 +162,6 @@ const handleStripeEvent = async (event: Stripe.Event): Promise<TWebhookResult> =
 	}
 };
 
-// Cron: hold শেষ হওয়া booking → EXPIRED (slot আবার খালি), খোলা Stripe link বন্ধ
 const expireUnpaidHolds = async () => {
 	const now = new Date();
 	const { expiredCount, sessionIds } = await prisma.$transaction((tx) => expireStaleHolds(tx, {}, now));

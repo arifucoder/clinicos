@@ -90,12 +90,10 @@ const doctorParamSchema = z.object({ doctorId: z.union([z.literal("me"), z.uuid(
 const publicDoctorParamSchema = z.object({ doctorId: z.uuid("Invalid doctor id") });
 const slotParamSchema = doctorParamSchema.extend({ slotId: z.uuid("Invalid slot id") });
 
-// Doctor/admin: calendar-এর week/month সবসময় জানা, অতীতও দেখা লাগে → দুটোই আবশ্যক
 const manageSlotQuerySchema = z
 	.object({ from: clinicDateSchema, to: clinicDateSchema })
 	.refine((query) => query.from <= query.to, { error: "'from' must be on or before 'to'", path: ["to"] });
 
-// Public: না দিলে আজ থেকে booking window (১৪ দিন)
 const publicSlotQuerySchema = z
 	.object({ from: clinicDateSchema.optional(), to: clinicDateSchema.optional() })
 	.refine((query) => !query.from || !query.to || query.from <= query.to, {

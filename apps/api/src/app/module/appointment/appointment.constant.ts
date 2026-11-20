@@ -18,7 +18,6 @@ export const appointmentSelect = {
 	cancelledAt: true,
 	cancelReason: true,
 	createdAt: true,
-	// allergies: doctor-এর screen-এ লাল করে দেখাতে
 	patient: { select: { id: true, fullName: true, phone: true, allergies: true, user: { select: { email: true } } } },
 	doctor: { select: { id: true, roomNumber: true, user: { select: { name: true } } } },
 	payments: {
@@ -35,7 +34,6 @@ export const appointmentSelect = {
 		},
 		orderBy: { createdAt: "asc" },
 	},
-	// Prescription (না থাকলে null) — staff detail আর রোগীর /patient/appointments/:id দুই জায়গাতেই আসে
 	prescription: {
 		select: {
 			symptoms: true,

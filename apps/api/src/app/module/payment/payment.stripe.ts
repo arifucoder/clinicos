@@ -15,9 +15,7 @@ type TCheckoutInput = {
 	customerEmail: string;
 };
 
-// Stripe-এর hosted checkout page। Card-এর তথ্য আমাদের server-এ আসে না।
 export const createCheckoutSession = async (input: TCheckoutInput) => {
-	// metadata দিয়েই webhook-এ চিনব কোন payment আর কোন appointment
 	const metadata = { appointmentId: input.appointmentId, paymentId: input.paymentId };
 
 	const session = await stripe.checkout.sessions.create(
@@ -29,7 +27,7 @@ export const createCheckoutSession = async (input: TCheckoutInput) => {
 					quantity: 1,
 					price_data: {
 						currency: input.currency,
-						unit_amount: input.amountCents, // আগে থেকেই integer cents → Math.round লাগে না
+						unit_amount: input.amountCents,
 						product_data: {
 							name: `Consultation with Dr. ${input.doctorName}`,
 							description: input.appointmentNumber,
@@ -43,7 +41,6 @@ export const createCheckoutSession = async (input: TCheckoutInput) => {
 			success_url: `${envVars.FRONTEND_URL}/portal/appointments?payment=success&appointment=${input.appointmentId}`,
 			cancel_url: `${envVars.FRONTEND_URL}/portal/appointments?payment=cancelled&appointment=${input.appointmentId}`,
 		},
-		// একই payment-এর জন্য retry হলে Stripe নতুন session না বানিয়ে আগেরটাই ফেরত দেয়
 		{ idempotencyKey: `checkout-${input.paymentId}` },
 	);
 
@@ -54,7 +51,6 @@ export const createCheckoutSession = async (input: TCheckoutInput) => {
 	return { sessionId: session.id, url: session.url };
 };
 
-// Hold শেষ বা desk-এ টাকা নেওয়া হলে পুরনো link বন্ধ। আগেই complete/expire হয়ে থাকলে Stripe error দেয় — সেটা স্বাভাবিক।
 export const expireCheckoutSession = async (sessionId: string) => {
 	try {
 		await stripe.checkout.sessions.expire(sessionId);
@@ -66,7 +62,6 @@ export const expireCheckoutSession = async (sessionId: string) => {
 	}
 };
 
-// idempotencyKey: Stripe বা আমাদের retry হলেও একই payment দুবার refund হয় না
 export const refundStripePayment = (paymentIntentId: string, paymentId: string) =>
 	stripe.refunds.create({ payment_intent: paymentIntentId }, { idempotencyKey: `refund-${paymentId}` });
 

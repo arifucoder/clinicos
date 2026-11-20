@@ -15,13 +15,11 @@ const handleStripeWebhook = catchAsync(async (req, res) => {
 
 	let event: Stripe.Event;
 	try {
-		// req.body এখানে Buffer (express.raw) — JSON parse হয়ে গেলে signature মিলবে না
 		event = stripe.webhooks.constructEvent(req.body, signature, envVars.STRIPE_WEBHOOK_SECRET);
 	} catch (error) {
 		throw new AppError(httpStatus.BAD_REQUEST, "Invalid Stripe signature", { cause: error });
 	}
 
-	// এখানে error হলে globalErrorHandler 500 দেয় → Stripe পরে আবার পাঠায়
 	const result = await PaymentService.handleStripeEvent(event);
 
 	sendResponse(res, { statusCode: httpStatus.OK, message: result.message, data: null });

@@ -25,7 +25,6 @@ const assertStorageConfigured = () => {
 
 export type TUploadedImage = { url: string; publicId: string };
 
-// Buffer → Cloudinary। নাম (public_id) server বানায়, client-এর filename কখনো না
 export const uploadImage = (buffer: Buffer, folder: string): Promise<TUploadedImage> => {
 	assertStorageConfigured();
 
@@ -50,7 +49,6 @@ export const deleteImage = async (publicId: string): Promise<void> => {
 	await cloudinary.uploader.destroy(publicId, { resource_type: "image", invalidate: true });
 };
 
-// পুরনো ছবি মোছা fail করলে request fail হবে না, শুধু log হবে
 export const deleteImageQuietly = async (publicId: string | null): Promise<void> => {
 	if (!publicId) return;
 	try {

@@ -9,13 +9,9 @@ import { addDaysToDate, clinicDateOf, clinicDayStartUtc } from "../slot/slot.uti
 
 const TZ = envVars.CLINIC_TIME_ZONE;
 
-// ---------------- ছোট helper ----------------
-
-// "2026-11-07" থেকে n দিনের তালিকা: ["2026-11-07", "2026-11-08", …]
 const dayList = (fromDate: string, days: number): string[] =>
 	Array.from({ length: days }, (_, index) => addDaysToDate(fromDate, index));
 
-// কোন status কতবার এসেছে: { CONFIRMED: 3, COMPLETED: 5, … } (যেটা নেই সেটা 0)
 const countByStatus = (rows: { status: AppointmentStatus }[]) => {
 	const counts: Record<AppointmentStatus, number> = {
 		PENDING_PAYMENT: 0,
@@ -30,25 +26,19 @@ const countByStatus = (rows: { status: AppointmentStatus }[]) => {
 	return counts;
 };
 
-// টাকার যোগফল
 const sumCents = (rows: { amountCents: number }[]) => rows.reduce((total, row) => total + row.amountCents, 0);
-
-// ---------------- Admin ----------------
 
 const getAdminStats = async (days: number) => {
 	const today = clinicDateOf(new Date(), TZ);
 	const fromDate = addDaysToDate(today, -(days - 1));
 	const range = { gte: clinicDayStartUtc(fromDate, TZ), lt: clinicDayRange(today).lt };
 
-	// শুধু দরকারি column আনি, তারপর JS-এ গুনি (clinic-এর আকারে কয়েক হাজার row — সমস্যা নেই)
 	const [appointments, payments, doctors, newPatients] = await Promise.all([
 		prisma.appointment.findMany({
-			// EXPIRED = pay না করা hold, আসলে booking হয়নি → বাদ
 			where: { startAt: range, status: { not: AppointmentStatus.EXPIRED } },
 			select: { startAt: true, status: true, source: true, doctorId: true },
 		}),
 		prisma.payment.findMany({
-			// আদায় = শুধু সফল payment (refund হলে status REFUNDED, তাই নিজে থেকেই বাদ)
 			where: { status: PaymentStatus.SUCCEEDED, paidAt: range },
 			select: { paidAt: true, amountCents: true },
 		}),
@@ -59,7 +49,6 @@ const getAdminStats = async (days: number) => {
 		prisma.patient.count({ where: { createdAt: range } }),
 	]);
 
-	// প্রতিটা row-এর গায়ে clinic-এর তারিখ ("2026-11-20") বসাই — timezone-এর কাজ এখানেই শেষ
 	const appointmentDays = appointments.map((appointment) => ({
 		...appointment,
 		day: clinicDateOf(appointment.startAt, TZ),
@@ -72,7 +61,6 @@ const getAdminStats = async (days: number) => {
 	const todayAppointments = appointmentDays.filter((appointment) => appointment.day === today);
 	const todayPayments = paymentDays.filter((payment) => payment.day === today);
 
-	// Chart: প্রতিদিন একটা row (যে দিনে কিছু নেই সেখানে 0)
 	const daily = dayList(fromDate, days).map((day) => {
 		const dayAppointments = appointmentDays.filter((appointment) => appointment.day === day);
 		return {
@@ -83,7 +71,6 @@ const getAdminStats = async (days: number) => {
 		};
 	});
 
-	// Doctor অনুযায়ী (যার এই সময়ে কোনো appointment নেই সে বাদ)
 	const byDoctor = doctors
 		.map((doctor) => {
 			const counts = countByStatus(appointments.filter((appointment) => appointment.doctorId === doctor.id));
@@ -117,8 +104,6 @@ const getAdminStats = async (days: number) => {
 	};
 };
 
-// ---------------- Doctor (শুধু নিজের) ----------------
-
 const getDoctorStats = async (userId: string) => {
 	const doctor = await prisma.doctorProfile.findUnique({ where: { userId }, select: { id: true } });
 	if (!doctor) throw new AppError(httpStatus.NOT_FOUND, "Doctor profile not found");
@@ -126,9 +111,9 @@ const getDoctorStats = async (userId: string) => {
 
 	const now = new Date();
 	const today = clinicDateOf(now, TZ);
-	const weekFrom = addDaysToDate(today, -6); // গত ৭ দিন (আজ সহ)
-	const monthFrom = `${today.slice(0, 7)}-01`; // এই মাসের ১ তারিখ
-	const fetchFrom = weekFrom < monthFrom ? weekFrom : monthFrom; // দুটোর যেটা আগে, সেখান থেকে আনি
+	const weekFrom = addDaysToDate(today, -6);
+	const monthFrom = `${today.slice(0, 7)}-01`;
+	const fetchFrom = weekFrom < monthFrom ? weekFrom : monthFrom;
 
 	const [appointments, nextAppointment] = await Promise.all([
 		prisma.appointment.findMany({
@@ -138,7 +123,6 @@ const getDoctorStats = async (userId: string) => {
 			},
 			select: { startAt: true, status: true, patientId: true },
 		}),
-		// পরের রোগী: আজ এসে অপেক্ষা করছে এমন কেউ, নাহলে সামনের confirmed appointment
 		prisma.appointment.findFirst({
 			where: {
 				doctorId,
@@ -164,7 +148,6 @@ const getDoctorStats = async (userId: string) => {
 	const monthCounts = countByStatus(monthRows);
 	const completedRows = withDay.filter((appointment) => appointment.status === AppointmentStatus.COMPLETED);
 
-	// এই মাসে কতজন আলাদা রোগী দেখেছেন (একই রোগী দুবার এলে একবার) — Set নিজেই duplicate বাদ দেয়
 	const patientsSeen = new Set(
 		completedRows.filter((appointment) => appointment.day >= monthFrom).map((appointment) => appointment.patientId),
 	).size;
@@ -172,8 +155,8 @@ const getDoctorStats = async (userId: string) => {
 	return {
 		today: {
 			date: today,
-			waiting: todayCounts.CHECKED_IN, // এসে অপেক্ষা করছেন
-			notArrived: todayCounts.CONFIRMED, // এখনো আসেননি
+			waiting: todayCounts.CHECKED_IN,
+			notArrived: todayCounts.CONFIRMED,
 			completed: todayCounts.COMPLETED,
 			noShow: todayCounts.NO_SHOW,
 		},
@@ -191,8 +174,6 @@ const getDoctorStats = async (userId: string) => {
 	};
 };
 
-// ---------------- Patient (শুধু নিজের; patientId session থেকে) ----------------
-
 const getPatientStats = async (userId: string) => {
 	const patient = await prisma.patient.findFirst({
 		where: { userId, user: { isDeleted: false } },
@@ -202,7 +183,6 @@ const getPatientStats = async (userId: string) => {
 	const patientId = patient.id;
 	const now = new Date();
 
-	// সামনের appointment: confirmed/checked-in যার সময় শেষ হয়নি, অথবা pay-এর hold এখনো চলছে
 	const upcomingWhere: Prisma.AppointmentWhereInput = {
 		patientId,
 		OR: [

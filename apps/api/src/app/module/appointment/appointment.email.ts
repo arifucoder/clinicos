@@ -5,7 +5,6 @@ import { formatClinicTime } from "../slot/slot.utils";
 
 const TZ = envVars.CLINIC_TIME_ZONE;
 
-// Email-এর জন্য appointment-এর যেটুকু লাগে
 export type TEmailAppointment = {
 	appointmentNumber: string;
 	startAt: Date;
@@ -14,7 +13,6 @@ export type TEmailAppointment = {
 	doctor: { user: { name: string } };
 };
 
-// Email fail করলে booking/cancel fail হওয়া উচিত না — শুধু log
 export const sendSafely = async (label: string, task: () => Promise<void>) => {
 	try {
 		await task();

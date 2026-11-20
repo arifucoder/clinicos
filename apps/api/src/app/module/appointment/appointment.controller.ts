@@ -51,8 +51,6 @@ const sendPaymentLink = catchAsync(async (req, res) => {
 	sendResponse(res, { statusCode: httpStatus.OK, message: "Payment link sent to the patient", data: result });
 });
 
-// ---------- Check-in → doctor → complete ----------
-
 const checkInAppointment = catchAsync(async (req, res) => {
 	const { id } = idParamSchema.parse(req.params);
 	const result = await AppointmentService.checkInAppointment(getAuthUser(req), id);
@@ -80,8 +78,6 @@ const markNoShow = catchAsync(async (req, res) => {
 
 	sendResponse(res, { statusCode: httpStatus.OK, message: "Marked as no-show", data: result });
 });
-
-// ---------- রোগী নিজে (/patient/appointments) ----------
 
 const getMyAppointments = catchAsync(async (req, res) => {
 	const { meta, data } = await AppointmentService.getMyAppointments(getAuthUser(req).userId, req.query);

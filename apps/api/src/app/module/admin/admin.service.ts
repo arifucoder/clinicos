@@ -18,7 +18,6 @@ const adminSelect = {
 	updatedAt: true,
 } as const;
 
-// সব কাজের আগে: id-টা কি সত্যিই একজন (মুছে না ফেলা) ADMIN?
 const findAdminOrThrow = async (id: string) => {
 	const admin = await prisma.user.findFirst({
 		where: { id, role: Role.ADMIN, isDeleted: false },
@@ -69,7 +68,6 @@ const updateAdminStatus = async (id: string, payload: TUpdateAdminStatusPayload)
 			select: adminSelect,
 		});
 
-		// বন্ধ করলে সাথে সাথে সব device থেকে logout
 		if (!isActive) {
 			await tx.session.deleteMany({ where: { userId: id } });
 		}

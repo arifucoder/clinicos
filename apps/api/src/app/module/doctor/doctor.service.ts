@@ -191,8 +191,6 @@ const updateMyProfile = async (userId: string, payload: TUpdateMyProfilePayload)
 	return toDoctorResponse(updated);
 };
 
-// ---------- Photo ----------
-
 const DOCTOR_PHOTO_FOLDER = "clinicos/doctors";
 
 const findMyDoctorIdOrThrow = async (userId: string) => {
@@ -221,13 +219,11 @@ const findPhotoPublicIdOrThrow = async (id: string) => {
 	return doctor.photoPublicId;
 };
 
-// ক্রম: নতুন ছবি upload → DB update → পুরনো ছবি মোছা
 const setDoctorPhoto = async (id: string, photo: Buffer) => {
 	const oldPublicId = await findPhotoPublicIdOrThrow(id);
 
 	const uploaded = await uploadImage(photo, DOCTOR_PHOTO_FOLDER);
 
-	// DB update fail করলে নতুন ছবিটা অনাথ হয়ে থাকবে, তাই সেটা মুছে error ফেরত
 	const updated = await prisma.doctorProfile
 		.update({
 			where: { id },
@@ -258,14 +254,10 @@ const removeDoctorPhoto = async (id: string) => {
 	return toDoctorResponse(updated);
 };
 
-// Doctor নিজে: id session থেকে, client থেকে না (IDOR-safe)
 const setMyPhoto = async (userId: string, photo: Buffer) => setDoctorPhoto(await findMyDoctorIdOrThrow(userId), photo);
 
 const removeMyPhoto = async (userId: string) => removeDoctorPhoto(await findMyDoctorIdOrThrow(userId));
 
-// ---------- Public (login লাগে না) ----------
-
-// Public-এ শুধু এগুলো যাবে। email, phone, licenseNumber, isActive যাবে না
 const publicDoctorSelect = {
 	id: true,
 	consultationFeeCents: true,
@@ -288,12 +280,10 @@ const toPublicDoctor = ({ user, doctorSpecialties, ...doctor }: TPublicDoctorRow
 	nextAvailableAt,
 });
 
-// Deleted বা deactivated doctor public-এ দেখা যাবে না
 const publicDoctorWhere = {
 	user: { isDeleted: false, isActive: true },
 } satisfies Prisma.DoctorProfileWhereInput;
 
-// কোন সময়ের slot খোঁজা হবে: date দিলে শুধু সেই দিন, না দিলে পুরো booking window
 const resolveSlotRange = (now: Date, date?: string) => {
 	const today = clinicDateOf(now, TZ);
 	const lastBookableDate = addDaysToDate(today, SLOT_CONFIG.bookingWindowDays - 1);
@@ -311,7 +301,6 @@ const resolveSlotRange = (now: Date, date?: string) => {
 	};
 };
 
-// "রোগী এখন book করতে পারবে" এমন slot: getPublicSlots আর createAppointment-এর নিয়মের সাথে মিল রেখে
 const bookableSlotWhere = (now: Date, date?: string): Prisma.DoctorSlotWhereInput => {
 	const { today, range } = resolveSlotRange(now, date);
 	const earliest = new Date(now.getTime() + SLOT_CONFIG.minLeadMinutes * 60_000);
@@ -323,7 +312,6 @@ const bookableSlotWhere = (now: Date, date?: string): Prisma.DoctorSlotWhereInpu
 			{ startAt: range },
 			{ startAt: { gte: earliest } },
 			{ appointments: { none: activeAppointmentWhere(now) } },
-			// Paused doctor-এর আজকের slot book করা যায় না (appointment.service-এর নিয়ম)
 			{ OR: [{ doctor: { isPaused: false } }, { startAt: { gte: tomorrowStart } }] },
 		],
 	};
@@ -333,7 +321,6 @@ const getPublicDoctors = async (rawQuery: unknown, query: TPublicDoctorQuery) =>
 	const now = new Date();
 	const slotWhere = bookableSlotWhere(now, query.date);
 
-	// date দিলে শুধু সেই দিনে খালি slot আছে এমন doctor
 	const baseWhere: Prisma.DoctorProfileWhereInput = query.date
 		? { ...publicDoctorWhere, slots: { some: slotWhere } }
 		: publicDoctorWhere;
@@ -345,7 +332,6 @@ const getPublicDoctors = async (rawQuery: unknown, query: TPublicDoctorQuery) =>
 		prisma.doctorProfile.count({ where: q.where }),
 	]);
 
-	// সব doctor-এর "পরের খালি slot" একটা query-তেই আসে (N+1 হয় না)
 	const doctorIds = rows.map((row) => row.id);
 	const nextSlots =
 		doctorIds.length === 0

@@ -34,7 +34,6 @@ const updateMyProfileSchema = z
 		error: "Provide at least one field to update",
 	});
 
-// Public list: ?date=YYYY-MM-DD → ওই দিনে খালি slot আছে এমন doctor
 const publicDoctorQuerySchema = z.object({
 	date: z.iso.date("Date must be in YYYY-MM-DD format").optional(),
 });

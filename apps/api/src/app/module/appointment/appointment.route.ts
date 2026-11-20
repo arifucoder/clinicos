@@ -5,7 +5,6 @@ import { Router } from "express";
 import { AppointmentController } from "./appointment.controller";
 import { AppointmentValidation } from "./appointment.validation";
 
-// ---------- /appointments (রোগী book করে; বাকি সব staff) ----------
 const router = Router();
 
 router.post(
@@ -32,8 +31,6 @@ router.post(
 );
 router.post("/:id/payment-link", checkAuth(...ADMINS), AppointmentController.sendPaymentLink);
 
-// ---------- Check-in → doctor → complete (slot-ই queue) ----------
-// Doctor-এর আজকের তালিকা: GET /appointments?date=YYYY-MM-DD&status=CHECKED_IN (নতুন route লাগে না)
 router.patch("/:id/check-in", checkAuth(...ADMINS), AppointmentController.checkInAppointment);
 router.patch("/:id/no-show", checkAuth(...ADMINS), AppointmentController.markNoShow);
 router.patch("/:id/complete", checkAuth(Role.DOCTOR), AppointmentController.completeAppointment);
@@ -46,7 +43,6 @@ router.put(
 
 export const AppointmentRoutes = router;
 
-// ---------- /patient/appointments (শুধু রোগী নিজে; patientId সবসময় session থেকে) ----------
 const patientRouter = Router();
 
 patientRouter.use(checkAuth(Role.PATIENT));

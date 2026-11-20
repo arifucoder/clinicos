@@ -19,7 +19,6 @@ export const toMinutes = (time: string): number => {
 	return hours * 60 + minutes;
 };
 
-// Shift-এর তারিখের মাঝরাত থেকে কত মিনিট। end <= start হলে রাতের shift → পরের দিন
 export const toShiftWindow = ({ startTime, endTime }: TTimeRange): TMinuteRange => {
 	const start = toMinutes(startTime);
 	let end = toMinutes(endTime);
@@ -27,7 +26,6 @@ export const toShiftWindow = ({ startTime, endTime }: TTimeRange): TMinuteRange 
 	return { start, end };
 };
 
-// রাতের shift-এ shift শুরুর আগের সময় মানে মাঝরাতের পরে (02:00 → 26:00)
 export const toBreakWindow = (range: TTimeRange, shift: TMinuteRange): TMinuteRange => {
 	let start = toMinutes(range.startTime);
 	if (start < shift.start) start += MINUTES_PER_DAY;
@@ -36,7 +34,6 @@ export const toBreakWindow = (range: TTimeRange, shift: TMinuteRange): TMinuteRa
 	return { start, end };
 };
 
-// Shift থেকে break কেটে ফেলে segment বানায়: [09–11], [11:10–13]
 export const subtractBreaks = (shift: TMinuteRange, breaks: TMinuteRange[]): TMinuteRange[] => {
 	const sorted = breaks.toSorted((a, b) => a.start - b.start);
 	const segments: TMinuteRange[] = [];
@@ -51,7 +48,6 @@ export const subtractBreaks = (shift: TMinuteRange, breaks: TMinuteRange[]): TMi
 	return segments;
 };
 
-// Clinic-এর wall time ("2026-11-21" + মিনিট) → আসল UTC মুহূর্ত
 const wallTimeToUtc = (date: string, minuteOfDay: number, timeZone: string): Date => {
 	const [year = 0, month = 1, day = 1] = date.split("-").map(Number);
 	const dayOffset = Math.floor(minuteOfDay / MINUTES_PER_DAY);

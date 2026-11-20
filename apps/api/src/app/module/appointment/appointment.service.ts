@@ -47,15 +47,12 @@ const TZ = envVars.CLINIC_TIME_ZONE;
 const MINUTE_MS = 60_000;
 const { currency } = APPOINTMENT_CONFIG;
 
-// ---------------- ছোট helper ----------------
-
 const findOwnDoctorId = async (userId: string) => {
 	const doctor = await prisma.doctorProfile.findUnique({ where: { userId }, select: { id: true } });
 	if (!doctor) throw new AppError(httpStatus.NOT_FOUND, "Doctor profile not found");
 	return doctor.id;
 };
 
-// IDOR-safe: রোগীর id সবসময় session থেকে
 const findMyPatientId = async (userId: string) => {
 	const patient = await prisma.patient.findFirst({
 		where: { userId, user: { isDeleted: false } },
@@ -71,7 +68,6 @@ const findAppointmentOrThrow = async (where: Prisma.AppointmentWhereInput): Prom
 	return appointment;
 };
 
-// Row lock: এই appointment নিয়ে একসাথে দুটো কাজ (desk payment + webhook ইত্যাদি) চলবে না
 const lockAppointment = async (tx: Prisma.TransactionClient, id: string) => {
 	await tx.$queryRaw`SELECT id FROM "appointments" WHERE id = ${id} FOR UPDATE`;
 };
@@ -85,7 +81,6 @@ const assertCancellable = (status: AppointmentStatus) => {
 const isPaid = (appointment: TAppointmentRow) =>
 	appointment.payments.some((payment) => payment.status === PaymentStatus.SUCCEEDED);
 
-// আগামীকালের appointment আজ check-in যেন না হয়
 const assertCheckInOpen = (startAt: Date, now: Date) => {
 	const opensAt = new Date(startAt.getTime() - APPOINTMENT_CONFIG.checkInOpensMinutesBefore * MINUTE_MS);
 	if (now < opensAt) {
@@ -96,7 +91,6 @@ const assertCheckInOpen = (startAt: Date, now: Date) => {
 	}
 };
 
-// DOCTOR শুধু নিজের রোগীর appointment-এ কাজ করতে পারে
 const findDoctorAppointment = async (userId: string, id: string) => {
 	const doctorId = await findOwnDoctorId(userId);
 	const appointment = await findAppointmentOrThrow({ id });
@@ -106,7 +100,6 @@ const findDoctorAppointment = async (userId: string, id: string) => {
 	return appointment;
 };
 
-// Partial unique index (doctorId, startAt)-এ ধাক্কা লাগলে Prisma P2002 → সুন্দর 409
 const rethrowBookingConflict = (error: unknown): never => {
 	if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
 		throw new AppError(httpStatus.CONFLICT, "This time was just booked — please pick another slot", { cause: error });
@@ -114,9 +107,6 @@ const rethrowBookingConflict = (error: unknown): never => {
 	throw error;
 };
 
-// ---------------- Booking ----------------
-
-// PATIENT → নিজের id (session), ADMINS → body-র patientId
 const resolveBookingPatient = async (authUser: TAuthPayload, payload: TBookAppointmentPayload) => {
 	if (authUser.role === Role.PATIENT) {
 		if (payload.deskPaymentMethod) {
@@ -148,7 +138,6 @@ const resolveBookingPatient = async (authUser: TAuthPayload, payload: TBookAppoi
 	return { patientId: patient.id, source: AppointmentSource.STAFF };
 };
 
-// Slot row lock (FOR UPDATE) → অন্য booking বা block এই slot-এ অপেক্ষা করবে
 const lockSlot = async (tx: Prisma.TransactionClient, slotId: string) => {
 	const locked = await tx.$queryRaw<{ id: string }[]>`SELECT id FROM "doctor_slots" WHERE id = ${slotId} FOR UPDATE`;
 	if (locked.length === 0) throw new AppError(httpStatus.NOT_FOUND, "Slot not found");
@@ -175,7 +164,6 @@ const lockSlot = async (tx: Prisma.TransactionClient, slotId: string) => {
 
 type TLockedSlot = Awaited<ReturnType<typeof lockSlot>>;
 
-// কে book করছে তার উপর নিয়ম আলাদা (SDLC 3.10)
 const assertSlotBookable = (slot: TLockedSlot, isStaff: boolean, now: Date) => {
 	if (!slot.doctor.user.isActive || slot.doctor.user.isDeleted) {
 		throw new AppError(httpStatus.NOT_FOUND, "Doctor not found");
@@ -187,7 +175,6 @@ const assertSlotBookable = (slot: TLockedSlot, isStaff: boolean, now: Date) => {
 	const today = clinicDateOf(now, TZ);
 
 	if (isStaff) {
-		// Front desk: রোগী সামনে দাঁড়িয়ে — এখন চলছে এমন slot-ও চলবে
 		if (slot.endAt <= now) throw new AppError(httpStatus.BAD_REQUEST, "This slot has already ended");
 	} else {
 		const earliest = new Date(now.getTime() + SLOT_CONFIG.minLeadMinutes * MINUTE_MS);
@@ -208,7 +195,6 @@ const assertSlotBookable = (slot: TLockedSlot, isStaff: boolean, now: Date) => {
 	}
 };
 
-// Stripe session খোলা (transaction-এর বাইরে)। Fail করলে payment FAILED করে 502।
 const openCheckout = async (appointment: TAppointmentRow, paymentId: string) => {
 	try {
 		const session = await createCheckoutSession({
@@ -251,7 +237,6 @@ const bookAppointment = async (authUser: TAuthPayload, payload: TBookAppointment
 				throw new AppError(httpStatus.BAD_REQUEST, "This fee is too small for online payment — pay at the front desk");
 			}
 
-			// এই slot-এ hold শেষ হওয়া পুরনো booking থাকলে আগে EXPIRED (নাহলে unique index-এ আটকে যেত)
 			const stale = await expireStaleHolds(tx, { slotId: slot.id }, now);
 
 			const taken = await tx.appointment.findFirst({
@@ -260,7 +245,6 @@ const bookAppointment = async (authUser: TAuthPayload, payload: TBookAppointment
 			});
 			if (taken) throw new AppError(httpStatus.CONFLICT, "This time was just booked — please pick another slot");
 
-			// একই রোগী, একই doctor, একই দিনে একটার বেশি active appointment না (FR-11)
 			const sameDay = await tx.appointment.findFirst({
 				where: {
 					patientId,
@@ -288,11 +272,11 @@ const bookAppointment = async (authUser: TAuthPayload, payload: TBookAppointment
 					status: isOnline
 						? AppointmentStatus.PENDING_PAYMENT
 						: checkInNow
-							? AppointmentStatus.CHECKED_IN // desk-এ fee নিলে একবারেই check-in
+							? AppointmentStatus.CHECKED_IN
 							: AppointmentStatus.CONFIRMED,
 					source,
 					paymentMode: payload.paymentMode,
-					feeCents, // booking-এর সময়ের fee-র snapshot
+					feeCents,
 					holdExpiresAt: isOnline ? new Date(now.getTime() + APPOINTMENT_CONFIG.holdMinutes * MINUTE_MS) : null,
 					reason: payload.reason ?? null,
 					bookedById: authUser.userId,
@@ -311,7 +295,6 @@ const bookAppointment = async (authUser: TAuthPayload, payload: TBookAppointment
 				});
 				paymentId = payment.id;
 			} else if (payload.deskPaymentMethod) {
-				// Front desk-এ এখনই টাকা নেওয়া হলো
 				await tx.payment.create({
 					data: {
 						appointmentId: appointment.id,
@@ -348,7 +331,6 @@ const bookAppointment = async (authUser: TAuthPayload, payload: TBookAppointment
 	try {
 		checkoutUrl = await openCheckout(appointment, created.paymentId);
 	} catch (error) {
-		// Stripe-এ যাওয়াই গেল না → slot ৩০ মিনিট আটকে না রেখে এখনই ছেড়ে দাও
 		await prisma.appointment.updateMany({
 			where: { id: appointment.id, status: AppointmentStatus.PENDING_PAYMENT },
 			data: { status: AppointmentStatus.EXPIRED },
@@ -365,8 +347,6 @@ const bookAppointment = async (authUser: TAuthPayload, payload: TBookAppointment
 
 	return { appointment: toAppointmentResponse(appointment), checkoutUrl };
 };
-
-// ---------------- দেখা ----------------
 
 const getAppointments = async (authUser: TAuthPayload, rawQuery: unknown, date?: string) => {
 	const conditions: Prisma.AppointmentWhereInput[] = [];
@@ -402,13 +382,9 @@ const getMyAppointments = async (userId: string, rawQuery: unknown) => {
 
 const getMyAppointmentById = async (userId: string, id: string) => {
 	const patientId = await findMyPatientId(userId);
-	// অন্য রোগীর appointment → 404 (403 না — আছে কিনা সেটাও জানানো হয় না)
 	return toAppointmentResponse(await findAppointmentOrThrow({ id, patientId }));
 };
 
-// ---------------- Check-in → Complete (slot-ই queue) ----------------
-
-// Front desk: CONFIRMED + paid → CHECKED_IN
 const checkInAppointment = async (authUser: TAuthPayload, id: string) => {
 	const appointment = await findAppointmentOrThrow({ id });
 
@@ -425,7 +401,6 @@ const checkInAppointment = async (authUser: TAuthPayload, id: string) => {
 	const now = new Date();
 	assertCheckInOpen(appointment.startAt, now);
 
-	// শর্তসহ update: এর মধ্যে অন্য কেউ বদলে ফেললে count = 0
 	const { count } = await prisma.appointment.updateMany({
 		where: { id, status: AppointmentStatus.CONFIRMED },
 		data: { status: AppointmentStatus.CHECKED_IN, checkedInAt: now, checkedInById: authUser.userId },
@@ -437,7 +412,6 @@ const checkInAppointment = async (authUser: TAuthPayload, id: string) => {
 	return toAppointmentResponse(await findAppointmentOrThrow({ id }));
 };
 
-// Doctor: CHECKED_IN → COMPLETED
 const completeAppointment = async (authUser: TAuthPayload, id: string) => {
 	const appointment = await findDoctorAppointment(authUser.userId, id);
 
@@ -456,7 +430,6 @@ const completeAppointment = async (authUser: TAuthPayload, id: string) => {
 	return toAppointmentResponse(await findAppointmentOrThrow({ id }));
 };
 
-// Doctor: prescription লেখা/বদলানো — পুরোটা replace (upsert + পুরনো ওষুধ মুছে নতুন)
 const savePrescription = async (authUser: TAuthPayload, id: string, payload: TPrescriptionPayload) => {
 	const appointment = await findDoctorAppointment(authUser.userId, id);
 
@@ -466,7 +439,6 @@ const savePrescription = async (authUser: TAuthPayload, id: string, payload: TPr
 		throw new AppError(httpStatus.CONFLICT, "A prescription can be written only after check-in");
 	}
 
-	// না পাঠানো field → null (পুরো replace; doctor কিছু মুছে দিলে সেটা সত্যিই মুছবে)
 	const fields = {
 		symptoms: payload.symptoms ?? null,
 		diagnosis: payload.diagnosis ?? null,
@@ -493,7 +465,7 @@ const savePrescription = async (authUser: TAuthPayload, id: string, payload: TPr
 					frequency: item.frequency,
 					durationDays: item.durationDays ?? null,
 					instructions: item.instructions ?? null,
-					sortOrder: index, // form-এ যে ক্রমে লিখেছে সেই ক্রমে দেখাবে
+					sortOrder: index,
 				})),
 			});
 		}
@@ -502,7 +474,6 @@ const savePrescription = async (authUser: TAuthPayload, id: string, payload: TPr
 	return toAppointmentResponse(await findAppointmentOrThrow({ id }));
 };
 
-// Front desk: শুরুর ৩০ মিনিট পরেও আসেনি → CONFIRMED → NO_SHOW
 const markNoShow = async (id: string) => {
 	const appointment = await findAppointmentOrThrow({ id });
 
@@ -531,8 +502,6 @@ const markNoShow = async (id: string) => {
 
 	return toAppointmentResponse(await findAppointmentOrThrow({ id }));
 };
-
-// ---------------- Cancel ----------------
 
 const cancelAppointment = async (authUser: TAuthPayload, id: string, { reason }: TCancelAppointmentPayload) => {
 	const current = await findAppointmentOrThrow({ id });
@@ -582,9 +551,6 @@ const cancelMyAppointment = async (userId: string, id: string, payload: TCancelM
 	return toAppointmentResponse(await findAppointmentOrThrow({ id, patientId }));
 };
 
-// ---------------- Payment (desk + online link) ----------------
-
-// Front desk-এ fee নেওয়া ("Pay at the front desk" বাছাই করা রোগী এলে, অথবা online link-এর বদলে cash)
 const recordDeskPayment = async (authUser: TAuthPayload, id: string, { method }: TDeskPaymentPayload) => {
 	const now = new Date();
 
@@ -616,7 +582,6 @@ const recordDeskPayment = async (authUser: TAuthPayload, id: string, { method }:
 			throw new AppError(httpStatus.CONFLICT, "Consultation fee is already paid");
 		}
 
-		// খোলা Stripe link থাকলে সেটা বাতিল — একই fee দুবার না
 		await tx.payment.updateMany({
 			where: { appointmentId: id, status: PaymentStatus.PENDING },
 			data: { status: PaymentStatus.FAILED },
@@ -647,7 +612,6 @@ const recordDeskPayment = async (authUser: TAuthPayload, id: string, { method }:
 	return toAppointmentResponse(await findAppointmentOrThrow({ id }));
 };
 
-// নতুন Stripe checkout: staff-এর "payment link" আর রোগীর "Pay now" — দুটোই এটা ব্যবহার করে
 const startOnlinePayment = async (id: string, patientId: string | null) => {
 	const now = new Date();
 
@@ -692,7 +656,6 @@ const startOnlinePayment = async (id: string, patientId: string | null) => {
 			where: { appointmentId: id, status: PaymentStatus.PENDING },
 			data: { status: PaymentStatus.FAILED },
 		});
-		// Pending হলে hold আবার ৩০ মিনিট; CONFIRMED হলে slot আগেই নিশ্চিত, hold লাগে না
 		await tx.appointment.update({
 			where: { id },
 			data: {

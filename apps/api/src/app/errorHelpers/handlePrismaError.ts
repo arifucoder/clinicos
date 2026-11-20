@@ -8,7 +8,6 @@ const toStringArray = (value: unknown): string[] =>
 	Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
 
 const getUniqueFields = (meta: Record<string, unknown> | undefined): string[] => {
-	// Prisma 7 + driver adapter (pg): meta.driverAdapterError.cause.constraint.fields
 	const adapterError = meta?.driverAdapterError;
 	if (isRecord(adapterError) && isRecord(adapterError.cause) && isRecord(adapterError.cause.constraint)) {
 		const fields = toStringArray(adapterError.cause.constraint.fields);

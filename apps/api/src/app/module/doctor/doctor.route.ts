@@ -36,7 +36,6 @@ router.delete("/:id/photo", DoctorController.removeDoctorPhoto);
 
 export const DoctorRoutes = router;
 
-// Public: checkAuth নেই (find a doctor page)
 const publicRouter = Router();
 
 publicRouter.get("/", DoctorController.getPublicDoctors);

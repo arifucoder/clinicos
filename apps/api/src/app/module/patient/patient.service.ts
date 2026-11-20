@@ -33,7 +33,6 @@ const toMyProfile = ({ user, ...patient }: TMyProfileRow) => ({
 	profileComplete: isProfileComplete(patient),
 });
 
-// visits, appointments, queue — পরের সব endpoint এটা দিয়েই শুরু হবে
 const getMyPatientOrThrow = async (userId: string) => {
 	const patient = await prisma.patient.findFirst({
 		where: { userId, ...notDeleted },

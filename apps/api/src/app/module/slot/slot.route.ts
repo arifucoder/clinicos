@@ -4,7 +4,6 @@ import { Router } from "express";
 import { SlotController } from "./slot.controller";
 import { SlotValidation } from "./slot.validation";
 
-// mount path-এ :doctorId আছে → mergeParams না দিলে req.params.doctorId = undefined
 const router = Router({ mergeParams: true });
 
 router.get("/", SlotController.getPublicSlots);
