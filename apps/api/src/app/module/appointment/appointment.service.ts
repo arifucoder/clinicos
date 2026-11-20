@@ -40,6 +40,7 @@ import type {
 	TCancelAppointmentPayload,
 	TCancelMyAppointmentPayload,
 	TDeskPaymentPayload,
+	TPrescriptionPayload,
 } from "./appointment.interface";
 
 const TZ = envVars.CLINIC_TIME_ZONE;
@@ -79,6 +80,30 @@ const assertCancellable = (status: AppointmentStatus) => {
 	if (!CANCELLABLE_STATUSES.includes(status)) {
 		throw new AppError(httpStatus.CONFLICT, `A ${status} appointment can't be cancelled`);
 	}
+};
+
+const isPaid = (appointment: TAppointmentRow) =>
+	appointment.payments.some((payment) => payment.status === PaymentStatus.SUCCEEDED);
+
+// আগামীকালের appointment আজ check-in যেন না হয়
+const assertCheckInOpen = (startAt: Date, now: Date) => {
+	const opensAt = new Date(startAt.getTime() - APPOINTMENT_CONFIG.checkInOpensMinutesBefore * MINUTE_MS);
+	if (now < opensAt) {
+		throw new AppError(
+			httpStatus.BAD_REQUEST,
+			`Check-in opens ${APPOINTMENT_CONFIG.checkInOpensMinutesBefore / 60} hours before the appointment`,
+		);
+	}
+};
+
+// DOCTOR শুধু নিজের রোগীর appointment-এ কাজ করতে পারে
+const findDoctorAppointment = async (userId: string, id: string) => {
+	const doctorId = await findOwnDoctorId(userId);
+	const appointment = await findAppointmentOrThrow({ id });
+	if (appointment.doctor.id !== doctorId) {
+		throw new AppError(httpStatus.FORBIDDEN, "This appointment belongs to another doctor");
+	}
+	return appointment;
 };
 
 // Partial unique index (doctorId, startAt)-এ ধাক্কা লাগলে Prisma P2002 → সুন্দর 409
@@ -212,12 +237,14 @@ const bookAppointment = async (authUser: TAuthPayload, payload: TBookAppointment
 	const { patientId, source } = await resolveBookingPatient(authUser, payload);
 	const isStaff = source === AppointmentSource.STAFF;
 	const isOnline = payload.paymentMode === AppointmentPaymentMode.ONLINE;
+	const checkInNow = payload.checkInNow === true;
 	const now = new Date();
 
 	const created = await prisma
 		.$transaction(async (tx) => {
 			const slot = await lockSlot(tx, payload.slotId);
 			assertSlotBookable(slot, isStaff, now);
+			if (checkInNow) assertCheckInOpen(slot.startAt, now);
 
 			const feeCents = slot.doctor.consultationFeeCents;
 			if (isOnline && feeCents < APPOINTMENT_CONFIG.minOnlineAmountCents) {
@@ -258,13 +285,19 @@ const bookAppointment = async (authUser: TAuthPayload, payload: TBookAppointment
 					slotId: slot.id,
 					startAt: slot.startAt,
 					endAt: slot.endAt,
-					status: isOnline ? AppointmentStatus.PENDING_PAYMENT : AppointmentStatus.CONFIRMED,
+					status: isOnline
+						? AppointmentStatus.PENDING_PAYMENT
+						: checkInNow
+							? AppointmentStatus.CHECKED_IN // desk-এ fee নিলে একবারেই check-in
+							: AppointmentStatus.CONFIRMED,
 					source,
 					paymentMode: payload.paymentMode,
 					feeCents, // booking-এর সময়ের fee-র snapshot
 					holdExpiresAt: isOnline ? new Date(now.getTime() + APPOINTMENT_CONFIG.holdMinutes * MINUTE_MS) : null,
 					reason: payload.reason ?? null,
 					bookedById: authUser.userId,
+					checkedInAt: checkInNow ? now : null,
+					checkedInById: checkInNow ? authUser.userId : null,
 				},
 				select: { id: true },
 			});
@@ -371,6 +404,102 @@ const getMyAppointmentById = async (userId: string, id: string) => {
 	const patientId = await findMyPatientId(userId);
 	// অন্য রোগীর appointment → 404 (403 না — আছে কিনা সেটাও জানানো হয় না)
 	return toAppointmentResponse(await findAppointmentOrThrow({ id, patientId }));
+};
+
+// ---------------- Check-in → Complete (slot-ই queue) ----------------
+
+// Front desk: CONFIRMED + paid → CHECKED_IN
+const checkInAppointment = async (authUser: TAuthPayload, id: string) => {
+	const appointment = await findAppointmentOrThrow({ id });
+
+	if (appointment.status !== AppointmentStatus.CONFIRMED) {
+		throw new AppError(
+			httpStatus.CONFLICT,
+			`Only a confirmed appointment can be checked in (this one is ${appointment.status})`,
+		);
+	}
+	if (!isPaid(appointment)) {
+		throw new AppError(httpStatus.CONFLICT, "Collect the consultation fee first");
+	}
+
+	const now = new Date();
+	assertCheckInOpen(appointment.startAt, now);
+
+	// শর্তসহ update: এর মধ্যে অন্য কেউ বদলে ফেললে count = 0
+	const { count } = await prisma.appointment.updateMany({
+		where: { id, status: AppointmentStatus.CONFIRMED },
+		data: { status: AppointmentStatus.CHECKED_IN, checkedInAt: now, checkedInById: authUser.userId },
+	});
+	if (count === 0) {
+		throw new AppError(httpStatus.CONFLICT, "This appointment was just changed — refresh and try again");
+	}
+
+	return toAppointmentResponse(await findAppointmentOrThrow({ id }));
+};
+
+// Doctor: CHECKED_IN → COMPLETED
+const completeAppointment = async (authUser: TAuthPayload, id: string) => {
+	const appointment = await findDoctorAppointment(authUser.userId, id);
+
+	if (appointment.status !== AppointmentStatus.CHECKED_IN) {
+		throw new AppError(httpStatus.CONFLICT, "Only a checked-in appointment can be completed");
+	}
+
+	const { count } = await prisma.appointment.updateMany({
+		where: { id, status: AppointmentStatus.CHECKED_IN },
+		data: { status: AppointmentStatus.COMPLETED, completedAt: new Date() },
+	});
+	if (count === 0) {
+		throw new AppError(httpStatus.CONFLICT, "This appointment was just changed — refresh and try again");
+	}
+
+	return toAppointmentResponse(await findAppointmentOrThrow({ id }));
+};
+
+// Doctor: prescription লেখা/বদলানো — পুরোটা replace (upsert + পুরনো ওষুধ মুছে নতুন)
+const savePrescription = async (authUser: TAuthPayload, id: string, payload: TPrescriptionPayload) => {
+	const appointment = await findDoctorAppointment(authUser.userId, id);
+
+	const canWrite =
+		appointment.status === AppointmentStatus.CHECKED_IN || appointment.status === AppointmentStatus.COMPLETED;
+	if (!canWrite) {
+		throw new AppError(httpStatus.CONFLICT, "A prescription can be written only after check-in");
+	}
+
+	// না পাঠানো field → null (পুরো replace; doctor কিছু মুছে দিলে সেটা সত্যিই মুছবে)
+	const fields = {
+		symptoms: payload.symptoms ?? null,
+		diagnosis: payload.diagnosis ?? null,
+		advice: payload.advice ?? null,
+		followUpDate: payload.followUpDate ? new Date(payload.followUpDate) : null,
+	};
+
+	await prisma.$transaction(async (tx) => {
+		const prescription = await tx.prescription.upsert({
+			where: { appointmentId: id },
+			create: { appointmentId: id, ...fields },
+			update: fields,
+			select: { id: true },
+		});
+
+		await tx.prescriptionItem.deleteMany({ where: { prescriptionId: prescription.id } });
+
+		if (payload.items.length > 0) {
+			await tx.prescriptionItem.createMany({
+				data: payload.items.map((item, index) => ({
+					prescriptionId: prescription.id,
+					medicineName: item.medicineName,
+					dosage: item.dosage,
+					frequency: item.frequency,
+					durationDays: item.durationDays ?? null,
+					instructions: item.instructions ?? null,
+					sortOrder: index, // form-এ যে ক্রমে লিখেছে সেই ক্রমে দেখাবে
+				})),
+			});
+		}
+	});
+
+	return toAppointmentResponse(await findAppointmentOrThrow({ id }));
 };
 
 // ---------------- Cancel ----------------
@@ -587,4 +716,7 @@ export const AppointmentService = {
 	recordDeskPayment,
 	sendPaymentLink,
 	payMyAppointment,
+	checkInAppointment,
+	completeAppointment,
+	savePrescription,
 };
