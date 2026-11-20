@@ -29,3 +29,11 @@ router.patch(
 router.delete("/:id", DoctorController.deleteDoctor);
 
 export const DoctorRoutes = router;
+
+// Public: checkAuth নেই (find a doctor page)
+const publicRouter = Router();
+
+publicRouter.get("/", DoctorController.getPublicDoctors);
+publicRouter.get("/:id", DoctorController.getPublicDoctorById);
+
+export const PublicDoctorRoutes = publicRouter;

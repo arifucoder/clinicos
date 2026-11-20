@@ -4,6 +4,7 @@ import { getAuthUser } from "@/app/shared/getAuthUser";
 import { sendResponse } from "@/app/shared/sendResponse";
 import httpStatus from "http-status";
 import { DoctorService } from "./doctor.service";
+import { DoctorValidation } from "./doctor.validation";
 
 const getAllDoctors = catchAsync(async (req, res) => {
 	const { meta, data } = await DoctorService.getAllDoctors(req.query);
@@ -71,6 +72,29 @@ const updateMyProfile = catchAsync(async (req, res) => {
 	});
 });
 
+const getPublicDoctors = catchAsync(async (req, res) => {
+	const query = DoctorValidation.publicDoctorQuerySchema.parse(req.query);
+	const { meta, data } = await DoctorService.getPublicDoctors(req.query, query);
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		message: "Doctors retrieved successfully",
+		meta,
+		data,
+	});
+});
+
+const getPublicDoctorById = catchAsync(async (req, res) => {
+	const { id } = idParamSchema.parse(req.params);
+	const result = await DoctorService.getPublicDoctorById(id);
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		message: "Doctor retrieved successfully",
+		data: result,
+	});
+});
+
 export const DoctorController = {
 	getAllDoctors,
 	getDoctorById,
@@ -78,4 +102,6 @@ export const DoctorController = {
 	updateDoctorStatus,
 	deleteDoctor,
 	updateMyProfile,
+	getPublicDoctors,
+	getPublicDoctorById,
 };
