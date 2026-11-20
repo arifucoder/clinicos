@@ -40,10 +40,15 @@ model Appointment {
   createdAt         DateTime               @default(now())
   updatedAt         DateTime               @updatedAt
 
-  patient  Patient       @relation(fields: [patientId], references: [id])
-  doctor   DoctorProfile @relation(fields: [doctorId], references: [id])
-  slot     DoctorSlot    @relation(fields: [slotId], references: [id])
-  payments Payment[]
+  checkedInAt   DateTime?
+  checkedInById String?
+  completedAt   DateTime?
+
+  patient      Patient       @relation(fields: [patientId], references: [id])
+  doctor       DoctorProfile @relation(fields: [doctorId], references: [id])
+  slot         DoctorSlot    @relation(fields: [slotId], references: [id])
+  payments     Payment[]
+  prescription Prescription?
 
   @@index([slotId])
   @@index([patientId, startAt])
