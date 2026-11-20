@@ -11,4 +11,6 @@ export const APPOINTMENT_CONFIG = {
 	minOnlineAmountCents: 50,
 	// Appointment-এর কত মিনিট আগে থেকে check-in করা যায় (কালকের appointment আজ check-in যেন না হয়)
 	checkInOpensMinutesBefore: 120,
+	// শুরুর কত মিনিট পরেও না এলে no-show চিহ্নিত করা যায়
+	noShowAfterMinutes: 30,
 };

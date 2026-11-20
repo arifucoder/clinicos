@@ -502,6 +502,36 @@ const savePrescription = async (authUser: TAuthPayload, id: string, payload: TPr
 	return toAppointmentResponse(await findAppointmentOrThrow({ id }));
 };
 
+// Front desk: শুরুর ৩০ মিনিট পরেও আসেনি → CONFIRMED → NO_SHOW
+const markNoShow = async (id: string) => {
+	const appointment = await findAppointmentOrThrow({ id });
+
+	if (appointment.status !== AppointmentStatus.CONFIRMED) {
+		throw new AppError(
+			httpStatus.CONFLICT,
+			`Only a confirmed appointment can be marked as no-show (this one is ${appointment.status})`,
+		);
+	}
+
+	const allowedAt = new Date(appointment.startAt.getTime() + APPOINTMENT_CONFIG.noShowAfterMinutes * MINUTE_MS);
+	if (new Date() < allowedAt) {
+		throw new AppError(
+			httpStatus.CONFLICT,
+			`No-show can be marked ${APPOINTMENT_CONFIG.noShowAfterMinutes} minutes after the start time`,
+		);
+	}
+
+	const { count } = await prisma.appointment.updateMany({
+		where: { id, status: AppointmentStatus.CONFIRMED },
+		data: { status: AppointmentStatus.NO_SHOW },
+	});
+	if (count === 0) {
+		throw new AppError(httpStatus.CONFLICT, "This appointment was just changed — refresh and try again");
+	}
+
+	return toAppointmentResponse(await findAppointmentOrThrow({ id }));
+};
+
 // ---------------- Cancel ----------------
 
 const cancelAppointment = async (authUser: TAuthPayload, id: string, { reason }: TCancelAppointmentPayload) => {
@@ -719,4 +749,5 @@ export const AppointmentService = {
 	checkInAppointment,
 	completeAppointment,
 	savePrescription,
+	markNoShow,
 };
