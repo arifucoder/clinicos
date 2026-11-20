@@ -35,6 +35,7 @@ router.post("/:id/payment-link", checkAuth(...ADMINS), AppointmentController.sen
 // ---------- Check-in → doctor → complete (slot-ই queue) ----------
 // Doctor-এর আজকের তালিকা: GET /appointments?date=YYYY-MM-DD&status=CHECKED_IN (নতুন route লাগে না)
 router.patch("/:id/check-in", checkAuth(...ADMINS), AppointmentController.checkInAppointment);
+router.patch("/:id/no-show", checkAuth(...ADMINS), AppointmentController.markNoShow);
 router.patch("/:id/complete", checkAuth(Role.DOCTOR), AppointmentController.completeAppointment);
 router.put(
 	"/:id/prescription",

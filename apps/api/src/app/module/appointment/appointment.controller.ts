@@ -74,6 +74,13 @@ const savePrescription = catchAsync(async (req, res) => {
 	sendResponse(res, { statusCode: httpStatus.OK, message: "Prescription saved", data: result });
 });
 
+const markNoShow = catchAsync(async (req, res) => {
+	const { id } = idParamSchema.parse(req.params);
+	const result = await AppointmentService.markNoShow(id);
+
+	sendResponse(res, { statusCode: httpStatus.OK, message: "Marked as no-show", data: result });
+});
+
 // ---------- রোগী নিজে (/patient/appointments) ----------
 
 const getMyAppointments = catchAsync(async (req, res) => {
@@ -113,6 +120,7 @@ export const AppointmentController = {
 	checkInAppointment,
 	completeAppointment,
 	savePrescription,
+	markNoShow,
 	getMyAppointments,
 	getMyAppointmentById,
 	cancelMyAppointment,
