@@ -3,13 +3,17 @@ import cors from "cors";
 import type { Request, Response } from "express";
 import express from "express";
 import helmet from "helmet";
-import { envVars } from "./app/config/env";
+import { envVars, isProduction } from "./app/config/env";
 import { globalErrorHandler } from "./app/middleware/globalErrorHandler";
 import { notFound } from "./app/middleware/notFound";
 import { PaymentController } from "./app/module/payment/payment.controller";
 import { AppRoutes } from "./app/routes";
 
 const app = express();
+if (isProduction) {
+	app.set("trust proxy", 1);
+}
+
 app.use(helmet({ crossOriginResourcePolicy: { policy: "same-site" } }));
 app.use(
 	cors({
