@@ -6,9 +6,11 @@ import { Prisma } from "@/generated/prisma/client";
 import { isAPIError } from "better-auth/api";
 import type { ErrorRequestHandler } from "express";
 import httpStatus from "http-status";
+import multer from "multer";
 import { ZodError } from "zod";
 import { envVars } from "../config/env";
 import { handleBetterAuthError } from "../errorHelpers/handleBetterAuthError";
+import { handleMulterError } from "../errorHelpers/handleMulterError";
 
 const isDev = envVars.NODE_ENV === "development";
 
@@ -25,6 +27,8 @@ export const globalErrorHandler: ErrorRequestHandler = (err, _req, res, _next) =
 		errorResponse = handlePrismaKnownError(err);
 	} else if (err instanceof Prisma.PrismaClientValidationError) {
 		errorResponse = handlePrismaValidationError();
+	} else if (err instanceof multer.MulterError) {
+		errorResponse = handleMulterError(err);
 	} else if (err instanceof AppError) {
 		errorResponse = { statusCode: err.statusCode, message: err.message, errorSources: [] };
 	} else if (isAPIError(err)) {
