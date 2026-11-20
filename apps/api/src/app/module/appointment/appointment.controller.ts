@@ -51,6 +51,29 @@ const sendPaymentLink = catchAsync(async (req, res) => {
 	sendResponse(res, { statusCode: httpStatus.OK, message: "Payment link sent to the patient", data: result });
 });
 
+// ---------- Check-in → doctor → complete ----------
+
+const checkInAppointment = catchAsync(async (req, res) => {
+	const { id } = idParamSchema.parse(req.params);
+	const result = await AppointmentService.checkInAppointment(getAuthUser(req), id);
+
+	sendResponse(res, { statusCode: httpStatus.OK, message: "Patient checked in", data: result });
+});
+
+const completeAppointment = catchAsync(async (req, res) => {
+	const { id } = idParamSchema.parse(req.params);
+	const result = await AppointmentService.completeAppointment(getAuthUser(req), id);
+
+	sendResponse(res, { statusCode: httpStatus.OK, message: "Appointment completed", data: result });
+});
+
+const savePrescription = catchAsync(async (req, res) => {
+	const { id } = idParamSchema.parse(req.params);
+	const result = await AppointmentService.savePrescription(getAuthUser(req), id, req.body);
+
+	sendResponse(res, { statusCode: httpStatus.OK, message: "Prescription saved", data: result });
+});
+
 // ---------- রোগী নিজে (/patient/appointments) ----------
 
 const getMyAppointments = catchAsync(async (req, res) => {
@@ -87,6 +110,9 @@ export const AppointmentController = {
 	cancelAppointment,
 	recordDeskPayment,
 	sendPaymentLink,
+	checkInAppointment,
+	completeAppointment,
+	savePrescription,
 	getMyAppointments,
 	getMyAppointmentById,
 	cancelMyAppointment,
