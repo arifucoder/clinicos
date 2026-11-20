@@ -1,10 +1,22 @@
+import { envVars } from "@/app/config/env";
+import { SLOT_CONFIG } from "@/app/config/slot.config";
 import { AppError } from "@/app/errorHelpers/AppError";
 import { prisma } from "@/app/lib/prisma";
 import { buildListQuery, buildMeta } from "@/app/shared/query/queryBuilder";
 import type { Prisma } from "@/generated/prisma/client";
+import { SlotStatus } from "@/generated/prisma/enums";
 import httpStatus from "http-status";
-import { doctorListConfig } from "./doctor.constant";
-import type { TUpdateDoctorPayload, TUpdateDoctorStatusPayload, TUpdateMyProfilePayload } from "./doctor.interface";
+import { activeAppointmentWhere } from "../appointment/appointment.helpers";
+import { addDaysToDate, clinicDateOf, clinicDayStartUtc } from "../slot/slot.utils";
+import { doctorListConfig, publicDoctorListConfig } from "./doctor.constant";
+import type {
+	TPublicDoctorQuery,
+	TUpdateDoctorPayload,
+	TUpdateDoctorStatusPayload,
+	TUpdateMyProfilePayload,
+} from "./doctor.interface";
+
+const TZ = envVars.CLINIC_TIME_ZONE;
 
 const doctorSelect = {
 	id: true,
@@ -178,6 +190,126 @@ const updateMyProfile = async (userId: string, payload: TUpdateMyProfilePayload)
 	return toDoctorResponse(updated);
 };
 
+// ---------- Public (login লাগে না) ----------
+
+// Public-এ শুধু এগুলো যাবে। email, phone, licenseNumber, isActive যাবে না
+const publicDoctorSelect = {
+	id: true,
+	consultationFeeCents: true,
+	roomNumber: true,
+	bio: true,
+	photoUrl: true,
+	user: { select: { name: true } },
+	doctorSpecialties: {
+		where: { specialty: { isActive: true, isDeleted: false } },
+		select: { specialty: { select: { name: true, slug: true, icon: true } } },
+	},
+} satisfies Prisma.DoctorProfileSelect;
+
+type TPublicDoctorRow = Prisma.DoctorProfileGetPayload<{ select: typeof publicDoctorSelect }>;
+
+const toPublicDoctor = ({ user, doctorSpecialties, ...doctor }: TPublicDoctorRow, nextAvailableAt: Date | null) => ({
+	...doctor,
+	name: user.name,
+	specialties: doctorSpecialties.map(({ specialty }) => specialty),
+	nextAvailableAt,
+});
+
+// Deleted বা deactivated doctor public-এ দেখা যাবে না
+const publicDoctorWhere = {
+	user: { isDeleted: false, isActive: true },
+} satisfies Prisma.DoctorProfileWhereInput;
+
+// কোন সময়ের slot খোঁজা হবে: date দিলে শুধু সেই দিন, না দিলে পুরো booking window
+const resolveSlotRange = (now: Date, date?: string) => {
+	const today = clinicDateOf(now, TZ);
+	const lastBookableDate = addDaysToDate(today, SLOT_CONFIG.bookingWindowDays - 1);
+
+	if (date && (date < today || date > lastBookableDate)) {
+		throw new AppError(httpStatus.BAD_REQUEST, `Pick a date between ${today} and ${lastBookableDate}`);
+	}
+
+	const from = date ?? today;
+	const to = date ?? lastBookableDate;
+
+	return {
+		today,
+		range: { gte: clinicDayStartUtc(from, TZ), lt: clinicDayStartUtc(addDaysToDate(to, 1), TZ) },
+	};
+};
+
+// "রোগী এখন book করতে পারবে" এমন slot: getPublicSlots আর createAppointment-এর নিয়মের সাথে মিল রেখে
+const bookableSlotWhere = (now: Date, date?: string): Prisma.DoctorSlotWhereInput => {
+	const { today, range } = resolveSlotRange(now, date);
+	const earliest = new Date(now.getTime() + SLOT_CONFIG.minLeadMinutes * 60_000);
+	const tomorrowStart = clinicDayStartUtc(addDaysToDate(today, 1), TZ);
+
+	return {
+		status: SlotStatus.OPEN,
+		AND: [
+			{ startAt: range },
+			{ startAt: { gte: earliest } },
+			{ appointments: { none: activeAppointmentWhere(now) } },
+			// Paused doctor-এর আজকের slot book করা যায় না (appointment.service-এর নিয়ম)
+			{ OR: [{ doctor: { isPaused: false } }, { startAt: { gte: tomorrowStart } }] },
+		],
+	};
+};
+
+const getPublicDoctors = async (rawQuery: unknown, query: TPublicDoctorQuery) => {
+	const now = new Date();
+	const slotWhere = bookableSlotWhere(now, query.date);
+
+	// date দিলে শুধু সেই দিনে খালি slot আছে এমন doctor
+	const baseWhere: Prisma.DoctorProfileWhereInput = query.date
+		? { ...publicDoctorWhere, slots: { some: slotWhere } }
+		: publicDoctorWhere;
+
+	const q = buildListQuery(rawQuery, publicDoctorListConfig, baseWhere);
+
+	const [rows, total] = await Promise.all([
+		prisma.doctorProfile.findMany({ ...q.args, select: publicDoctorSelect }),
+		prisma.doctorProfile.count({ where: q.where }),
+	]);
+
+	// সব doctor-এর "পরের খালি slot" একটা query-তেই আসে (N+1 হয় না)
+	const doctorIds = rows.map((row) => row.id);
+	const nextSlots =
+		doctorIds.length === 0
+			? []
+			: await prisma.doctorSlot.groupBy({
+					by: ["doctorId"],
+					where: { ...slotWhere, doctorId: { in: doctorIds } },
+					_min: { startAt: true },
+				});
+
+	const nextByDoctor = new Map(nextSlots.map((slot) => [slot.doctorId, slot._min.startAt]));
+
+	return {
+		meta: buildMeta(total, q.page, q.limit),
+		data: rows.map((row) => toPublicDoctor(row, nextByDoctor.get(row.id) ?? null)),
+	};
+};
+
+const getPublicDoctorById = async (id: string) => {
+	const doctor = await prisma.doctorProfile.findFirst({
+		where: { id, ...publicDoctorWhere },
+		select: publicDoctorSelect,
+	});
+
+	if (!doctor) {
+		throw new AppError(httpStatus.NOT_FOUND, "Doctor not found");
+	}
+
+	const nextSlot = await prisma.doctorSlot.findFirst({
+		where: { ...bookableSlotWhere(new Date()), doctorId: id },
+		orderBy: { startAt: "asc" },
+		select: { startAt: true },
+	});
+
+	return toPublicDoctor(doctor, nextSlot?.startAt ?? null);
+};
+
 export const DoctorService = {
 	getAllDoctors,
 	getDoctorById,
@@ -185,4 +317,6 @@ export const DoctorService = {
 	updateDoctorStatus,
 	deleteDoctor,
 	updateMyProfile,
+	getPublicDoctors,
+	getPublicDoctorById,
 };
