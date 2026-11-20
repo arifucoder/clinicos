@@ -54,6 +54,7 @@ model DoctorProfile {
   slotMinutesDefault   Int     @default(15)
   bio                  String?
   photoUrl             String?
+  photoPublicId        String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
