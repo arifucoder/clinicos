@@ -17,7 +17,8 @@
 		"no-console": ["warn", { "allow": ["info", "warn", "error"] }],
 		"typescript/no-floating-promises": "error",
 		"typescript/consistent-type-imports": "error",
-		"import/no-unassigned-import": ["warn", { "allow": ["dotenv/config"] }]
+		"import/no-unassigned-import": ["warn", { "allow": ["dotenv/config"] }],
+		"no-underscore-dangle": ["warn", { "allow": ["_count", "_min", "_max", "_sum", "_avg"] }]
 	},
 	"ignorePatterns": ["dist/**", "coverage/**", "src/generated/**"]
 }
