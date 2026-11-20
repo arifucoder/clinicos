@@ -46,6 +46,10 @@ const envSchema = z
 		STRIPE_SECRET_KEY: z.string().startsWith("sk_", 'Must start with "sk_" (Stripe → Developers → API keys)'),
 		STRIPE_WEBHOOK_SECRET: z.string().startsWith("whsec_", 'Must start with "whsec_" (shown by "stripe listen")'),
 
+		CLOUDINARY_CLOUD_NAME: z.string().trim().min(1).optional(),
+		CLOUDINARY_API_KEY: z.string().trim().min(1).optional(),
+		CLOUDINARY_API_SECRET: z.string().trim().min(1).optional(),
+
 		SMTP_HOST: z.string().trim().min(1),
 		SMTP_PORT: z.coerce.number().int().min(1).max(65535),
 		SMTP_USER: z.string().min(1),
@@ -68,6 +72,15 @@ const envSchema = z
 				code: "custom",
 				path: ["BETTER_AUTH_URL"],
 				message: "Must use https in production",
+			});
+		}
+		const cloudinaryKeys = ["CLOUDINARY_CLOUD_NAME", "CLOUDINARY_API_KEY", "CLOUDINARY_API_SECRET"] as const;
+		const setCount = cloudinaryKeys.filter((key) => env[key]).length;
+		if (setCount > 0 && setCount < cloudinaryKeys.length) {
+			ctx.addIssue({
+				code: "custom",
+				path: ["CLOUDINARY_CLOUD_NAME"],
+				message: "Set all three CLOUDINARY_* variables, or none of them",
 			});
 		}
 	});
