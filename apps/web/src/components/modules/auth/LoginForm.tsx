@@ -12,8 +12,6 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
-type FieldName = keyof LoginPayload;
-
 const inputClass = "h-11.5 rounded-lg px-3.5 text-[15px] md:text-[15px]";
 
 interface LoginFormProps {
