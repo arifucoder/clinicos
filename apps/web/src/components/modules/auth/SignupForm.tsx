@@ -1,12 +1,13 @@
 "use client";
 
 import { registerAction } from "@/actions/auth.action";
+import { PasswordInput } from "@/components/shared/PasswordInput";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { type RegisterPayload, registerSchema } from "@/zod/auth.validation";
 import { type AnyFieldMeta, useForm } from "@tanstack/react-form";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -15,9 +16,10 @@ type FieldName = keyof RegisterPayload;
 
 const defaultValues: RegisterPayload = { name: "", email: "", password: "" };
 
+const inputClass = "h-11.5 rounded-lg px-3.5 text-[15px] md:text-[15px]";
+
 export function SignupForm() {
 	const router = useRouter();
-	const [showPassword, setShowPassword] = useState(false);
 	const [serverErrors, setServerErrors] = useState<Record<string, string>>({});
 	const [formError, setFormError] = useState<string | null>(null);
 
@@ -82,12 +84,15 @@ export function SignupForm() {
 					const error = getError("name", field.state.meta);
 					return (
 						<div className="space-y-2">
-							<Label htmlFor={field.name}>Full name</Label>
+							<Label htmlFor={field.name} className="text-[13px]">
+								Full name
+							</Label>
 							<Input
 								id={field.name}
 								name={field.name}
 								autoComplete="name"
 								placeholder="Ayesha Rahman"
+								className={inputClass}
 								value={field.state.value}
 								onBlur={field.handleBlur}
 								onChange={(e) => {
@@ -112,7 +117,9 @@ export function SignupForm() {
 					const error = getError("email", field.state.meta);
 					return (
 						<div className="space-y-2">
-							<Label htmlFor={field.name}>Email</Label>
+							<Label htmlFor={field.name} className="text-[13px]">
+								Email
+							</Label>
 							<Input
 								id={field.name}
 								name={field.name}
@@ -120,6 +127,7 @@ export function SignupForm() {
 								autoComplete="email"
 								inputMode="email"
 								placeholder="you@example.com"
+								className={inputClass}
 								value={field.state.value}
 								onBlur={field.handleBlur}
 								onChange={(e) => {
@@ -144,35 +152,23 @@ export function SignupForm() {
 					const error = getError("password", field.state.meta);
 					return (
 						<div className="space-y-2">
-							<Label htmlFor={field.name}>Password</Label>
-							<div className="relative">
-								<Input
-									id={field.name}
-									name={field.name}
-									type={showPassword ? "text" : "password"}
-									autoComplete="new-password"
-									className="pr-10"
-									value={field.state.value}
-									onBlur={field.handleBlur}
-									onChange={(e) => {
-										field.handleChange(e.target.value);
-										clearServerError("password");
-									}}
-									aria-invalid={!!error}
-									aria-describedby={`${field.name}-hint${error ? ` ${field.name}-error` : ""}`}
-								/>
-								<Button
-									type="button"
-									variant="ghost"
-									size="icon-sm"
-									className="absolute top-1/2 right-0.5 -translate-y-1/2 text-muted-foreground"
-									onClick={() => setShowPassword((v) => !v)}
-									aria-label={showPassword ? "Hide password" : "Show password"}
-									aria-pressed={showPassword}
-								>
-									{showPassword ? <EyeOff /> : <Eye />}
-								</Button>
-							</div>
+							<Label htmlFor={field.name} className="text-[13px]">
+								Password
+							</Label>
+							<PasswordInput
+								id={field.name}
+								name={field.name}
+								autoComplete="new-password"
+								className={inputClass}
+								value={field.state.value}
+								onBlur={field.handleBlur}
+								onChange={(e) => {
+									field.handleChange(e.target.value);
+									clearServerError("password");
+								}}
+								aria-invalid={!!error}
+								aria-describedby={`${field.name}-hint${error ? ` ${field.name}-error` : ""}`}
+							/>
 							<p id={`${field.name}-hint`} className="text-xs text-muted-foreground">
 								At least 8 characters.
 							</p>
@@ -188,7 +184,7 @@ export function SignupForm() {
 
 			<form.Subscribe selector={(state) => state.isSubmitting}>
 				{(isSubmitting) => (
-					<Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
+					<Button type="submit" className="h-12 w-full rounded-lg text-[15px] font-semibold" disabled={isSubmitting}>
 						{isSubmitting ? (
 							<>
 								<Loader2 className="animate-spin" aria-hidden="true" />

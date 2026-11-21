@@ -1,33 +1,21 @@
 "use client";
 
 import { resendOtpAction, verifyEmailAction } from "@/actions/auth.action";
+import { OTP_LENGTH, OtpCodeInput } from "@/components/modules/auth/OtpCodeInput";
 import { Button } from "@/components/ui/button";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { REGEXP_ONLY_DIGITS } from "input-otp";
+import { useResendCountdown } from "@/hooks/useResendCountdown";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
-
-const OTP_LENGTH = 6;
-const RESEND_SECONDS = 60;
-
-const formatSeconds = (seconds: number) => `0:${String(seconds).padStart(2, "0")}`;
 
 export function VerifyEmailForm({ email }: { email: string }) {
 	const router = useRouter();
 	const [otp, setOtp] = useState("");
 	const [error, setError] = useState<string | null>(null);
-	const [secondsLeft, setSecondsLeft] = useState(RESEND_SECONDS);
+	const countdown = useResendCountdown();
 	const [isVerifying, startVerify] = useTransition();
 	const [isResending, startResend] = useTransition();
-
-	// প্রতি সেকেন্ডে ১ কমে; ০ হলে থামে
-	useEffect(() => {
-		if (secondsLeft <= 0) return;
-		const timer = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
-		return () => clearTimeout(timer);
-	}, [secondsLeft]);
 
 	const verify = (code: string) => {
 		if (code.length !== OTP_LENGTH || isVerifying) return;
@@ -39,11 +27,12 @@ export function VerifyEmailForm({ email }: { email: string }) {
 			if (!result.success) {
 				setError(result.fieldErrors?.otp ?? result.message);
 				setOtp("");
+				// ৩ বার ভুল: এই code আর কাজ করবে না → সাথে সাথে Resend চালু
+				if (result.code === "TOO_MANY_ATTEMPTS") countdown.finish();
 				return;
 			}
 
 			toast.success("Email verified. Please log in.");
-			// replace: Back চাপলে আবার OTP page-এ ফিরবে না
 			router.replace(`/login?email=${encodeURIComponent(email)}`);
 		});
 	};
@@ -60,7 +49,7 @@ export function VerifyEmailForm({ email }: { email: string }) {
 			toast.success(result.message);
 			setOtp("");
 			setError(null);
-			setSecondsLeft(RESEND_SECONDS);
+			countdown.restart();
 		});
 	};
 
@@ -76,10 +65,8 @@ export function VerifyEmailForm({ email }: { email: string }) {
 				<label htmlFor="otp" className="sr-only">
 					Verification code
 				</label>
-				<InputOTP
+				<OtpCodeInput
 					id="otp"
-					maxLength={OTP_LENGTH}
-					pattern={REGEXP_ONLY_DIGITS}
 					value={otp}
 					onChange={(value) => {
 						setOtp(value);
@@ -88,16 +75,9 @@ export function VerifyEmailForm({ email }: { email: string }) {
 					onComplete={verify}
 					disabled={isVerifying}
 					autoFocus
-					aria-invalid={!!error}
-					aria-describedby={error ? "otp-error otp-hint" : "otp-hint"}
-				>
-					<InputOTPGroup>
-						{Array.from({ length: OTP_LENGTH }, (_, index) => (
-							<InputOTPSlot key={index} index={index} className="size-12 text-lg" />
-						))}
-					</InputOTPGroup>
-				</InputOTP>
-
+					invalid={!!error}
+					describedBy={error ? "otp-error otp-hint" : "otp-hint"}
+				/>
 				{error && (
 					<p id="otp-error" role="alert" className="text-sm text-destructive">
 						{error}
@@ -125,9 +105,7 @@ export function VerifyEmailForm({ email }: { email: string }) {
 
 			<p className="text-center text-sm text-muted-foreground" aria-live="polite">
 				No code yet?{" "}
-				{secondsLeft > 0 ? (
-					<span>Resend in {formatSeconds(secondsLeft)}</span>
-				) : (
+				{countdown.canResend ? (
 					<button
 						type="button"
 						onClick={resend}
@@ -136,6 +114,8 @@ export function VerifyEmailForm({ email }: { email: string }) {
 					>
 						{isResending ? "Sending…" : "Resend code"}
 					</button>
+				) : (
+					<span>Resend in {countdown.label}</span>
 				)}
 			</p>
 		</form>
