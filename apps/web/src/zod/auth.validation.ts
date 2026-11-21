@@ -33,3 +33,30 @@ export const loginSchema = z.object({
 });
 
 export type LoginPayload = z.infer<typeof loginSchema>;
+
+export const forgetPasswordSchema = z.object({
+	email: emailSchema,
+});
+
+// action-এ যায় — api-র resetPasswordSchema-র সাথে হুবহু মিল
+export const resetPasswordSchema = z.object({
+	email: emailSchema,
+	otp: otpSchema,
+	newPassword: passwordSchema,
+});
+
+// শুধু form-এর জন্য: confirmPassword কখনো server-এ যায় না
+export const resetPasswordFormSchema = z
+	.object({
+		otp: otpSchema,
+		newPassword: passwordSchema,
+		confirmPassword: z.string().min(1, "Confirm your new password"),
+	})
+	.refine((data) => data.newPassword === data.confirmPassword, {
+		path: ["confirmPassword"],
+		message: "Passwords don't match",
+	});
+
+export type ForgetPasswordPayload = z.infer<typeof forgetPasswordSchema>;
+export type ResetPasswordPayload = z.infer<typeof resetPasswordSchema>;
+export type ResetPasswordFormValues = z.infer<typeof resetPasswordFormSchema>;

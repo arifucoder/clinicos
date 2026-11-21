@@ -9,7 +9,7 @@ const ROLE_HOME: Record<UserRole, string> = {
 };
 
 // login করা থাকলে এগুলোতে ঢোকা যাবে না
-const AUTH_ONLY_ROUTES = ["/login", "/signup", "/verify-email"];
+const AUTH_ONLY_ROUTES = ["/login", "/signup", "/verify-email", "/forgot-password", "/reset-password"];
 
 // যেকোনো role, শুধু login লাগবে
 const LOGGED_IN_ROUTES = ["/change-password", "/dashboard"];
