@@ -15,6 +15,10 @@ const AUTH_ERRORS: Record<string, { statusCode: number; message: string }> = {
 		statusCode: httpStatus.TOO_MANY_REQUESTS,
 		message: "Too many wrong attempts. Request a new code",
 	},
+	EMAIL_NOT_VERIFIED: {
+		statusCode: httpStatus.FORBIDDEN,
+		message: "Please verify your email before logging in",
+	},
 };
 
 export const handleBetterAuthError = (err: APIError): TGenericErrorResponse => {
