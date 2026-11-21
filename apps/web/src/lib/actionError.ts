@@ -26,7 +26,11 @@ export const toActionError = (error: unknown): ActionError => {
 		}
 
 		if (response.status === 429) {
-			return { success: false, message: "Too many attempts. Please wait a few minutes and try again." };
+			// OTP-র "Too many wrong attempts. Request a new code"-এর মতো নির্দিষ্ট message থাকলে সেটাই দেখাও
+			return {
+				success: false,
+				message: response.data?.message ?? "Too many attempts. Please wait a few minutes and try again.",
+			};
 		}
 
 		const fieldErrors: Record<string, string> = {};
