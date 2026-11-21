@@ -5,7 +5,7 @@ export function TopStrip() {
 				<p className="flex items-center gap-2">
 					<span
 						aria-hidden="true"
-						className="size-1.5 rounded-full bg-teal-400 motion-safe:animate-live-pulse md:size-[7px]"
+						className="size-1.5 rounded-full bg-teal-400 motion-safe:animate-live-pulse md:size-1.75"
 					/>
 					<span className="font-medium text-white">Open 24/7</span>
 					<span aria-hidden="true">·</span>
