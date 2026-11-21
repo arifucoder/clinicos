@@ -1,13 +1,14 @@
 "use client";
 
 import { loginAction, resendOtpAction } from "@/actions/auth.action";
+import { PasswordInput } from "@/components/shared/PasswordInput";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
 import { type LoginPayload, loginSchema } from "@/zod/auth.validation";
 import { type AnyFieldMeta, useForm } from "@tanstack/react-form";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -21,7 +22,6 @@ interface LoginFormProps {
 
 export function LoginForm({ defaultEmail, next }: LoginFormProps) {
 	const router = useRouter();
-	const [showPassword, setShowPassword] = useState(false);
 	const [formError, setFormError] = useState<string | null>(null);
 	const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
 	const [isSendingCode, startSendingCode] = useTransition();
@@ -139,35 +139,33 @@ export function LoginForm({ defaultEmail, next }: LoginFormProps) {
 					const error = getError(field.state.meta);
 					return (
 						<div className="space-y-2">
-							<Label htmlFor={field.name} className="text-[13px]">
-								Password
-							</Label>
-							<div className="relative">
-								<Input
-									id={field.name}
-									name={field.name}
-									type={showPassword ? "text" : "password"}
-									autoComplete="current-password"
-									autoFocus={!!defaultEmail}
-									className={cn(inputClass, "pr-11")}
-									value={field.state.value}
-									onBlur={field.handleBlur}
-									onChange={(e) => field.handleChange(e.target.value)}
-									aria-invalid={!!error}
-									aria-describedby={error ? `${field.name}-error` : undefined}
-								/>
-								<Button
-									type="button"
-									variant="ghost"
-									size="icon-sm"
-									className="absolute top-1/2 right-1.5 -translate-y-1/2 text-muted-foreground"
-									onClick={() => setShowPassword((v) => !v)}
-									aria-label={showPassword ? "Hide password" : "Show password"}
-									aria-pressed={showPassword}
-								>
-									{showPassword ? <EyeOff /> : <Eye />}
-								</Button>
+							<div className="flex items-center justify-between">
+								<Label htmlFor={field.name} className="text-[13px]">
+									Password
+								</Label>
+								<form.Subscribe selector={(state) => state.values.email.trim()}>
+									{(email) => (
+										<Link
+											href={email ? `/forgot-password?email=${encodeURIComponent(email)}` : "/forgot-password"}
+											className="text-[13px] font-medium text-primary underline-offset-4 hover:underline"
+										>
+											Forgot password?
+										</Link>
+									)}
+								</form.Subscribe>
 							</div>
+							<PasswordInput
+								id={field.name}
+								name={field.name}
+								autoComplete="current-password"
+								autoFocus={!!defaultEmail}
+								className={inputClass}
+								value={field.state.value}
+								onBlur={field.handleBlur}
+								onChange={(e) => field.handleChange(e.target.value)}
+								aria-invalid={!!error}
+								aria-describedby={error ? `${field.name}-error` : undefined}
+							/>
 							{error && (
 								<p id={`${field.name}-error`} className="text-sm text-destructive">
 									{error}
