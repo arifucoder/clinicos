@@ -1,12 +1,34 @@
 "use server";
 
 import { toActionError, zodFieldErrors } from "@/lib/actionError";
-import { applyAuthCookies } from "@/lib/authCookies";
+import { applyAuthCookies, clearAuthCookies } from "@/lib/authCookies";
 import { getPostLoginRedirect } from "@/lib/authRedirect";
 import { AuthService } from "@/services/auth.service";
-import type { ActionResult } from "@/types/api.types";
-import { loginSchema, registerSchema, resendOtpSchema, verifyEmailSchema } from "@/zod/auth.validation";
+import type { ActionError, ActionResult } from "@/types/api.types";
+import {
+	forgetPasswordSchema,
+	loginSchema,
+	registerSchema,
+	resendOtpSchema,
+	resetPasswordSchema,
+	verifyEmailSchema,
+} from "@/zod/auth.validation";
 import { isAxiosError } from "axios";
+
+// api-র handleBetterAuthError-এর EMAIL_NOT_VERIFIED message-এর সাথে হুবহু মিলতে হবে
+const EMAIL_NOT_VERIFIED_MESSAGE = "Please verify your email before logging in";
+
+// OTP-ভিত্তিক action-এর error: ৪২৯ → code, field error ছাড়া ৪০০ → ভুল/মেয়াদ শেষ code
+const toOtpActionError = (error: unknown): ActionError => {
+	const result = toActionError(error);
+	if (!isAxiosError(error)) return result;
+
+	const status = error.response?.status;
+	if (status === 429) return { ...result, code: "TOO_MANY_ATTEMPTS" };
+	if (status === 400 && !result.fieldErrors) return { ...result, fieldErrors: { otp: result.message } };
+
+	return result;
+};
 
 export async function registerAction(input: unknown): Promise<ActionResult> {
 	// Server Action আসলে একটা public POST endpoint, তাই client-এর data বিশ্বাস করা যায় না
@@ -48,12 +70,7 @@ export async function verifyEmailAction(input: unknown): Promise<ActionResult> {
 		const response = await AuthService.verifyEmail(parsed.data);
 		return { success: true, message: response.message, data: null };
 	} catch (error) {
-		const result = toActionError(error);
-		// ভুল বা মেয়াদ শেষ code (400) → OTP box-এর নিচে দেখাবে
-		if (isAxiosError(error) && error.response?.status === 400) {
-			return { ...result, fieldErrors: { otp: result.message } };
-		}
-		return result;
+		return toOtpActionError(error);
 	}
 }
 
@@ -70,9 +87,6 @@ export async function resendOtpAction(input: unknown): Promise<ActionResult> {
 		return toActionError(error);
 	}
 }
-
-// api-র handleBetterAuthError-এর EMAIL_NOT_VERIFIED message-এর সাথে হুবহু মিলতে হবে
-const EMAIL_NOT_VERIFIED_MESSAGE = "Please verify your email before logging in";
 
 export async function loginAction(input: unknown, next?: unknown): Promise<ActionResult<{ redirectTo: string }>> {
 	const parsed = loginSchema.safeParse(input);
@@ -110,5 +124,43 @@ export async function loginAction(input: unknown, next?: unknown): Promise<Actio
 			}
 		}
 		return toActionError(error);
+	}
+}
+
+export async function forgetPasswordAction(input: unknown): Promise<ActionResult> {
+	const parsed = forgetPasswordSchema.safeParse(input);
+	if (!parsed.success) {
+		return {
+			success: false,
+			message: "Please fix the highlighted fields.",
+			fieldErrors: zodFieldErrors(parsed.error),
+		};
+	}
+
+	try {
+		const response = await AuthService.forgetPassword(parsed.data);
+		return { success: true, message: response.message, data: null };
+	} catch (error) {
+		return toActionError(error);
+	}
+}
+
+export async function resetPasswordAction(input: unknown): Promise<ActionResult> {
+	const parsed = resetPasswordSchema.safeParse(input);
+	if (!parsed.success) {
+		return {
+			success: false,
+			message: "Please fix the highlighted fields.",
+			fieldErrors: zodFieldErrors(parsed.error),
+		};
+	}
+
+	try {
+		const response = await AuthService.resetPassword(parsed.data);
+		// api সব session বাতিল করেছে → এই browser-এর পুরনো cookie-ও মুছি
+		await clearAuthCookies();
+		return { success: true, message: response.message, data: null };
+	} catch (error) {
+		return toOtpActionError(error);
 	}
 }
