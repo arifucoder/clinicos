@@ -1,7 +1,8 @@
 import "server-only";
 
+import type { UserRole } from "@/lib/authRedirect";
 import { httpClient } from "@/lib/axios/httpClient";
-import type { RegisterPayload, ResendOtpPayload, VerifyEmailPayload } from "@/zod/auth.validation";
+import type { LoginPayload, RegisterPayload, ResendOtpPayload, VerifyEmailPayload } from "@/zod/auth.validation";
 
 interface RegisterResult {
 	user: { id: string; name: string; email: string; role: string; emailVerified: boolean };
@@ -22,8 +23,21 @@ const verifyEmail = (payload: VerifyEmailPayload) =>
 
 const resendOtp = (payload: ResendOtpPayload) => httpClient.post<null>("/auth/resend-otp", payload, { auth: false });
 
+export interface LoginResult {
+	id: string;
+	name: string;
+	email: string;
+	role: UserRole;
+	needPasswordChange: boolean;
+}
+
+// login-এ api-র Set-Cookie header লাগে → postWithCookies
+const login = (payload: LoginPayload) =>
+	httpClient.postWithCookies<LoginResult>("/auth/login", payload, { auth: false });
+
 export const AuthService = {
 	registerPatient,
 	verifyEmail,
 	resendOtp,
+	login,
 };

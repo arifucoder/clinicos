@@ -25,3 +25,11 @@ export const resendOtpSchema = z.object({
 
 export type VerifyEmailPayload = z.infer<typeof verifyEmailSchema>;
 export type ResendOtpPayload = z.infer<typeof resendOtpSchema>;
+
+export const loginSchema = z.object({
+	email: emailSchema,
+	// এখানে min 8 না: login শুধু মিলিয়ে দেখে, নতুন নিয়ম চাপায় না (api-ও min 1)
+	password: z.string().min(1, "Password is required").max(128, "Password is too long"),
+});
+
+export type LoginPayload = z.infer<typeof loginSchema>;

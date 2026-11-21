@@ -23,3 +23,10 @@ export interface ActionError {
 }
 
 export type ActionResult<TData = null> = { success: true; message: string; data: TData } | ActionError;
+
+export interface ActionError {
+	success: false;
+	message: string;
+	fieldErrors?: Record<string, string>;
+	code?: "EMAIL_NOT_VERIFIED";
+}
