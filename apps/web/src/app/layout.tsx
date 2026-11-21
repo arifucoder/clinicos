@@ -1,3 +1,4 @@
+import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
@@ -27,7 +28,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
 	return (
 		<html lang="en" className={cn("h-full antialiased", inter.variable, jakarta.variable)}>
-			<body className="flex min-h-full flex-col">{children}</body>
+			<body className="flex min-h-full flex-col">
+				{children}
+				<Toaster richColors closeButton position="top-right" />
+			</body>
 		</html>
 	);
 }
