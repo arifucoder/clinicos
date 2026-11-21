@@ -5,3 +5,11 @@ export const AUTH_COOKIES = {
 	refreshToken: "refreshToken",
 	sessionToken: "better-auth.session_token",
 } as const;
+
+// login (Server Action) আর proxy দুই জায়গাতেই একই attribute — এক জায়গায় রাখলে কখনো আলাদা হবে না
+export const AUTH_COOKIE_OPTIONS = {
+	httpOnly: true,
+	secure: process.env.NODE_ENV === "production",
+	sameSite: "lax",
+	path: "/",
+} as const;
