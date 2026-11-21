@@ -2,11 +2,11 @@
 
 import { toActionError, zodFieldErrors } from "@/lib/actionError";
 import { AuthService } from "@/services/auth.service";
-import type { TActionResult } from "@/types/api.types";
+import type { ActionResult } from "@/types/api.types";
 import { registerSchema } from "@/zod/auth.validation";
 import { isAxiosError } from "axios";
 
-export async function registerAction(input: unknown): Promise<TActionResult> {
+export async function registerAction(input: unknown): Promise<ActionResult> {
 	// Server Action আসলে একটা public POST endpoint, তাই client-এর data বিশ্বাস করা যায় না
 	const parsed = registerSchema.safeParse(input);
 	if (!parsed.success) {

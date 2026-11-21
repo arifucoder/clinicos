@@ -10,4 +10,4 @@ export const registerSchema = z.object({
 	password: passwordSchema,
 });
 
-export type TRegisterPayload = z.infer<typeof registerSchema>;
+export type RegisterPayload = z.infer<typeof registerSchema>;
