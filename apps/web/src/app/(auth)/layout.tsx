@@ -23,7 +23,7 @@ function AuthShowcase() {
 			{/* পেছনের dot pattern, কিনারায় মিলিয়ে যায় */}
 			<div
 				aria-hidden="true"
-				className="absolute inset-0 bg-[radial-gradient(var(--color-primary)_1px,transparent_1px)] opacity-20 [background-size:22px_22px] [mask-image:radial-gradient(ellipse_at_center,black_35%,transparent_75%)]"
+				className="absolute inset-0 bg-[radial-gradient(var(--color-primary)_1px,transparent_1px)] opacity-20 bg-size-[22px_22px] mask-[radial-gradient(ellipse_at_center,black_35%,transparent_75%)]"
 			/>
 			{/* বড় নরম গোল আলো */}
 			<div
