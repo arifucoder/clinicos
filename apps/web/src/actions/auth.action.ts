@@ -1,9 +1,11 @@
 "use server";
 
 import { toActionError, zodFieldErrors } from "@/lib/actionError";
+import { applyAuthCookies } from "@/lib/authCookies";
+import { getPostLoginRedirect } from "@/lib/authRedirect";
 import { AuthService } from "@/services/auth.service";
 import type { ActionResult } from "@/types/api.types";
-import { registerSchema, resendOtpSchema, verifyEmailSchema } from "@/zod/auth.validation";
+import { loginSchema, registerSchema, resendOtpSchema, verifyEmailSchema } from "@/zod/auth.validation";
 import { isAxiosError } from "axios";
 
 export async function registerAction(input: unknown): Promise<ActionResult> {
@@ -65,6 +67,48 @@ export async function resendOtpAction(input: unknown): Promise<ActionResult> {
 		const response = await AuthService.resendOtp(parsed.data);
 		return { success: true, message: response.message, data: null };
 	} catch (error) {
+		return toActionError(error);
+	}
+}
+
+// api-র handleBetterAuthError-এর EMAIL_NOT_VERIFIED message-এর সাথে হুবহু মিলতে হবে
+const EMAIL_NOT_VERIFIED_MESSAGE = "Please verify your email before logging in";
+
+export async function loginAction(input: unknown, next?: unknown): Promise<ActionResult<{ redirectTo: string }>> {
+	const parsed = loginSchema.safeParse(input);
+	if (!parsed.success) {
+		return {
+			success: false,
+			message: "Please fix the highlighted fields.",
+			fieldErrors: zodFieldErrors(parsed.error),
+		};
+	}
+
+	try {
+		const { data: response, setCookies } = await AuthService.login(parsed.data);
+
+		const applied = await applyAuthCookies(setCookies);
+		if (applied === 0) {
+			console.error("[loginAction] login succeeded but no auth cookies were returned");
+			return { success: false, message: "Something went wrong. Please try again." };
+		}
+
+		const user = response.data;
+		const redirectTo = user.needPasswordChange ? "/change-password" : getPostLoginRedirect(user.role, next);
+
+		return { success: true, message: response.message, data: { redirectTo } };
+	} catch (error) {
+		if (isAxiosError(error)) {
+			const status = error.response?.status;
+
+			// কোনটা ভুল (email না password) বলি না — user enumeration ঠেকাতে
+			if (status === 401) {
+				return { success: false, message: "Email or password is incorrect." };
+			}
+			if (status === 403 && error.response?.data?.message === EMAIL_NOT_VERIFIED_MESSAGE) {
+				return { success: false, message: EMAIL_NOT_VERIFIED_MESSAGE, code: "EMAIL_NOT_VERIFIED" };
+			}
+		}
 		return toActionError(error);
 	}
 }
