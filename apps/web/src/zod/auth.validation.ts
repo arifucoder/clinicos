@@ -11,3 +11,17 @@ export const registerSchema = z.object({
 });
 
 export type RegisterPayload = z.infer<typeof registerSchema>;
+
+const otpSchema = z.string().regex(/^\d{6}$/, "Enter the 6-digit code");
+
+export const verifyEmailSchema = z.object({
+	email: emailSchema,
+	otp: otpSchema,
+});
+
+export const resendOtpSchema = z.object({
+	email: emailSchema,
+});
+
+export type VerifyEmailPayload = z.infer<typeof verifyEmailSchema>;
+export type ResendOtpPayload = z.infer<typeof resendOtpSchema>;
