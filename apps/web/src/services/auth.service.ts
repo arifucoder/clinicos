@@ -2,7 +2,14 @@ import "server-only";
 
 import type { UserRole } from "@/lib/authRedirect";
 import { httpClient } from "@/lib/axios/httpClient";
-import type { LoginPayload, RegisterPayload, ResendOtpPayload, VerifyEmailPayload } from "@/zod/auth.validation";
+import type {
+	ForgetPasswordPayload,
+	LoginPayload,
+	RegisterPayload,
+	ResendOtpPayload,
+	ResetPasswordPayload,
+	VerifyEmailPayload,
+} from "@/zod/auth.validation";
 
 interface RegisterResult {
 	user: { id: string; name: string; email: string; role: string; emailVerified: boolean };
@@ -35,9 +42,18 @@ export interface LoginResult {
 const login = (payload: LoginPayload) =>
 	httpClient.postWithCookies<LoginResult>("/auth/login", payload, { auth: false });
 
+const forgetPassword = (payload: ForgetPasswordPayload) =>
+	httpClient.post<null>("/auth/forget-password", payload, { auth: false });
+
+// api এখানে cookie মোছে, কিন্তু BFF-এ সেটা browser-এ পৌঁছায় না → action নিজে মুছবে
+const resetPassword = (payload: ResetPasswordPayload) =>
+	httpClient.post<null>("/auth/reset-password", payload, { auth: false });
+
 export const AuthService = {
 	registerPatient,
 	verifyEmail,
 	resendOtp,
 	login,
+	forgetPassword,
+	resetPassword,
 };

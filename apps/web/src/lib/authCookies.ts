@@ -1,6 +1,6 @@
 import "server-only";
 
-import { AUTH_COOKIE_OPTIONS } from "@/lib/cookieConfig";
+import { AUTH_COOKIE_OPTIONS, AUTH_COOKIES } from "@/lib/cookieConfig";
 import { parseAuthSetCookies, toCookieLifetime } from "@/lib/setCookie";
 import { cookies } from "next/headers";
 
@@ -14,4 +14,10 @@ export const applyAuthCookies = async (setCookies: string[]): Promise<number> =>
 	}
 
 	return authCookies.length;
+};
+
+// password reset বা logout-এর পরে এই browser-এর তিনটা auth cookie মোছা
+export const clearAuthCookies = async () => {
+	const cookieStore = await cookies();
+	for (const name of Object.values(AUTH_COOKIES)) cookieStore.delete(name);
 };
