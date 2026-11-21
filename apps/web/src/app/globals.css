@@ -71,6 +71,9 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  --color-inverse: var(--inverse);
+  --color-inverse-foreground: var(--inverse-foreground);
 }
 
 /* ---------- Fixed tokens (dark mode-এ বদলায় না) ---------- */
@@ -162,6 +165,8 @@
   --sidebar-ring: #2563eb;
 
   --dot: #cbd5e1;
+  --inverse: #0f172a;
+  --inverse-foreground: #cbd5e1;
 }
 
 
@@ -226,6 +231,9 @@
   --sidebar-accent-foreground: #93c5fd;
   --sidebar-border: #263248;
   --sidebar-ring: #60a5fa;
+
+  --inverse: #020617;
+  --inverse-foreground: #cbd5e1;
 }
 
 /* ---------- Motif utilities ---------- */
