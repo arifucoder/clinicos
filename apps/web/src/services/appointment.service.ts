@@ -13,6 +13,7 @@ export interface AppointmentListParams {
 	sortOrder?: "asc" | "desc";
 	page?: number;
 	limit?: number;
+	source?: Appointment["source"];
 }
 
 const getAppointments = ({ status, searchTerm, ...rest }: AppointmentListParams) =>
@@ -33,5 +34,21 @@ const undoCheckIn = (id: string) => httpClient.patch<Appointment>(`/appointments
 const book = (payload: DeskBookingPayload) => httpClient.post<BookAppointmentResult>("/appointments", payload);
 
 const getAppointment = (id: string) => httpClient.get<Appointment>(`/appointments/${id}`);
+const cancel = (id: string, reason: string) => httpClient.patch<Appointment>(`/appointments/${id}/cancel`, { reason });
 
-export const AppointmentService = { getAppointments, getAppointment, book, recordDeskPayment, checkIn, undoCheckIn };
+// httpClient.patch/post-এ data required; api এই route-গুলোতে body পড়ে না
+const markNoShow = (id: string) => httpClient.patch<Appointment>(`/appointments/${id}/no-show`, {});
+
+const sendPaymentLink = (id: string) => httpClient.post<BookAppointmentResult>(`/appointments/${id}/payment-link`, {});
+
+export const AppointmentService = {
+	getAppointments,
+	getAppointment,
+	book,
+	recordDeskPayment,
+	checkIn,
+	undoCheckIn,
+	cancel,
+	markNoShow,
+	sendPaymentLink,
+};

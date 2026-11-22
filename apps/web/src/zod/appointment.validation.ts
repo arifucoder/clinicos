@@ -1,4 +1,4 @@
-import type { PaymentMethod } from "@/types/appointment.types";
+import type { Appointment, AppointmentStatus, PaymentMethod } from "@/types/appointment.types";
 import * as z from "zod";
 import { baseListQuerySchema } from "./listQuery.validation";
 
@@ -52,3 +52,43 @@ export const deskBookingSchema = z
 		path: ["checkInNow"],
 	});
 export type DeskBookingPayload = z.output<typeof deskBookingSchema>;
+
+// ---------- Appointments list ----------
+// URL: /admin/front-desk/appointments?date=…&doctorId=…&status=…&source=…&searchTerm=…&page=…
+export const APPOINTMENT_STATUSES = [
+	"PENDING_PAYMENT",
+	"CONFIRMED",
+	"CHECKED_IN",
+	"COMPLETED",
+	"CANCELLED",
+	"NO_SHOW",
+	"EXPIRED",
+] as const satisfies readonly AppointmentStatus[];
+
+export const APPOINTMENT_SOURCES = ["ONLINE", "STAFF"] as const satisfies readonly Appointment["source"][];
+
+export const APPOINTMENT_PAGE_SIZES = [20, 50, 100] as const;
+
+// api-র appointmentListConfig.sortableFields; default startAt asc (দিনের timeline)
+export const APPOINTMENT_SORT_FIELDS = ["startAt", "createdAt", "appointmentNumber"] as const;
+
+export const appointmentListQuerySchema = baseListQuerySchema.extend({
+	limit: z.coerce.number().int().min(1).max(100).catch(20),
+	sortBy: z.enum(APPOINTMENT_SORT_FIELDS).catch("startAt"),
+	sortOrder: z.enum(["asc", "desc"]).catch("asc"),
+	date: z.iso.date().optional().catch(undefined), // না থাকলে = আজ (page-এ ঠিক হয়)
+	doctorId: z.uuid().optional().catch(undefined),
+	status: z.enum(APPOINTMENT_STATUSES).optional().catch(undefined),
+	source: z.enum(APPOINTMENT_SOURCES).optional().catch(undefined),
+});
+export type AppointmentListQuery = z.output<typeof appointmentListQuerySchema>;
+
+// api-র cancelAppointmentSchema-র সাথে মিল (3–200)
+export const cancelAppointmentSchema = z.object({
+	reason: z
+		.string()
+		.trim()
+		.min(3, "Reason must be at least 3 characters")
+		.max(200, "Keep the reason under 200 characters"),
+});
+export type CancelAppointmentPayload = z.output<typeof cancelAppointmentSchema>;

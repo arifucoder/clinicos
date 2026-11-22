@@ -6,7 +6,12 @@ import { isAxiosError } from "axios";
 import { revalidatePath } from "next/cache";
 // import-এ যোগ
 import { toActionError, zodFieldErrors } from "@/lib/actionError";
-import { appointmentIdSchema, deskBookingSchema, paymentMethodSchema } from "@/zod/appointment.validation";
+import {
+	appointmentIdSchema,
+	cancelAppointmentSchema,
+	deskBookingSchema,
+	paymentMethodSchema,
+} from "@/zod/appointment.validation";
 
 // "layout": /admin/front-desk-এর নিচের সব page (Today, Check-in, Appointments) একসাথে নতুন হয়
 const revalidateFrontDesk = () => revalidatePath("/admin/front-desk", "layout");
@@ -79,5 +84,54 @@ export async function bookForPatientAction(input: unknown): Promise<ActionResult
 	} catch (error) {
 		// 409 "This time was just booked", "already has APT-… same day", "Check-in opens 2 hours…" — api-র message-ই দেখাই
 		return toActionError(error);
+	}
+}
+
+export async function cancelAppointmentAction(id: unknown, input: unknown): Promise<ActionResult> {
+	const parsedId = appointmentIdSchema.safeParse(id);
+	if (!parsedId.success) return invalidInput;
+
+	const parsed = cancelAppointmentSchema.safeParse(input);
+	if (!parsed.success) {
+		return {
+			success: false,
+			message: parsed.error.issues[0]?.message ?? "Invalid reason.",
+			fieldErrors: zodFieldErrors(parsed.error),
+		};
+	}
+
+	try {
+		const response = await AppointmentService.cancel(parsedId.data, parsed.data.reason);
+		revalidateFrontDesk();
+		return { success: true, message: response.message, data: null };
+	} catch (error) {
+		return toAppointmentError(error);
+	}
+}
+
+export async function markNoShowAction(id: unknown): Promise<ActionResult> {
+	const parsedId = appointmentIdSchema.safeParse(id);
+	if (!parsedId.success) return invalidInput;
+
+	try {
+		const response = await AppointmentService.markNoShow(parsedId.data);
+		revalidateFrontDesk();
+		return { success: true, message: response.message, data: null };
+	} catch (error) {
+		// 409 "No-show can be marked 30 minutes after…" — api-র message-ই দেখাই
+		return toAppointmentError(error);
+	}
+}
+
+export async function sendPaymentLinkAction(id: unknown): Promise<ActionResult> {
+	const parsedId = appointmentIdSchema.safeParse(id);
+	if (!parsedId.success) return invalidInput;
+
+	try {
+		const response = await AppointmentService.sendPaymentLink(parsedId.data);
+		revalidateFrontDesk(); // status PENDING_PAYMENT হয়, hold নতুন করে শুরু
+		return { success: true, message: response.message, data: null };
+	} catch (error) {
+		return toAppointmentError(error);
 	}
 }
