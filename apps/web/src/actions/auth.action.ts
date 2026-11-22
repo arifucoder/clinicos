@@ -14,6 +14,7 @@ import {
 	verifyEmailSchema,
 } from "@/zod/auth.validation";
 import { isAxiosError } from "axios";
+import { redirect } from "next/navigation";
 
 // api-র handleBetterAuthError-এর EMAIL_NOT_VERIFIED message-এর সাথে হুবহু মিলতে হবে
 const EMAIL_NOT_VERIFIED_MESSAGE = "Please verify your email before logging in";
@@ -163,4 +164,14 @@ export async function resetPasswordAction(input: unknown): Promise<ActionResult>
 	} catch (error) {
 		return toOtpActionError(error);
 	}
+}
+
+export async function logoutAction(): Promise<void> {
+	try {
+		await AuthService.logout(); // api-তে session row মোছা
+	} catch {
+		// api-তে না পৌঁছালেও এই browser থেকে logout হবে
+	}
+	await clearAuthCookies(); // BFF: api-র clear-cookie browser-এ পৌঁছায় না, তাই নিজে মুছি
+	redirect("/login"); // try-এর বাইরে রাখতে হবে, কারণ redirect() ভেতরে একটা error throw করে
 }
