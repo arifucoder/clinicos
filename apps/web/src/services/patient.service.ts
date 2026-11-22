@@ -19,4 +19,6 @@ const updateAccountStatus = (id: string, isActive: boolean) =>
 // httpClient.post-এ data required; api এই route-এ body পড়ে না, তাই খালি object
 const resetPassword = (id: string) => httpClient.post<ResetPasswordResult>(`/patient-records/${id}/reset-password`, {});
 
-export const PatientService = { getPatients, createPatient, updateAccountStatus, resetPassword };
+const getPatient = (id: string) => httpClient.get<PatientRecord>(`/patient-records/${id}`);
+
+export const PatientService = { getPatients, getPatient, createPatient, updateAccountStatus, resetPassword };

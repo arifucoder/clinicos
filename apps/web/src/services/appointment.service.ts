@@ -1,8 +1,8 @@
 import "server-only";
 
 import { httpClient } from "@/lib/axios/httpClient";
-import type { Appointment, AppointmentStatus, PaymentMethod } from "@/types/appointment.types";
-
+import type { Appointment, AppointmentStatus, BookAppointmentResult, PaymentMethod } from "@/types/appointment.types";
+import type { DeskBookingPayload } from "@/zod/appointment.validation";
 // api-র appointmentListConfig-এর সাথে মিল
 export interface AppointmentListParams {
 	date?: string; // "YYYY-MM-DD", clinic-এর দিন
@@ -27,4 +27,11 @@ const recordDeskPayment = (id: string, method: PaymentMethod) =>
 // httpClient.patch-এ data required; api এই route-এ body পড়ে না
 const checkIn = (id: string) => httpClient.patch<Appointment>(`/appointments/${id}/check-in`, {});
 
-export const AppointmentService = { getAppointments, recordDeskPayment, checkIn };
+// httpClient.patch-এ data required; api body পড়ে না
+const undoCheckIn = (id: string) => httpClient.patch<Appointment>(`/appointments/${id}/undo-check-in`, {});
+
+const book = (payload: DeskBookingPayload) => httpClient.post<BookAppointmentResult>("/appointments", payload);
+
+const getAppointment = (id: string) => httpClient.get<Appointment>(`/appointments/${id}`);
+
+export const AppointmentService = { getAppointments, getAppointment, book, recordDeskPayment, checkIn, undoCheckIn };

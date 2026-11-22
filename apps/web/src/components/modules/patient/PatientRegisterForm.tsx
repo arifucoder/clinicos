@@ -13,16 +13,31 @@ import { BLOOD_GROUP_LABEL, GENDER_LABEL } from "@/lib/patientDisplay";
 import type { BloodGroup, Gender, RegisteredPatient } from "@/types/patient.types";
 import { BLOOD_GROUPS, GENDERS, type PatientFormValues, patientFormSchema } from "@/zod/patient.validation";
 import { useForm } from "@tanstack/react-form";
-import { CircleCheck, Loader2, UserPlus } from "lucide-react";
+import { ArrowRight, CircleCheck, Loader2, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-export function PatientRegisterForm() {
+interface PatientRegisterFormProps {
+	/** দিলে card-এ "Continue booking" দেখায় (Book for patient page); না দিলে আগের মতো */
+	onContinue?: (result: RegisteredPatient) => void;
+	/** Cancel button কোথায় নেবে */
+	cancelHref?: string;
+}
+
+export function PatientRegisterForm({ onContinue, cancelHref = "/admin/patients" }: PatientRegisterFormProps) {
 	const [registered, setRegistered] = useState<RegisteredPatient | null>(null);
 
 	// card দেখালে form unmount হয় → "Register another"-এ নতুন, খালি form আসে
-	if (registered) return <RegisteredCard result={registered} onRegisterAnother={() => setRegistered(null)} />;
-	return <RegisterForm onRegistered={setRegistered} />;
+	if (registered) {
+		return (
+			<RegisteredCard
+				result={registered}
+				onRegisterAnother={() => setRegistered(null)}
+				onContinue={onContinue ? () => onContinue(registered) : undefined}
+			/>
+		);
+	}
+	return <RegisterForm onRegistered={setRegistered} cancelHref={cancelHref} />;
 }
 
 const EMPTY_VALUES = {
@@ -38,7 +53,12 @@ const EMPTY_VALUES = {
 	emergencyContactPhone: "",
 } satisfies PatientFormValues;
 
-function RegisterForm({ onRegistered }: { onRegistered: (result: RegisteredPatient) => void }) {
+interface RegisterFormProps {
+	onRegistered: (result: RegisteredPatient) => void;
+	cancelHref: string;
+}
+
+function RegisterForm({ onRegistered, cancelHref }: RegisterFormProps) {
 	const [formError, setFormError] = useState<string | null>(null);
 	const { serverErrors, setServerErrors, clearServerError } = useServerFieldErrors();
 
@@ -350,7 +370,7 @@ function RegisterForm({ onRegistered }: { onRegistered: (result: RegisteredPatie
 			</fieldset>
 
 			<div className="flex flex-wrap justify-end gap-2 border-t border-border pt-5">
-				<Button type="button" variant="outline" render={<Link href="/admin/patients" />} nativeButton={false}>
+				<Button type="button" variant="outline" render={<Link href={cancelHref} />} nativeButton={false}>
 					Cancel
 				</Button>
 				<form.Subscribe selector={(state) => state.isSubmitting}>
@@ -366,7 +386,14 @@ function RegisterForm({ onRegistered }: { onRegistered: (result: RegisteredPatie
 	);
 }
 
-function RegisteredCard({ result, onRegisterAnother }: { result: RegisteredPatient; onRegisterAnother: () => void }) {
+interface RegisteredCardProps {
+	result: RegisteredPatient;
+	onRegisterAnother: () => void;
+	/** থাকলে booking flow: শুধু "Continue booking" দেখাই */
+	onContinue?: () => void;
+}
+
+function RegisteredCard({ result, onRegisterAnother, onContinue }: RegisteredCardProps) {
 	const headingRef = useRef<HTMLHeadingElement>(null);
 
 	// screen reader আর keyboard user-কে নতুন content-এ নিয়ে যাই
@@ -408,13 +435,22 @@ function RegisteredCard({ result, onRegisterAnother }: { result: RegisteredPatie
 			)}
 
 			<div className="flex flex-wrap gap-2 border-t border-border pt-5">
-				<Button onClick={onRegisterAnother}>
-					<UserPlus aria-hidden="true" />
-					Register another
-				</Button>
-				<Button variant="outline" render={<Link href="/admin/patients" />} nativeButton={false}>
-					Back to patients
-				</Button>
+				{onContinue ? (
+					<Button onClick={onContinue}>
+						Continue booking
+						<ArrowRight aria-hidden="true" />
+					</Button>
+				) : (
+					<>
+						<Button onClick={onRegisterAnother}>
+							<UserPlus aria-hidden="true" />
+							Register another
+						</Button>
+						<Button variant="outline" render={<Link href="/admin/patients" />} nativeButton={false}>
+							Back to patients
+						</Button>
+					</>
+				)}
 			</div>
 		</section>
 	);

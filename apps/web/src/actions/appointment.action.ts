@@ -1,11 +1,12 @@
 "use server";
 
-import { toActionError } from "@/lib/actionError";
 import { AppointmentService } from "@/services/appointment.service";
 import type { ActionError, ActionResult } from "@/types/api.types";
-import { appointmentIdSchema, paymentMethodSchema } from "@/zod/appointment.validation";
 import { isAxiosError } from "axios";
 import { revalidatePath } from "next/cache";
+// import-এ যোগ
+import { toActionError, zodFieldErrors } from "@/lib/actionError";
+import { appointmentIdSchema, deskBookingSchema, paymentMethodSchema } from "@/zod/appointment.validation";
 
 // "layout": /admin/front-desk-এর নিচের সব page (Today, Check-in, Appointments) একসাথে নতুন হয়
 const revalidateFrontDesk = () => revalidatePath("/admin/front-desk", "layout");
@@ -45,5 +46,38 @@ export async function checkInAppointmentAction(id: unknown): Promise<ActionResul
 		return { success: true, message: response.message, data: null };
 	} catch (error) {
 		return toAppointmentError(error);
+	}
+}
+
+export async function undoCheckInAction(id: unknown): Promise<ActionResult> {
+	const parsedId = appointmentIdSchema.safeParse(id);
+	if (!parsedId.success) return invalidInput;
+
+	try {
+		const response = await AppointmentService.undoCheckIn(parsedId.data);
+		revalidateFrontDesk();
+		return { success: true, message: response.message, data: null };
+	} catch (error) {
+		return toAppointmentError(error);
+	}
+}
+
+export async function bookForPatientAction(input: unknown): Promise<ActionResult<{ appointmentId: string }>> {
+	const parsed = deskBookingSchema.safeParse(input);
+	if (!parsed.success) {
+		return {
+			success: false,
+			message: parsed.error.issues[0]?.message ?? "Invalid booking.",
+			fieldErrors: zodFieldErrors(parsed.error),
+		};
+	}
+
+	try {
+		const response = await AppointmentService.book(parsed.data);
+		revalidateFrontDesk();
+		return { success: true, message: response.message, data: { appointmentId: response.data.appointment.id } };
+	} catch (error) {
+		// 409 "This time was just booked", "already has APT-… same day", "Check-in opens 2 hours…" — api-র message-ই দেখাই
+		return toActionError(error);
 	}
 }

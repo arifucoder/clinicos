@@ -65,3 +65,9 @@ export interface Appointment {
 	prescription: AppointmentPrescription | null;
 	isPaid: boolean; // api হিসাব করে পাঠায়: কোনো SUCCEEDED payment আছে কিনা
 }
+
+// POST /appointments → api-র response
+export interface BookAppointmentResult {
+	appointment: Appointment;
+	checkoutUrl: string | null; // ONLINE হলে Stripe link (api নিজেই রোগীকে email করে)
+}
