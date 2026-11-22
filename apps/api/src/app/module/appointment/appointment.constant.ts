@@ -18,7 +18,19 @@ export const appointmentSelect = {
 	cancelledAt: true,
 	cancelReason: true,
 	createdAt: true,
-	patient: { select: { id: true, fullName: true, phone: true, allergies: true, user: { select: { email: true } } } },
+	patient: {
+		select: {
+			id: true,
+			fullName: true,
+			phone: true,
+			allergies: true,
+			// consultation-এ doctor-এর বয়স/লিঙ্গ/রক্তের গ্রুপ লাগে (portal-এ রোগী নিজেরটাই দেখে)
+			dateOfBirth: true,
+			gender: true,
+			bloodGroup: true,
+			user: { select: { email: true } },
+		},
+	},
 	doctor: { select: { id: true, roomNumber: true, user: { select: { name: true } } } },
 	payments: {
 		select: {
