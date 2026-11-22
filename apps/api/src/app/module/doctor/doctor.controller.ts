@@ -125,7 +125,16 @@ const getPublicDoctorById = catchAsync(async (req, res) => {
 		data: result,
 	});
 });
+const getMyProfile = catchAsync(async (req, res) => {
+	const { userId } = getAuthUser(req);
+	const result = await DoctorService.getMyProfile(userId);
 
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		message: "Profile retrieved successfully",
+		data: result,
+	});
+});
 export const DoctorController = {
 	getAllDoctors,
 	getDoctorById,
@@ -139,4 +148,5 @@ export const DoctorController = {
 	removeDoctorPhoto,
 	uploadDoctorPhoto,
 	removeMyPhoto,
+	getMyProfile,
 };

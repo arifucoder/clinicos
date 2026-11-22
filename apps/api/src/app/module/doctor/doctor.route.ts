@@ -8,7 +8,7 @@ import { DoctorController } from "./doctor.controller";
 import { DoctorValidation } from "./doctor.validation";
 
 const router = Router();
-
+router.get("/me", checkAuth(Role.DOCTOR), DoctorController.getMyProfile);
 router.patch(
 	"/me",
 	checkAuth(Role.DOCTOR),

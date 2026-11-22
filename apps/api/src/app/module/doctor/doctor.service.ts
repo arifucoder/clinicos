@@ -206,6 +206,11 @@ const findMyDoctorIdOrThrow = async (userId: string) => {
 	return doctor.id;
 };
 
+const getMyProfile = async (userId: string) => {
+	const id = await findMyDoctorIdOrThrow(userId);
+	return getDoctorById(id);
+};
+
 const findPhotoPublicIdOrThrow = async (id: string) => {
 	const doctor = await prisma.doctorProfile.findFirst({
 		where: { id, ...notDeleted },
@@ -337,10 +342,10 @@ const getPublicDoctors = async (rawQuery: unknown, query: TPublicDoctorQuery) =>
 		doctorIds.length === 0
 			? []
 			: await prisma.doctorSlot.groupBy({
-					by: ["doctorId"],
-					where: { ...slotWhere, doctorId: { in: doctorIds } },
-					_min: { startAt: true },
-				});
+				by: ["doctorId"],
+				where: { ...slotWhere, doctorId: { in: doctorIds } },
+				_min: { startAt: true },
+			});
 
 	const nextByDoctor = new Map(nextSlots.map((slot) => [slot.doctorId, slot._min.startAt]));
 
@@ -369,6 +374,8 @@ const getPublicDoctorById = async (id: string) => {
 	return toPublicDoctor(doctor, nextSlot?.startAt ?? null);
 };
 
+
+
 export const DoctorService = {
 	getAllDoctors,
 	getDoctorById,
@@ -382,4 +389,5 @@ export const DoctorService = {
 	removeDoctorPhoto,
 	setMyPhoto,
 	removeMyPhoto,
+	getMyProfile,
 };
