@@ -17,6 +17,7 @@ interface DataTableProps<TData extends { id: string }> {
 	toolbar?: ReactNode;
 	emptyState: ReactNode;
 	pageSizes?: readonly number[];
+	mobileColumns?: readonly string[];
 }
 
 export function DataTable<TData extends { id: string }>({
@@ -27,10 +28,12 @@ export function DataTable<TData extends { id: string }>({
 	toolbar,
 	emptyState,
 	pageSizes = [10, 20, 50],
+	mobileColumns,
 }: DataTableProps<TData>) {
 	const { setParams, isPending } = useTableUrlState();
 	const sorting: SortingState = [{ id: sort.sortBy, desc: sort.sortOrder === "desc" }];
-
+	const mobileClass = (columnId: string) =>
+		mobileColumns && !mobileColumns.includes(columnId) ? "hidden md:table-cell" : undefined;
 	const table = useTable({
 		features: dataTableFeatures,
 		columns,
@@ -76,7 +79,10 @@ export function DataTable<TData extends { id: string }>({
 																: "none"
 														: undefined
 												}
-												className="h-10 px-3 text-xs font-semibold text-muted-foreground first:pl-4 last:pr-4"
+												className={cn(
+													"h-10 px-3 text-xs font-semibold text-muted-foreground first:pl-4 last:pr-4",
+													mobileClass(header.column.id),
+												)}
 											>
 												{header.isPlaceholder ? null : <table.FlexRender header={header} />}
 											</TableHead>
@@ -89,7 +95,10 @@ export function DataTable<TData extends { id: string }>({
 							{table.getRowModel().rows.map((row) => (
 								<TableRow key={row.id} className="hover:bg-surface">
 									{row.getAllCells().map((cell) => (
-										<TableCell key={cell.id} className="h-15 px-3 first:pl-4 last:pr-4">
+										<TableCell
+											key={cell.id}
+											className={cn("h-15 px-3 first:pl-4 last:pr-4", mobileClass(cell.column.id))}
+										>
 											<table.FlexRender cell={cell} />
 										</TableCell>
 									))}
