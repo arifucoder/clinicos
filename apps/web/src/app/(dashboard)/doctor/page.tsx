@@ -1,59 +1,64 @@
 import { DoctorTodayStats } from "@/components/modules/doctor/DoctorTodayStats";
-import {
-	CheckedInSection,
-	CompletedSection,
-	NotArrivedSection,
-} from "@/components/modules/doctor/TodayPatientSections";
+import { DoctorTodayTable } from "@/components/modules/doctor/DoctorTodayTable";
+import { DoctorTodayTabs } from "@/components/modules/doctor/DoctorTodayTabs";
 import { AutoRefresh } from "@/components/shared/AutoRefresh";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { DataTableSkeleton } from "@/components/shared/data-table/DataTableSkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { clinicToday, formatDayLabel } from "@/lib/clinicDate";
+import { DOCTOR_TAB_CONFIG, doctorTabCounts } from "@/lib/doctorToday";
 import { AppointmentService } from "@/services/appointment.service";
 import { StatsService } from "@/services/stats.service";
-import type { AppointmentStatus } from "@/types/appointment.types";
+import { doctorTodayQuerySchema } from "@/zod/appointment.validation";
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { Suspense } from "react";
 
 export const metadata: Metadata = { title: "Today's patients" };
 
-// এই তিন অবস্থার রোগীই page-এ দেখাই (cancelled / no-show / hold বাদ)
-const TODAY_STATUSES: AppointmentStatus[] = ["CHECKED_IN", "CONFIRMED", "COMPLETED"];
+type SearchParams = PageProps<"/doctor">["searchParams"];
 
-export default function DoctorDashboardPage() {
+export default function DoctorDashboardPage({ searchParams }: PageProps<"/doctor">) {
 	return (
 		<Suspense fallback={<TodaySkeleton />}>
-			<TodayContent />
+			<TodayContent searchParams={searchParams} />
 		</Suspense>
 	);
 }
 
-async function TodayContent() {
+async function TodayContent({ searchParams }: { searchParams: SearchParams }) {
+	// ভুল URL (?tab=xyz&page=-3) → crash না করে default
+	const query = doctorTodayQuerySchema.parse(await searchParams);
+
 	// request-time-এ চালাও → এর পরে new Date() নিরাপদ
 	await connection();
 	const today = clinicToday(new Date());
+	const config = DOCTOR_TAB_CONFIG[query.tab];
 
 	// api doctor-এর জন্য নিজে থেকেই শুধু নিজের appointment দেয় (doctorId পাঠাই না)
 	const [statsResponse, appointmentsResponse] = await Promise.all([
 		StatsService.getDoctorStats(),
 		AppointmentService.getAppointments({
 			date: today,
-			status: TODAY_STATUSES,
+			status: config.statuses,
 			sortBy: "startAt",
-			sortOrder: "asc",
-			limit: 100, // api-র সর্বোচ্চ; এক দিনে একজন doctor-এর জন্য যথেষ্ট
+			sortOrder: config.sortOrder,
+			searchTerm: query.searchTerm,
+			page: query.page,
+			limit: query.limit,
 		}),
 	]);
 
-	// একটা request, তিন ভাগ — startAt অনুযায়ী আগেই সাজানো
-	const appointments = appointmentsResponse.data;
-	const checkedIn = appointments.filter((appointment) => appointment.status === "CHECKED_IN");
-	const notArrived = appointments.filter((appointment) => appointment.status === "CONFIRMED");
-	const completed = appointments.filter((appointment) => appointment.status === "COMPLETED");
+	const meta = appointmentsResponse.meta ?? {
+		page: query.page,
+		limit: query.limit,
+		total: appointmentsResponse.data.length,
+		totalPages: 1,
+	};
 
 	return (
 		<div className="space-y-6">
-			{/* ৫ সেকেন্ড পরপর নতুন data; tab লুকানো থাকলে থামে */}
+			{/* ৫ সেকেন্ড পরপর নতুন data; URL-এ state থাকায় page/search হারায় না */}
 			<AutoRefresh />
 
 			<div className="space-y-1">
@@ -63,9 +68,10 @@ async function TodayContent() {
 
 			<DoctorTodayStats stats={statsResponse.data} />
 
-			<CheckedInSection appointments={checkedIn} />
-			<NotArrivedSection appointments={notArrived} />
-			<CompletedSection appointments={completed} />
+			<div className="space-y-3">
+				<DoctorTodayTabs active={query.tab} counts={doctorTabCounts(statsResponse.data.today)} />
+				<DoctorTodayTable data={appointmentsResponse.data} meta={meta} query={query} />
+			</div>
 		</div>
 	);
 }
@@ -82,9 +88,10 @@ function TodaySkeleton() {
 					<Skeleton key={index} className="h-24 rounded-xl" />
 				))}
 			</div>
-			<Skeleton className="h-56 rounded-xl" />
-			<Skeleton className="h-40 rounded-xl" />
-			<Skeleton className="h-14 rounded-xl" />
+			<div className="space-y-3">
+				<Skeleton className="h-10 w-80" />
+				<DataTableSkeleton rows={8} columns={4} />
+			</div>
 		</div>
 	);
 }

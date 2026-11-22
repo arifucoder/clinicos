@@ -6,13 +6,14 @@ import { isAxiosError } from "axios";
 import { revalidatePath } from "next/cache";
 // import-এ যোগ
 import { toActionError, zodFieldErrors } from "@/lib/actionError";
+import { toPrescriptionPayload } from "@/lib/prescriptionForm";
 import {
 	appointmentIdSchema,
 	cancelAppointmentSchema,
 	deskBookingSchema,
 	paymentMethodSchema,
 } from "@/zod/appointment.validation";
-
+import { prescriptionFormSchema } from "@/zod/prescription.validation";
 // "layout": /admin/front-desk-এর নিচের সব page (Today, Check-in, Appointments) একসাথে নতুন হয়
 const revalidateFrontDesk = () => revalidatePath("/admin/front-desk", "layout");
 
@@ -132,6 +133,47 @@ export async function sendPaymentLinkAction(id: unknown): Promise<ActionResult> 
 		revalidateFrontDesk(); // status PENDING_PAYMENT হয়, hold নতুন করে শুরু
 		return { success: true, message: response.message, data: null };
 	} catch (error) {
+		return toAppointmentError(error);
+	}
+}
+
+// "layout": /doctor (Today) আর /doctor/appointments/[id] দুটোই নতুন হয়
+const revalidateDoctor = () => revalidatePath("/doctor", "layout");
+
+export async function savePrescriptionAction(id: unknown, input: unknown): Promise<ActionResult> {
+	const parsedId = appointmentIdSchema.safeParse(id);
+	if (!parsedId.success) return invalidInput;
+
+	// client-এ validate হলেও server-এ আবার: action একটা public endpoint
+	const parsed = prescriptionFormSchema.safeParse(input);
+	if (!parsed.success) {
+		return {
+			success: false,
+			message: parsed.error.issues[0]?.message ?? "Invalid prescription.",
+			fieldErrors: zodFieldErrors(parsed.error),
+		};
+	}
+
+	try {
+		const response = await AppointmentService.savePrescription(parsedId.data, toPrescriptionPayload(parsed.data));
+		revalidateDoctor();
+		return { success: true, message: response.message, data: null };
+	} catch (error) {
+		// 409 "A prescription can be written only after check-in", 403 অন্য doctor-এর
+		return toAppointmentError(error);
+	}
+}
+
+export async function completeAppointmentAction(id: unknown): Promise<ActionResult> {
+	const parsedId = appointmentIdSchema.safeParse(id);
+	if (!parsedId.success) return invalidInput;
+
+	try {
+		const response = await AppointmentService.complete(parsedId.data);
+		revalidateDoctor();
+		return { success: true, message: response.message, data: null };
+	} catch (error) {
+		// 409 "Write the prescription before completing" / "just changed — refresh"
 		return toAppointmentError(error);
 	}
 }

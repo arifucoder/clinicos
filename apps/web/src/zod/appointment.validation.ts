@@ -92,3 +92,17 @@ export const cancelAppointmentSchema = z.object({
 		.max(200, "Keep the reason under 200 characters"),
 });
 export type CancelAppointmentPayload = z.output<typeof cancelAppointmentSchema>;
+
+// ---------- Doctor: Today's patients ----------
+// URL: /doctor?tab=waiting&searchTerm=…&page=2&limit=20
+export const DOCTOR_TODAY_TABS = ["waiting", "not-arrived", "completed"] as const;
+export type DoctorTodayTab = (typeof DOCTOR_TODAY_TABS)[number];
+
+export const DOCTOR_TODAY_PAGE_SIZES = [20, 50, 100] as const;
+
+// sortOrder URL থেকে নেওয়া হয় না: কোন tab, সেটাই ঠিক করে (lib/doctorToday.ts)
+export const doctorTodayQuerySchema = baseListQuerySchema.omit({ sortOrder: true }).extend({
+	tab: z.enum(DOCTOR_TODAY_TABS).catch("waiting"),
+	limit: z.coerce.number().int().min(1).max(100).catch(20),
+});
+export type DoctorTodayQuery = z.output<typeof doctorTodayQuerySchema>;

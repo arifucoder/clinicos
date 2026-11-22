@@ -1,3 +1,5 @@
+import type { BloodGroup, Gender } from "@/types/patient.types";
+
 // api-র appointmentSelect + toAppointmentResponse (appointment.constant.ts)। Date JSON হয়ে string আসে।
 export type AppointmentStatus =
 	| "PENDING_PAYMENT"
@@ -58,6 +60,9 @@ export interface Appointment {
 		fullName: string;
 		phone: string | null;
 		allergies: string | null;
+		dateOfBirth: string | null; // @db.Date → "1990-05-12T00:00:00.000Z"
+		gender: Gender | null;
+		bloodGroup: BloodGroup | null;
 		user: { email: string };
 	};
 	doctor: { id: string; roomNumber: string | null; user: { name: string } };

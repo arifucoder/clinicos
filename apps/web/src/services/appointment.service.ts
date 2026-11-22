@@ -1,6 +1,7 @@
 import "server-only";
 
 import { httpClient } from "@/lib/axios/httpClient";
+import type { PrescriptionPayload } from "@/lib/prescriptionForm";
 import type { Appointment, AppointmentStatus, BookAppointmentResult, PaymentMethod } from "@/types/appointment.types";
 import type { DeskBookingPayload } from "@/zod/appointment.validation";
 // api-র appointmentListConfig-এর সাথে মিল
@@ -14,6 +15,7 @@ export interface AppointmentListParams {
 	page?: number;
 	limit?: number;
 	source?: Appointment["source"];
+	patientId?: string;
 }
 
 const getAppointments = ({ status, searchTerm, ...rest }: AppointmentListParams) =>
@@ -41,6 +43,12 @@ const markNoShow = (id: string) => httpClient.patch<Appointment>(`/appointments/
 
 const sendPaymentLink = (id: string) => httpClient.post<BookAppointmentResult>(`/appointments/${id}/payment-link`, {});
 
+const savePrescription = (id: string, payload: PrescriptionPayload) =>
+	httpClient.put<Appointment>(`/appointments/${id}/prescription`, payload);
+
+// httpClient.patch-এ data required; api body পড়ে না
+const complete = (id: string) => httpClient.patch<Appointment>(`/appointments/${id}/complete`, {});
+
 export const AppointmentService = {
 	getAppointments,
 	getAppointment,
@@ -51,4 +59,6 @@ export const AppointmentService = {
 	cancel,
 	markNoShow,
 	sendPaymentLink,
+	savePrescription,
+	complete,
 };
