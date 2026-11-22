@@ -50,9 +50,16 @@ interface SlotBoardProps {
 	days: ManageSlotDay[];
 	today: string;
 	now: string; // server-এর সময় (ISO) — render-এ Date.now() না ডেকে prop থেকে
+	emptyDescription?: string; // খালি সপ্তাহের লেখা — admin আর doctor-এর জন্য আলাদা
 }
 
-export function SlotBoard({ doctorId, days, today, now }: SlotBoardProps) {
+export function SlotBoard({
+	doctorId,
+	days,
+	today,
+	now,
+	emptyDescription = "Use “Open slots” to add this doctor's hours, or check another week.",
+}: SlotBoardProps) {
 	const [selectedIds, setSelectedIds] = useState<ReadonlySet<string>>(() => new Set());
 	const [dialog, setDialog] = useState<"block" | "delete" | null>(null);
 	const [isPending, startTransition] = useTransition();
@@ -94,11 +101,7 @@ export function SlotBoard({ doctorId, days, today, now }: SlotBoardProps) {
 	if (slotsById.size === 0) {
 		return (
 			<div className="rounded-xl border border-border bg-card">
-				<EmptyState
-					icon={CalendarX2}
-					title="No slots in these 7 days"
-					description="Use “Open slots” to add this doctor's hours, or check another week."
-				/>
+				<EmptyState icon={CalendarX2} title="No slots in these 7 days" description={emptyDescription} />
 			</div>
 		);
 	}

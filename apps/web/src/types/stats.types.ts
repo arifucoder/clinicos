@@ -33,3 +33,28 @@ export interface AdminStats {
 	daily: DailyStat[];
 	byDoctor: DoctorStat[];
 }
+
+// api-র StatsService.getDoctorStats-এর return (stats.service.ts)
+export interface DoctorStats {
+	today: {
+		date: string;
+		waiting: number; // CHECKED_IN
+		notArrived: number; // CONFIRMED
+		completed: number;
+		noShow: number;
+	};
+	nextAppointment: {
+		id: string;
+		appointmentNumber: string;
+		startAt: string;
+		status: AppointmentStatus;
+		patient: { fullName: string; allergies: string | null };
+	} | null;
+	thisMonth: {
+		from: string;
+		completed: number;
+		noShow: number;
+		patientsSeen: number; // আলাদা রোগী (একজন দুবার এলেও ১)
+	};
+	last7Days: { day: string; completed: number }[];
+}

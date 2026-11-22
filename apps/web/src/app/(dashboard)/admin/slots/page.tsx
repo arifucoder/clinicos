@@ -1,14 +1,15 @@
 import { DoctorPicker } from "@/components/modules/slot/DoctorPicker";
 import { OpenSlotsButton } from "@/components/modules/slot/OpenSlotsDialog";
 import { SlotBoard } from "@/components/modules/slot/SlotBoard";
+import { SlotsSkeleton } from "@/components/modules/slot/SlotsSkeleton";
 import { WeekNav } from "@/components/modules/slot/WeekNav";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { Skeleton } from "@/components/ui/skeleton";
-import { addDays, clinicToday, dateRange } from "@/lib/clinicDate";
+import { addDays, clinicToday } from "@/lib/clinicDate";
+import { fillWeek } from "@/lib/slotBoard";
 import { DoctorService } from "@/services/doctor.service";
 import { SlotService } from "@/services/slot.service";
-import type { ManageSlotDay, SlotDoctorOption } from "@/types/slot.types";
+import type { SlotDoctorOption } from "@/types/slot.types";
 import { doctorListQuerySchema } from "@/zod/doctor.validation";
 import { BOARD_DAYS, slotPageQuerySchema } from "@/zod/slot.validation";
 import { isAxiosError } from "axios";
@@ -40,15 +41,9 @@ const loadSlots = async (doctorId: string, range: { from: string; to: string }) 
 	}
 };
 
-// api শুধু যেদিন slot আছে সেদিন দেয় → ৭ দিনই দেখাতে খালি দিন বসাই
-const fillWeek = (from: string, slotDays: ManageSlotDay[]): ManageSlotDay[] => {
-	const byDate = new Map(slotDays.map((day) => [day.date, day.slots]));
-	return dateRange(from, BOARD_DAYS).map((date) => ({ date, slots: byDate.get(date) ?? [] }));
-};
-
 export default function AdminSlotsPage({ searchParams }: PageProps<"/admin/slots">) {
 	return (
-		<Suspense fallback={<SlotsSkeleton />}>
+		<Suspense fallback={<SlotsSkeleton withPicker />}>
 			<SlotsContent searchParams={searchParams} />
 		</Suspense>
 	);
@@ -116,26 +111,6 @@ async function SlotsContent({ searchParams }: { searchParams: SearchParams }) {
 					now={now.toISOString()}
 				/>
 			)}
-		</div>
-	);
-}
-
-function SlotsSkeleton() {
-	return (
-		<div className="space-y-5">
-			<div className="flex items-center justify-between">
-				<Skeleton className="h-8 w-56" />
-				<Skeleton className="h-10 w-32" />
-			</div>
-			<div className="flex flex-wrap justify-between gap-3">
-				<Skeleton className="h-9 w-80" />
-				<Skeleton className="h-9 w-64" />
-			</div>
-			<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
-				{Array.from({ length: BOARD_DAYS }, (_, index) => (
-					<Skeleton key={index} className="h-64 rounded-xl" />
-				))}
-			</div>
 		</div>
 	);
 }
