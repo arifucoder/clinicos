@@ -1,6 +1,5 @@
 import { matchesPrefix, type UserRole } from "@/lib/authRedirect";
 import {
-	CalendarClock,
 	CalendarDays,
 	CalendarPlus,
 	ClipboardList,
@@ -36,7 +35,6 @@ const adminNav: DashboardNavSection[] = [
 	{
 		title: "Front desk",
 		items: [
-			{ title: "Today", href: "/admin/front-desk", icon: CalendarClock, exact: true },
 			{ title: "Appointments", href: "/admin/front-desk/appointments", icon: CalendarDays },
 			{ title: "Book for patient", href: "/admin/front-desk/book", icon: CalendarPlus },
 			{ title: "Check-in", href: "/admin/front-desk/check-in", icon: UserCheck },

@@ -1,4 +1,5 @@
 import { AppointmentTable } from "@/components/modules/appointment/AppointmentTable";
+import { AutoRefresh } from "@/components/shared/AutoRefresh";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { DataTableSkeleton } from "@/components/shared/data-table/DataTableSkeleton";
 import { Button } from "@/components/ui/button";
@@ -78,6 +79,9 @@ async function AppointmentsContent({ searchParams }: { searchParams: SearchParam
 
 	return (
 		<div className="space-y-5">
+			{/* আজকের তালিকা প্রতি ৫ সেকেন্ডে নতুন (tab লুকানো থাকলে থামে); অন্য দিনের তালিকা বদলায় না → বন্ধ */}
+			<AutoRefresh enabled={date === today} />
+
 			<div className="space-y-1">
 				<PageHeader
 					title="Appointments"
