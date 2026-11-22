@@ -18,3 +18,8 @@ const dateFormatter = new Intl.DateTimeFormat("en-GB", {
 });
 
 export const formatDate = (iso: string) => dateFormatter.format(new Date(iso));
+
+const moneyFormatter = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
+
+// api-র সব টাকা integer cents (SDLC: currency usd) → "$25.50"
+export const formatCents = (cents: number) => moneyFormatter.format(cents / 100);
