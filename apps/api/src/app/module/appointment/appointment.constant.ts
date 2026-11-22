@@ -31,7 +31,19 @@ export const appointmentSelect = {
 			user: { select: { email: true } },
 		},
 	},
-	doctor: { select: { id: true, roomNumber: true, user: { select: { name: true } } } },
+	doctor: {
+		select: {
+			id: true,
+			roomNumber: true,
+			// prescription-এর কাগজে doctor-এর license আর specialty দেখায়
+			licenseNumber: true,
+			user: { select: { name: true } },
+			doctorSpecialties: {
+				select: { specialty: { select: { name: true } } },
+				orderBy: { specialty: { name: "asc" } },
+			},
+		},
+	},
 	payments: {
 		select: {
 			id: true,
@@ -69,8 +81,10 @@ export const appointmentSelect = {
 
 export type TAppointmentRow = Prisma.AppointmentGetPayload<{ select: typeof appointmentSelect }>;
 
-export const toAppointmentResponse = (appointment: TAppointmentRow) => ({
+// doctorSpecialties-এর join table client-এ লুকাই → doctor.specialties: string[] (doctor module-এর মতো)
+export const toAppointmentResponse = ({ doctor: { doctorSpecialties, ...doctor }, ...appointment }: TAppointmentRow) => ({
 	...appointment,
+	doctor: { ...doctor, specialties: doctorSpecialties.map(({ specialty }) => specialty.name) },
 	isPaid: appointment.payments.some((payment) => payment.status === PaymentStatus.SUCCEEDED),
 });
 
