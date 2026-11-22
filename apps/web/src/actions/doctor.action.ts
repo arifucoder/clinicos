@@ -3,7 +3,14 @@
 import { toActionError, zodFieldErrors } from "@/lib/actionError";
 import { DoctorService } from "@/services/doctor.service";
 import type { ActionError, ActionResult, ApiErrorResponse } from "@/types/api.types";
-import { createDoctorSchema, doctorIdSchema, updateDoctorSchema } from "@/zod/doctor.validation";
+import {
+	createDoctorSchema,
+	doctorIdSchema,
+	PHOTO_MAX_BYTES,
+	PHOTO_TYPES,
+	updateDoctorSchema,
+	updateMyProfileSchema,
+} from "@/zod/doctor.validation";
 import { isAxiosError } from "axios";
 import { revalidatePath } from "next/cache";
 import * as z from "zod";
@@ -102,5 +109,53 @@ export async function deleteDoctorAction(id: unknown): Promise<ActionResult> {
 		return { success: true, message: response.message, data: null };
 	} catch (error) {
 		return toDoctorError(error);
+	}
+}
+
+const PROFILE_PATH = "/doctor/profile";
+
+// id নেই: api session থেকে নিজের profile বের করে (IDOR-safe)
+export async function updateMyProfileAction(input: unknown): Promise<ActionResult> {
+	const parsed = updateMyProfileSchema.safeParse(input);
+	if (!parsed.success) return fixFields(parsed.error);
+
+	try {
+		const response = await DoctorService.updateMyProfile(parsed.data);
+		// এই page আর layout (topbar-এর নাম) আবার render হয়
+		revalidatePath(PROFILE_PATH);
+		return { success: true, message: response.message, data: null };
+	} catch (error) {
+		return toActionError(error);
+	}
+}
+
+export async function uploadMyPhotoAction(formData: FormData): Promise<ActionResult> {
+	const photo = formData.get("photo");
+	if (!(photo instanceof File) || photo.size === 0) return { success: false, message: "Choose a photo to upload." };
+	if (!PHOTO_TYPES.includes(photo.type)) {
+		return { success: false, message: "Only JPEG, PNG or WebP images are allowed." };
+	}
+	if (photo.size > PHOTO_MAX_BYTES) return { success: false, message: "Photo must be 2 MB or smaller." };
+
+	// client-এর FormData সরাসরি না পাঠিয়ে নতুন বানাই → শুধু "photo" field যায়, বাড়তি কিছু না
+	const body = new FormData();
+	body.append("photo", photo, photo.name);
+
+	try {
+		const response = await DoctorService.uploadMyPhoto(body);
+		revalidatePath(PROFILE_PATH);
+		return { success: true, message: response.message, data: null };
+	} catch (error) {
+		return toActionError(error);
+	}
+}
+
+export async function removeMyPhotoAction(): Promise<ActionResult> {
+	try {
+		const response = await DoctorService.removeMyPhoto();
+		revalidatePath(PROFILE_PATH);
+		return { success: true, message: response.message, data: null };
+	} catch (error) {
+		return toActionError(error);
 	}
 }

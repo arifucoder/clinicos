@@ -19,7 +19,9 @@ async function DashboardShell({ children }: { children: ReactNode }) {
 	const me = await getCurrentUser();
 	if (!me) redirect("/session-expired");
 
-	const user: ShellUser = { name: me.name, email: me.email, image: me.image, role: me.role };
+	// doctor-এর ছবি doctorProfile-এ; admin/patient-এর জন্য initials (SDLC: users.image ব্যবহার হয় না)
+	const image = me.doctorProfile?.photoUrl ?? me.image;
+	const user: ShellUser = { name: me.name, email: me.email, image, role: me.role };
 
 	return (
 		<div className="flex min-h-svh flex-1 bg-canvas print:bg-white">

@@ -5,6 +5,9 @@ const nextConfig: NextConfig = {
 	cacheComponents: true,
 	partialPrefetching: true,
 	// পুরনো "Today" page (/admin/front-desk) সরানো হয়েছে → bookmark থাকলে appointments-এ পাঠাই
+	experimental: {
+		serverActions: { bodySizeLimit: "3mb" },
+	},
 	async redirects() {
 		return [{ source: "/admin/front-desk", destination: "/admin/front-desk/appointments", permanent: false }];
 	},

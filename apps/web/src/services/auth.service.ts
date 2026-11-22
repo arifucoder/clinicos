@@ -56,6 +56,8 @@ export interface MeResult {
 	image: string | null;
 	role: UserRole;
 	needPasswordChange: boolean;
+	// শুধু DOCTOR-এর থাকে; বাকিদের null
+	doctorProfile: { id: string; photoUrl: string | null } | null;
 }
 
 // auth: true (default) → accessToken + sessionToken cookie api-তে যায়

@@ -92,3 +92,24 @@ export const doctorListQuerySchema = baseListQuerySchema.extend({
 	specialty: z.string().trim().max(100).optional().catch(undefined), // specialty-র slug
 });
 export type DoctorListQuery = z.output<typeof doctorListQuerySchema>;
+
+// ---------- নিজের profile (doctor) ----------
+// api-র updateMyProfileSchema: শুধু name, phone, bio। license/fee/specialty/room admin-এর কাজ।
+export const myProfileFormSchema = z.object({
+	name: nameSchema,
+	phone: phoneSchema,
+	bio: bioSchema,
+});
+export type MyProfileFormValues = z.input<typeof myProfileFormSchema>;
+
+// form সব সময় তিনটাই পাঠায় → "Nothing to update" লাগে না
+export const updateMyProfileSchema = z.object({
+	name: nameSchema,
+	phone: clearable(phoneSchema), // "" → null (মুছে ফেলো)
+	bio: clearable(bioSchema),
+});
+export type UpdateMyProfilePayload = z.output<typeof updateMyProfileSchema>;
+
+// api-র uploadPhoto.ts আর getValidatedPhoto.ts-এর সাথে মিল (এখানে শুধু UX, আসল যাচাই api-তে)
+export const PHOTO_MAX_BYTES = 2 * 1024 * 1024;
+export const PHOTO_TYPES: readonly string[] = ["image/jpeg", "image/png", "image/webp"];
