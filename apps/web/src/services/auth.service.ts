@@ -49,6 +49,20 @@ const forgetPassword = (payload: ForgetPasswordPayload) =>
 const resetPassword = (payload: ResetPasswordPayload) =>
 	httpClient.post<null>("/auth/reset-password", payload, { auth: false });
 
+export interface MeResult {
+	id: string;
+	name: string;
+	email: string;
+	image: string | null;
+	role: UserRole;
+	needPasswordChange: boolean;
+}
+
+// auth: true (default) → accessToken + sessionToken cookie api-তে যায়
+const getMe = () => httpClient.get<MeResult>("/auth/me");
+
+const logout = () => httpClient.post<null>("/auth/logout", null);
+
 export const AuthService = {
 	registerPatient,
 	verifyEmail,
@@ -56,4 +70,6 @@ export const AuthService = {
 	login,
 	forgetPassword,
 	resetPassword,
+	getMe,
+	logout,
 };
