@@ -26,7 +26,7 @@ export function DoctorPicker({ doctors, value }: DoctorPickerProps) {
 			items={doctors}
 			value={selected}
 			onValueChange={(doctor) => {
-				if (doctor) setParams({ doctorId: doctor.id });
+				if (doctor) setParams({ doctorId: doctor.id }, { resetPage: true });
 			}}
 			itemToStringLabel={(doctor) => doctor.name}
 			isItemEqualToValue={(item, current) => item.id === current.id}
