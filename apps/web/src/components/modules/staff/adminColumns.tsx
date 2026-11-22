@@ -1,25 +1,15 @@
 import { DataTableColumnHeader } from "@/components/shared/data-table/DataTableColumnHeader";
 import type { DataTableFeatures } from "@/components/shared/data-table/dataTableFeatures";
-import { StatusPill } from "@/components/shared/StatusPill";
 import { formatDate } from "@/lib/format";
 import type { StaffAdmin } from "@/types/admin.types";
 import type { ColumnDef } from "@tanstack/react-table";
-import { AdminRowActions, type AdminRowHandlers } from "./AdminRowActions";
+import { StaffRowActions, type StaffRowHandlers } from "./StaffRowActions";
+import { StaffStatus } from "./StaffStatus";
 
 // mobile-এ শুধু এই দুটো column; বাকি তথ্য "name" cell-এর ভেতরে md:hidden হয়ে দেখায়
 export const ADMIN_MOBILE_COLUMNS = ["name", "actions"] as const;
 
-function AdminStatus({ admin }: { admin: StaffAdmin }) {
-	return (
-		<div className="flex flex-wrap gap-1.5">
-			<StatusPill tone={admin.isActive ? "success" : "neutral"}>{admin.isActive ? "Active" : "Inactive"}</StatusPill>
-			{/* temporary password এখনো বদলায়নি = এখনো প্রথমবার login করেনি */}
-			{admin.needPasswordChange && <StatusPill tone="info">Invited</StatusPill>}
-		</div>
-	);
-}
-
-export const getAdminColumns = (handlers: AdminRowHandlers): ColumnDef<DataTableFeatures, StaffAdmin>[] => [
+export const getAdminColumns = (handlers: StaffRowHandlers<StaffAdmin>): ColumnDef<DataTableFeatures, StaffAdmin>[] => [
 	{
 		accessorKey: "name",
 		enableSorting: true,
@@ -29,7 +19,7 @@ export const getAdminColumns = (handlers: AdminRowHandlers): ColumnDef<DataTable
 				<p className="font-medium text-foreground">{row.original.name}</p>
 				<p className="truncate text-xs text-muted-foreground">{row.original.email}</p>
 				<div className="md:hidden">
-					<AdminStatus admin={row.original} />
+					<StaffStatus {...row.original} />
 				</div>
 			</div>
 		),
@@ -47,7 +37,7 @@ export const getAdminColumns = (handlers: AdminRowHandlers): ColumnDef<DataTable
 	{
 		accessorKey: "isActive",
 		header: "Status",
-		cell: ({ row }) => <AdminStatus admin={row.original} />,
+		cell: ({ row }) => <StaffStatus {...row.original} />,
 	},
 	{
 		accessorKey: "createdAt",
@@ -60,10 +50,20 @@ export const getAdminColumns = (handlers: AdminRowHandlers): ColumnDef<DataTable
 	{
 		id: "actions",
 		header: () => <span className="sr-only">Actions</span>,
-		cell: ({ row }) => (
-			<div className="flex justify-end">
-				<AdminRowActions admin={row.original} {...handlers} />
-			</div>
-		),
+		cell: ({ row }) => {
+			const admin = row.original;
+			return (
+				<div className="flex justify-end">
+					<StaffRowActions
+						label={admin.name}
+						isActive={admin.isActive}
+						busy={handlers.busyId === admin.id}
+						onEdit={() => handlers.onEdit(admin)}
+						onToggleActive={() => handlers.onToggleActive(admin)}
+						onDelete={() => handlers.onDelete(admin)}
+					/>
+				</div>
+			);
+		},
 	},
 ];

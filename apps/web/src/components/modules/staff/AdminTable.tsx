@@ -1,6 +1,6 @@
 "use client";
 
-import { toggleAdminStatusAction } from "@/actions/admin.action";
+import { deleteAdminAction, toggleAdminStatusAction } from "@/actions/admin.action";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { DataTable } from "@/components/shared/data-table/DataTable";
 import { DataTableSearch } from "@/components/shared/data-table/DataTableSearch";
@@ -11,7 +11,11 @@ import { type AdminListQuery, STAFF_PAGE_SIZES } from "@/zod/admin.validation";
 import { SearchX, UserCog } from "lucide-react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
+import { AdminFormDialog } from "./AdminFormDialog";
+import { DeleteStaffDialog } from "./DeleteStaffDialog";
+import { NewAdminButton } from "./NewAdminButton";
 import { ADMIN_MOBILE_COLUMNS, getAdminColumns } from "./adminColumns";
+import { STATUS_OPTIONS } from "./staffFilters";
 
 interface AdminTableProps {
 	data: StaffAdmin[];
@@ -19,17 +23,25 @@ interface AdminTableProps {
 	query: AdminListQuery;
 }
 
-const STATUS_OPTIONS = [
-	{ label: "Active", value: "true" },
-	{ label: "Inactive", value: "false" },
-];
-
 export function AdminTable({ data, meta, query }: AdminTableProps) {
+	// target আর open আলাদা: বন্ধ হওয়ার animation-এর সময় title হঠাৎ বদলে যায় না
+	const [editTarget, setEditTarget] = useState<StaffAdmin | null>(null);
+	const [editOpen, setEditOpen] = useState(false);
+	const [deleteTarget, setDeleteTarget] = useState<StaffAdmin | null>(null);
+	const [deleteOpen, setDeleteOpen] = useState(false);
 	const [busyId, setBusyId] = useState<string | null>(null);
 	const [, startToggle] = useTransition();
 
 	const columns = getAdminColumns({
 		busyId,
+		onEdit: (admin) => {
+			setEditTarget(admin);
+			setEditOpen(true);
+		},
+		onDelete: (admin) => {
+			setDeleteTarget(admin);
+			setDeleteOpen(true);
+		},
 		onToggleActive: (admin) => {
 			setBusyId(admin.id);
 			startToggle(async () => {
@@ -57,24 +69,36 @@ export function AdminTable({ data, meta, query }: AdminTableProps) {
 				icon={UserCog}
 				title="No admins yet"
 				description="Add an admin to share front-desk and manager work."
+				action={<NewAdminButton />}
 			/>
 		);
 
 	return (
-		<DataTable
-			columns={columns}
-			data={data}
-			meta={meta}
-			sort={{ sortBy: query.sortBy, sortOrder: query.sortOrder }}
-			pageSizes={STAFF_PAGE_SIZES}
-			mobileColumns={ADMIN_MOBILE_COLUMNS}
-			emptyState={emptyState}
-			toolbar={
-				<>
-					<DataTableSearch placeholder="Search name, email or phone" />
-					<FilterChip label="Status" paramKey="isActive" options={STATUS_OPTIONS} />
-				</>
-			}
-		/>
+		<>
+			<DataTable
+				columns={columns}
+				data={data}
+				meta={meta}
+				sort={{ sortBy: query.sortBy, sortOrder: query.sortOrder }}
+				pageSizes={STAFF_PAGE_SIZES}
+				mobileColumns={ADMIN_MOBILE_COLUMNS}
+				emptyState={emptyState}
+				toolbar={
+					<>
+						<DataTableSearch placeholder="Search name, email or phone" />
+						<FilterChip label="Status" paramKey="isActive" options={STATUS_OPTIONS} />
+					</>
+				}
+			/>
+
+			<AdminFormDialog open={editOpen} onOpenChange={setEditOpen} admin={editTarget} />
+			<DeleteStaffDialog
+				kind="admin"
+				target={deleteTarget}
+				open={deleteOpen}
+				onOpenChange={setDeleteOpen}
+				deleteAction={deleteAdminAction}
+			/>
+		</>
 	);
 }
