@@ -23,3 +23,6 @@ const moneyFormatter = new Intl.NumberFormat("en-US", { style: "currency", curre
 
 // api-র সব টাকা integer cents (SDLC: currency usd) → "$25.50"
 export const formatCents = (cents: number) => moneyFormatter.format(cents / 100);
+
+// 1 → "1 slot", 3 → "3 slots"
+export const pluralize = (count: number, word: string) => `${count} ${word}${count === 1 ? "" : "s"}`;
