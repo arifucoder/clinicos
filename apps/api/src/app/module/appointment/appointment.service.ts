@@ -698,6 +698,31 @@ const payMyAppointment = async (userId: string, id: string) => {
 	return { appointment: toAppointmentResponse(appointment), checkoutUrl };
 };
 
+const undoCheckIn = async (id: string) => {
+	const appointment = await findAppointmentOrThrow({ id });
+
+	if (appointment.status !== AppointmentStatus.CHECKED_IN) {
+		throw new AppError(
+			httpStatus.CONFLICT,
+			`Only a checked-in appointment can be undone (this one is ${appointment.status})`,
+		);
+	}
+	if (appointment.prescription) {
+		throw new AppError(httpStatus.CONFLICT, "The doctor has already started this consultation");
+	}
+
+	// শর্তসহ update: পড়া আর লেখার মাঝে doctor prescription save করে ফেললেও undo হবে না
+	const { count } = await prisma.appointment.updateMany({
+		where: { id, status: AppointmentStatus.CHECKED_IN, prescription: { is: null } },
+		data: { status: AppointmentStatus.CONFIRMED, checkedInAt: null, checkedInById: null },
+	});
+	if (count === 0) {
+		throw new AppError(httpStatus.CONFLICT, "This appointment was just changed — refresh and try again");
+	}
+
+	return toAppointmentResponse(await findAppointmentOrThrow({ id }));
+};
+
 export const AppointmentService = {
 	bookAppointment,
 	getAppointments,
@@ -713,4 +738,5 @@ export const AppointmentService = {
 	completeAppointment,
 	savePrescription,
 	markNoShow,
+	undoCheckIn,
 };

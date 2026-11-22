@@ -32,6 +32,7 @@ router.post(
 router.post("/:id/payment-link", checkAuth(...ADMINS), AppointmentController.sendPaymentLink);
 
 router.patch("/:id/check-in", checkAuth(...ADMINS), AppointmentController.checkInAppointment);
+router.patch("/:id/undo-check-in", checkAuth(...ADMINS), AppointmentController.undoCheckIn);
 router.patch("/:id/no-show", checkAuth(...ADMINS), AppointmentController.markNoShow);
 router.patch("/:id/complete", checkAuth(Role.DOCTOR), AppointmentController.completeAppointment);
 router.put(

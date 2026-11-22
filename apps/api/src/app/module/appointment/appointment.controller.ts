@@ -105,7 +105,12 @@ const payMyAppointment = catchAsync(async (req, res) => {
 
 	sendResponse(res, { statusCode: httpStatus.OK, message: "Checkout created", data: result });
 });
+const undoCheckIn = catchAsync(async (req, res) => {
+	const { id } = idParamSchema.parse(req.params);
+	const result = await AppointmentService.undoCheckIn(id);
 
+	sendResponse(res, { statusCode: httpStatus.OK, message: "Check-in undone", data: result });
+});
 export const AppointmentController = {
 	bookAppointment,
 	getAppointments,
@@ -121,4 +126,5 @@ export const AppointmentController = {
 	getMyAppointmentById,
 	cancelMyAppointment,
 	payMyAppointment,
+	undoCheckIn,
 };
