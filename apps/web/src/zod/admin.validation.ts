@@ -48,3 +48,6 @@ export const adminListQuerySchema = baseListQuerySchema.extend({
 	isActive: z.enum(["true", "false"]).optional().catch(undefined),
 });
 export type AdminListQuery = z.output<typeof adminListQuerySchema>;
+
+export const staffTabSchema = z.enum(["doctors", "admins"]).catch("doctors");
+export type StaffTab = z.output<typeof staffTabSchema>;
