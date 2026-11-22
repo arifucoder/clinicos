@@ -1,6 +1,6 @@
 "use client";
 
-import { checkInAppointmentAction } from "@/actions/appointment.action";
+import { checkInAppointmentAction, undoCheckInAction } from "@/actions/appointment.action";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { StatusPill } from "@/components/shared/StatusPill";
 import { Button } from "@/components/ui/button";
@@ -9,11 +9,12 @@ import { formatClinicTime } from "@/lib/clinicDate";
 import { formatCents } from "@/lib/format";
 import type { Appointment } from "@/types/appointment.types";
 import { cn } from "cn";
-import { Banknote, CalendarCheck, CalendarPlus, Loader2, SearchX, Stethoscope, UserCheck } from "lucide-react";
+import { Banknote, CalendarCheck, CalendarPlus, Loader2, SearchX, Stethoscope, Undo2, UserCheck } from "lucide-react";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { CollectFeeDialog } from "./CollectFeeDialog";
+import { UndoCheckInDialog } from "./UndoCheckInDialog";
 
 interface CheckInListProps {
 	appointments: Appointment[];
@@ -26,20 +27,34 @@ export function CheckInList({ appointments, searchTerm, hasFilters }: CheckInLis
 	const [busyId, setBusyId] = useState<string | null>(null);
 	const [feeTarget, setFeeTarget] = useState<Appointment | null>(null);
 	const [feeOpen, setFeeOpen] = useState(false);
-	const [, startCheckIn] = useTransition();
+	const [undoTarget, setUndoTarget] = useState<Appointment | null>(null);
+	const [undoOpen, setUndoOpen] = useState(false);
+	const [, startTransition] = useTransition();
+
+	// toast-এর "Undo": সাথে সাথে ভুল ধরলে confirm ছাড়াই ফেরত
+	const quickUndo = (appointment: Appointment) => {
+		setBusyId(appointment.id);
+		startTransition(async () => {
+			const result = await undoCheckInAction(appointment.id);
+			setBusyId(null);
+			if (result.success) toast.success(`Check-in undone for ${appointment.patient.fullName}`);
+			else toast.error(result.message);
+		});
+	};
 
 	const handleCheckIn = (appointment: Appointment) => {
 		setBusyId(appointment.id);
-		startCheckIn(async () => {
+		startTransition(async () => {
 			const result = await checkInAppointmentAction(appointment.id);
 			setBusyId(null);
 			if (!result.success) {
 				toast.error(result.message);
 				return;
 			}
-			// SDLC: "Checked in · Dr. X · 10:30"
+			// SDLC: "Checked in · Dr. X · 10:30" + ভুল click-এর জন্য Undo
 			toast.success(
 				`${appointment.patient.fullName} checked in · ${appointment.doctor.user.name} · ${formatClinicTime(appointment.startAt)}`,
+				{ action: { label: "Undo", onClick: () => quickUndo(appointment) }, duration: 8000 },
 			);
 		});
 	};
@@ -89,12 +104,17 @@ export function CheckInList({ appointments, searchTerm, hasFilters }: CheckInLis
 								setFeeTarget(appointment);
 								setFeeOpen(true);
 							}}
+							onUndo={() => {
+								setUndoTarget(appointment);
+								setUndoOpen(true);
+							}}
 						/>
 					</li>
 				))}
 			</ul>
 
 			<CollectFeeDialog appointment={feeTarget} open={feeOpen} onOpenChange={setFeeOpen} />
+			<UndoCheckInDialog appointment={undoTarget} open={undoOpen} onOpenChange={setUndoOpen} />
 		</>
 	);
 }
@@ -104,11 +124,14 @@ interface CheckInCardProps {
 	busy: boolean;
 	onCheckIn: () => void;
 	onCollectFee: () => void;
+	onUndo: () => void;
 }
 
-function CheckInCard({ appointment, busy, onCheckIn, onCollectFee }: CheckInCardProps) {
+function CheckInCard({ appointment, busy, onCheckIn, onCollectFee, onUndo }: CheckInCardProps) {
 	const { patient, doctor } = appointment;
 	const isCheckedIn = appointment.status === "CHECKED_IN";
+	// doctor prescription শুরু করলে undo চলবে না (api 409 দেয়; button-ও লুকাই)
+	const canUndo = isCheckedIn && appointment.prescription === null;
 	const paid = paidLabel(appointment);
 
 	return (
@@ -149,11 +172,27 @@ function CheckInCard({ appointment, busy, onCheckIn, onCollectFee }: CheckInCard
 				</div>
 			</div>
 
-			<div className="flex shrink-0 sm:justify-end">
+			<div className="flex shrink-0 items-center gap-2 sm:justify-end">
 				{isCheckedIn ? (
-					<StatusPill tone="info">
-						Checked in{appointment.checkedInAt && ` · ${formatClinicTime(appointment.checkedInAt)}`}
-					</StatusPill>
+					<>
+						<StatusPill tone="info">
+							Checked in{appointment.checkedInAt && ` · ${formatClinicTime(appointment.checkedInAt)}`}
+						</StatusPill>
+						{canUndo ? (
+							<Button
+								variant="ghost"
+								size="sm"
+								onClick={onUndo}
+								disabled={busy}
+								aria-label={`Undo check-in for ${patient.fullName}`}
+							>
+								{busy ? <Loader2 className="animate-spin" aria-hidden="true" /> : <Undo2 aria-hidden="true" />}
+								Undo
+							</Button>
+						) : (
+							<span className="text-xs text-muted-foreground">With doctor</span>
+						)}
+					</>
 				) : appointment.isPaid ? (
 					<Button
 						onClick={onCheckIn}
