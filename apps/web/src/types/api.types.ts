@@ -24,3 +24,17 @@ export interface ActionError {
 }
 
 export type ActionResult<TData = null> = { success: true; message: string; data: TData } | ActionError;
+
+export interface PaginationMeta {
+	page: number;
+	limit: number;
+	total: number;
+	totalPages: number;
+}
+
+export interface ApiResponse<TData> {
+	success: true;
+	message: string;
+	data: TData;
+	meta?: PaginationMeta;
+}
