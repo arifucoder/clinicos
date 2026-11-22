@@ -48,7 +48,8 @@ const savePrescription = (id: string, payload: PrescriptionPayload) =>
 
 // httpClient.patch-এ data required; api body পড়ে না
 const complete = (id: string) => httpClient.patch<Appointment>(`/appointments/${id}/complete`, {});
-
+// patient portal: patientId কখনো পাঠাই না, api session থেকে নেয় (IDOR-safe)
+const getMyAppointment = (id: string) => httpClient.get<Appointment>(`/patient/appointments/${id}`);
 export const AppointmentService = {
 	getAppointments,
 	getAppointment,
@@ -61,4 +62,5 @@ export const AppointmentService = {
 	sendPaymentLink,
 	savePrescription,
 	complete,
+	getMyAppointment,
 };

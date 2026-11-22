@@ -22,7 +22,7 @@ async function DashboardShell({ children }: { children: ReactNode }) {
 	const user: ShellUser = { name: me.name, email: me.email, image: me.image, role: me.role };
 
 	return (
-		<div className="flex min-h-svh flex-1 bg-canvas">
+		<div className="flex min-h-svh flex-1 bg-canvas print:bg-white">
 			<a
 				href="#main"
 				className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-card focus:px-3 focus:py-2"
@@ -34,7 +34,7 @@ async function DashboardShell({ children }: { children: ReactNode }) {
 
 			<div className="flex min-w-0 flex-1 flex-col">
 				<Topbar user={user} />
-				<main id="main" className="flex-1 px-4 py-5 md:px-8 md:pt-6 md:pb-8">
+				<main id="main" className="flex-1 px-4 py-5 md:px-8 md:pt-6 md:pb-8 print:p-0">
 					{children}
 				</main>
 			</div>

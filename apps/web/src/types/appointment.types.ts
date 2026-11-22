@@ -65,7 +65,13 @@ export interface Appointment {
 		bloodGroup: BloodGroup | null;
 		user: { email: string };
 	};
-	doctor: { id: string; roomNumber: string | null; user: { name: string } };
+	doctor: {
+		id: string;
+		roomNumber: string | null;
+		licenseNumber: string;
+		specialties: string[]; // api join table চ্যাপ্টা করে নাম পাঠায়
+		user: { name: string };
+	};
 	payments: AppointmentPayment[];
 	prescription: AppointmentPrescription | null;
 	isPaid: boolean; // api হিসাব করে পাঠায়: কোনো SUCCEEDED payment আছে কিনা

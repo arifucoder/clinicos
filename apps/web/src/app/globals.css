@@ -278,3 +278,21 @@
     @apply font-semibold;
   }
 }
+
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+
+  html,
+  body {
+    background: white;
+  }
+
+  /* allergy-র লাল, Rx-এর নীল যেন print-এ মুছে না যায় */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

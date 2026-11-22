@@ -67,7 +67,7 @@ async function ConsultationContent({ params }: ConsultationPageProps) {
 			<div className="space-y-2">
 				<Button variant="ghost" size="sm" render={<Link href="/doctor" />} nativeButton={false} className="-ml-2">
 					<ArrowLeft aria-hidden="true" />
-					Today's patients
+					Today&rsquo;s patients
 				</Button>
 				<PageHeader title={appointment.patient.fullName} />
 				<div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">

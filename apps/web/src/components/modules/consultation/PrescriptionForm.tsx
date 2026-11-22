@@ -10,7 +10,8 @@ import { EMPTY_ITEM, toPrescriptionFormValues } from "@/lib/prescriptionForm";
 import type { Appointment } from "@/types/appointment.types";
 import { type PrescriptionFormValues, prescriptionFormSchema } from "@/zod/prescription.validation";
 import { type AnyFieldApi, useForm } from "@tanstack/react-form";
-import { CheckCircle2, Loader2, Plus, Trash2 } from "lucide-react";
+import { CheckCircle2, Loader2, Plus, Printer, Trash2 } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ComponentProps, useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -184,7 +185,7 @@ export function PrescriptionForm({ appointment, today }: PrescriptionFormProps) 
 						<legend className={sectionTitle}>Medicines</legend>
 
 						{itemsField.state.value.length === 0 && (
-							<p className="text-sm text-muted-foreground">No medicines added. That's fine if only advice is needed.</p>
+							<p className="text-sm text-muted-foreground">No medicines added. That&rsquo;s fine if only advice is needed.</p>
 						)}
 
 						{itemsField.state.value.map((_, index) => (
@@ -329,6 +330,22 @@ export function PrescriptionForm({ appointment, today }: PrescriptionFormProps) 
 							<p className="text-xs text-muted-foreground sm:mr-auto" aria-live="polite">
 								{statusText}
 							</p>
+							{/* save হওয়া data-ই কাগজে যায় → unsaved থাকলে Print বন্ধ */}
+							{savedSnapshot !== null && !hasUnsaved ? (
+								<Button
+									variant="outline"
+									render={<Link href={`/doctor/appointments/${appointment.id}/print`} />}
+									nativeButton={false}
+								>
+									<Printer aria-hidden="true" />
+									Print
+								</Button>
+							) : (
+								<Button type="button" variant="outline" disabled>
+									<Printer aria-hidden="true" />
+									Print
+								</Button>
+							)}
 							<Button
 								type="submit"
 								variant={isCompleted ? "default" : "outline"}
