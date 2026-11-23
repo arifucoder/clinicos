@@ -326,7 +326,10 @@ const getPublicDoctors = async (rawQuery: unknown, query: TPublicDoctorQuery) =>
 	const now = new Date();
 	const slotWhere = bookableSlotWhere(now, query.date);
 
-	const baseWhere: Prisma.DoctorProfileWhereInput = query.date
+	// date দিলে সেই দিনে খালি slot লাগবেই; available=true দিলে পুরো window-এ অন্তত একটা।
+	// একই slotWhere → list-এর filter আর nextAvailableAt-এর হিসাব কখনো আলাদা হয় না
+	const needsOpenSlot = Boolean(query.date) || query.available === true;
+	const baseWhere: Prisma.DoctorProfileWhereInput = needsOpenSlot
 		? { ...publicDoctorWhere, slots: { some: slotWhere } }
 		: publicDoctorWhere;
 
