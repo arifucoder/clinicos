@@ -1,8 +1,12 @@
 import "server-only";
 
 import { httpClient } from "@/lib/axios/httpClient";
-import type { CreatePatientResult, PatientRecord, ResetPasswordResult } from "@/types/patient.types";
-import type { CreatePatientPayload, PatientListQuery } from "@/zod/patient.validation";
+import type { CreatePatientResult, MyPatientProfile, PatientRecord, ResetPasswordResult } from "@/types/patient.types";
+import type {
+	CreatePatientPayload,
+	PatientListQuery,
+	UpdateMyPatientProfilePayload,
+} from "@/zod/patient.validation";
 
 const getPatients = (query: PatientListQuery) =>
 	httpClient.get<PatientRecord[]>("/patient-records", {
@@ -21,4 +25,18 @@ const resetPassword = (id: string) => httpClient.post<ResetPasswordResult>(`/pat
 
 const getPatient = (id: string) => httpClient.get<PatientRecord>(`/patient-records/${id}`);
 
-export const PatientService = { getPatients, getPatient, createPatient, updateAccountStatus, resetPassword };
+// patient portal: id পাঠাই না, api session থেকে নিজের record বের করে (IDOR-safe)
+const getMyProfile = () => httpClient.get<MyPatientProfile>("/patient/me");
+
+const updateMyProfile = (payload: UpdateMyPatientProfilePayload) =>
+	httpClient.patch<MyPatientProfile>("/patient/me", payload);
+
+export const PatientService = {
+	getPatients,
+	getPatient,
+	createPatient,
+	updateAccountStatus,
+	resetPassword,
+	getMyProfile,
+	updateMyProfile,
+};

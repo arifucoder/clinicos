@@ -1,7 +1,7 @@
 import { clinicToday } from "@/lib/clinicDate";
 import type { BloodGroup, Gender } from "@/types/patient.types";
 import * as z from "zod";
-import { emailSchema, nameSchema, omitEmpty, phoneSchema } from "./common.validation";
+import { clearable, emailSchema, nameSchema, omitEmpty, phoneSchema } from "./common.validation";
 import { baseListQuerySchema, sortBySchema } from "./listQuery.validation";
 // satisfies: type-এ নতুন মান যোগ করে এখানে ভুলে গেলে compile error
 export const GENDERS = ["MALE", "FEMALE", "OTHER"] as const satisfies readonly Gender[];
@@ -81,3 +81,39 @@ export const patientListQuerySchema = baseListQuerySchema.extend({
 export type PatientListQuery = z.output<typeof patientListQuerySchema>;
 
 export const patientIdSchema = z.uuid("Invalid patient id");
+
+// ---------- Patient portal: My profile (/portal/profile) ----------
+// নাম, email, allergy রোগী বদলাতে পারে না (front desk করে) → এখানে নেই, api-ও নেয় না
+// phone, জন্মতারিখ, gender: booking-এর আগে লাগে, আর api-তে একবার দিলে মোছা যায় না → required
+const requiredGenderSchema = z
+	.enum(GENDERS)
+	.or(z.literal(""))
+	.refine((value) => value !== "", { error: "Select a gender" });
+
+// Form (browser): সব field string, খালি হলে ""
+export const myPatientProfileFormSchema = z.object({
+	phone: requiredPhoneSchema,
+	dateOfBirth: dateOfBirthSchema,
+	gender: requiredGenderSchema,
+	address: addressSchema,
+	bloodGroup: z.enum(BLOOD_GROUPS).or(z.literal("")),
+	emergencyContactName: optionalNameSchema,
+	emergencyContactPhone: phoneSchema,
+});
+export type MyPatientProfileFormValues = z.input<typeof myPatientProfileFormSchema>;
+
+// Action (server): api-র updateMyProfileSchema-র আকার। ঐচ্ছিক field "" → null (মুছে ফেলো)
+export const updateMyPatientProfileSchema = z.object({
+	phone: requiredPhoneSchema,
+	dateOfBirth: dateOfBirthSchema,
+	gender: z.enum(GENDERS, { error: "Select a gender" }),
+	address: clearable(addressSchema),
+	bloodGroup: z
+		.enum(BLOOD_GROUPS)
+		.or(z.literal(""))
+		.optional()
+		.transform((value) => (value === undefined ? undefined : value || null)),
+	emergencyContactName: clearable(optionalNameSchema),
+	emergencyContactPhone: clearable(phoneSchema),
+});
+export type UpdateMyPatientProfilePayload = z.output<typeof updateMyPatientProfileSchema>;

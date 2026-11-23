@@ -48,3 +48,21 @@ export interface ResetPasswordResult {
 	temporaryPassword: string;
 	emailSent: boolean;
 }
+
+// GET/PATCH /patient/me → api-র myProfileSelect + toMyProfile (patient.service.ts)
+export interface MyPatientProfile {
+	id: string;
+	fullName: string;
+	email: string;
+	phone: string | null;
+	dateOfBirth: string | null; // @db.Date → "1990-05-12T00:00:00.000Z"
+	gender: Gender | null;
+	address: string | null;
+	bloodGroup: BloodGroup | null;
+	allergies: string | null;
+	emergencyContactName: string | null;
+	emergencyContactPhone: string | null;
+	profileComplete: boolean; // phone + জন্মতারিখ + gender থাকলে true (booking-এর আগে লাগে)
+	createdAt: string;
+	updatedAt: string;
+}
