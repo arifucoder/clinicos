@@ -25,6 +25,16 @@ const getAllSpecialties = catchAsync(async (req, res) => {
 	});
 });
 
+const getPublicSpecialties = catchAsync(async (_req, res) => {
+	const result = await SpecialtyService.getPublicSpecialties();
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		message: "Specialties retrieved successfully",
+		data: result,
+	});
+});
+
 const getSpecialtyById = catchAsync(async (req, res) => {
 	const { id } = idParamSchema.parse(req.params);
 	const result = await SpecialtyService.getSpecialtyById(id);
@@ -61,6 +71,7 @@ const deleteSpecialty = catchAsync(async (req, res) => {
 export const SpecialtyController = {
 	createSpecialty,
 	getAllSpecialties,
+	getPublicSpecialties,
 	getSpecialtyById,
 	updateSpecialty,
 	deleteSpecialty,

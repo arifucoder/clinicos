@@ -24,3 +24,9 @@ router.patch(
 router.delete("/:id", checkAuth(...ADMINS), SpecialtyController.deleteSpecialty);
 
 export const SpecialtyRoutes = router;
+
+// login লাগে না; find-doctor page-এর filter
+const publicRouter = Router();
+publicRouter.get("/", SpecialtyController.getPublicSpecialties);
+
+export const PublicSpecialtyRoutes = publicRouter;

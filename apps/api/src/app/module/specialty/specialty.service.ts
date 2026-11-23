@@ -2,6 +2,7 @@ import { AppError } from "@/app/errorHelpers/AppError";
 import { prisma } from "@/app/lib/prisma";
 import { buildListQuery, buildMeta } from "@/app/shared/query/queryBuilder";
 import { slugify } from "@/app/shared/slugify";
+import type { Prisma } from "@/generated/prisma/client";
 import httpStatus from "http-status";
 import { specialtyListConfig } from "./specialty.constant";
 import type { TCreateSpecialtyPayload, TUpdateSpecialtyPayload } from "./specialty.interface";
@@ -24,6 +25,27 @@ const getAllSpecialties = async (rawQuery: unknown) => {
 	]);
 
 	return { meta: buildMeta(total, q.page, q.limit), data };
+};
+
+// doctor module-এর publicDoctorWhere-এর সাথে একই নিয়ম: মোছা বা বন্ধ doctor গোনা হয় না
+const activeDoctorLink = {
+	doctorProfile: { user: { isDeleted: false, isActive: true } },
+} satisfies Prisma.DoctorSpecialtyWhereInput;
+
+// public find-doctor filter: শুধু active specialty যেখানে অন্তত একজন active doctor আছে, সাথে কতজন
+const getPublicSpecialties = async () => {
+	const rows = await prisma.specialty.findMany({
+		where: { isActive: true, isDeleted: false, doctorSpecialties: { some: activeDoctorLink } },
+		orderBy: { name: "asc" },
+		select: {
+			name: true,
+			slug: true,
+			icon: true,
+			_count: { select: { doctorSpecialties: { where: activeDoctorLink } } },
+		},
+	});
+
+	return rows.map(({ _count, ...specialty }) => ({ ...specialty, doctorCount: _count.doctorSpecialties }));
 };
 
 const getSpecialtyById = async (id: string) => {
@@ -60,6 +82,7 @@ const deleteSpecialty = async (id: string) => {
 export const SpecialtyService = {
 	createSpecialty,
 	getAllSpecialties,
+	getPublicSpecialties,
 	getSpecialtyById,
 	updateSpecialty,
 	deleteSpecialty,

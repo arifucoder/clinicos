@@ -1,4 +1,4 @@
-import { SpecialtyRoutes } from "@/app/module/specialty/specialty.route";
+import { PublicSpecialtyRoutes, SpecialtyRoutes } from "@/app/module/specialty/specialty.route";
 import { Router } from "express";
 import { AdminRoutes } from "../module/admin/admin.route";
 import { AppointmentRoutes, PatientAppointmentRoutes } from "../module/appointment/appointment.route";
@@ -14,6 +14,7 @@ const router = Router();
 
 const moduleRoutes = [
 	{ path: "/public/doctors", route: PublicDoctorRoutes },
+	{ path: "/public/specialties", route: PublicSpecialtyRoutes },
 	{ path: "/auth", route: AuthRoutes },
 	{ path: "/specialties", route: SpecialtyRoutes },
 	{ path: "/users", route: UserRoutes },
