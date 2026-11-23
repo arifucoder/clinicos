@@ -2,6 +2,7 @@ import { DoctorProfileCard } from "@/components/modules/doctor/DoctorProfileCard
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CHANGE_PASSWORD_PATH } from "@/lib/authRedirect";
 import { DoctorService } from "@/services/doctor.service";
 import { Info, KeyRound } from "lucide-react";
 import type { Metadata } from "next";
@@ -16,7 +17,7 @@ export default function DoctorProfilePage() {
 			<PageHeader
 				title="Profile"
 				actions={
-					<Button variant="outline" render={<Link href="/change-password" />} nativeButton={false}>
+					<Button variant="outline" render={<Link href={CHANGE_PASSWORD_PATH} />} nativeButton={false}>
 						<KeyRound aria-hidden="true" />
 						Change password
 					</Button>

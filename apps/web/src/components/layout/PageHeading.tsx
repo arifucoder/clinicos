@@ -1,13 +1,21 @@
 "use client";
 
-import type { UserRole } from "@/lib/authRedirect";
+import { CHANGE_PASSWORD_PATH, type UserRole } from "@/lib/authRedirect";
 import { findActiveNavItem } from "@/lib/dashboardNavItems";
 import { usePathname } from "next/navigation";
+
+const SHARED_PAGE_TITLES: Record<string, string> = {
+	[CHANGE_PASSWORD_PATH]: "Change password",
+};
 
 export function PageHeading({ role }: { role: UserRole }) {
 	const pathname = usePathname();
 	const current = findActiveNavItem(pathname, role);
-	if (!current) return null;
+	if (!current) {
+		// menu-তে নেই কিন্তু সব role-এর page (user menu থেকে খোলে)
+		const title = SHARED_PAGE_TITLES[pathname];
+		return title ? <span className="truncate font-heading text-[17px] font-bold text-foreground">{title}</span> : null;
+	}
 
 	return (
 		<div className="flex min-w-0 flex-col leading-tight">

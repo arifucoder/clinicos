@@ -11,6 +11,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { CHANGE_PASSWORD_PATH } from "@/lib/authRedirect";
 import type { ShellUser } from "@/lib/userDisplay";
 import { ChevronDown, KeyRound, LogOut } from "lucide-react";
 import Link from "next/link";
@@ -45,7 +46,7 @@ export function UserMenu({ user }: { user: ShellUser }) {
 				</DropdownMenuGroup>
 
 				<DropdownMenuSeparator />
-				<DropdownMenuItem render={<Link href="/change-password" />}>
+				<DropdownMenuItem render={<Link href={CHANGE_PASSWORD_PATH} />}>
 					<KeyRound />
 					Change password
 				</DropdownMenuItem>
