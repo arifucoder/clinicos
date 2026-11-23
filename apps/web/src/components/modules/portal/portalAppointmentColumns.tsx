@@ -1,4 +1,5 @@
 import { StatusPill } from "@/components/shared/StatusPill";
+import { DataTableColumnHeader } from "@/components/shared/data-table/DataTableColumnHeader";
 import type { DataTableFeatures } from "@/components/shared/data-table/dataTableFeatures";
 import { Button } from "@/components/ui/button";
 import { APPOINTMENT_STATUS_META, paidLabel } from "@/lib/appointmentDisplay";
@@ -38,13 +39,14 @@ function StatusCell({ appointment }: { appointment: Appointment }) {
 	);
 }
 
-// sort নেই: ক্রম tab ঠিক করে (upcoming = কাছেরটা আগে, past = নতুনটা আগে)
+// শুধু তারিখে sort (column id = api-র sortBy "startAt"); default ক্রম tab ঠিক করে
 export const getPortalAppointmentColumns = (
 	handlers: PortalAppointmentHandlers,
 ): ColumnDef<DataTableFeatures, Appointment>[] => [
 	{
 		accessorKey: "startAt",
-		header: "Date & time",
+		enableSorting: true,
+		header: ({ column }) => <DataTableColumnHeader column={column} title="Date & time" />,
 		cell: ({ row }) => (
 			<div className="space-y-0.5 whitespace-nowrap">
 				<time dateTime={row.original.startAt} className="block font-medium text-foreground">

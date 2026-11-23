@@ -1,4 +1,4 @@
-import type { Appointment, AppointmentStatus } from "@/types/appointment.types";
+import type { Appointment, AppointmentPeriod, AppointmentStatus } from "@/types/appointment.types";
 import type { PortalAppointmentTab } from "@/zod/appointment.validation";
 
 interface PortalTabConfig {
@@ -51,4 +51,48 @@ export const getPortalAbilities = (appointment: Appointment, nowMs: number) => {
 		mustCallDesk: cancellableStatus && (paidAtDesk || startMs - nowMs < PATIENT_CANCEL_BEFORE_MINUTES * MINUTE_MS),
 		canViewPrescription: appointment.status === "COMPLETED" && appointment.prescription !== null,
 	};
+};
+
+// ---------- বছর/মাস filter ----------
+export const MONTH_LABELS = [
+	"January",
+	"February",
+	"March",
+	"April",
+	"May",
+	"June",
+	"July",
+	"August",
+	"September",
+	"October",
+	"November",
+	"December",
+] as const;
+
+const pad = (value: number) => String(value).padStart(2, "0");
+
+// year → পুরো বছর; year + month → সেই মাস। api-কে clinic-এর দিন পাঠাই ("YYYY-MM-DD")
+export const periodToRange = (year?: number, month?: number): { from?: string; to?: string } => {
+	if (!year) return {};
+	if (!month) return { from: `${year}-01-01`, to: `${year}-12-31` };
+	// Date.UTC(year, month, 0) = এই মাসের শেষ দিন (পরের মাসের "০" তারিখ)
+	const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+	return { from: `${year}-${pad(month)}-01`, to: `${year}-${pad(month)}-${pad(lastDay)}` };
+};
+
+// api যে বছর/মাস দেয় (যেখানে appointment আছে) + URL-এ বাছাই করা মান।
+// বাছাই করা মান তালিকায় না থাকলে chip খালি দেখাত, অথচ filter চালু থাকত → সেটাও যোগ করি
+const withSelected = (values: number[], selected?: number) =>
+	selected && !values.includes(selected) ? [...values, selected].sort((a, b) => b - a) : values;
+
+export const periodOptions = (periods: AppointmentPeriod[], year?: number, month?: number) => {
+	const years = withSelected(
+		periods.map((period) => period.year),
+		year,
+	);
+	// মাস শুধু বাছাই করা বছরের; ক্যালেন্ডারের ক্রমে (জানুয়ারি আগে)
+	const months = year
+		? withSelected(periods.find((period) => period.year === year)?.months ?? [], month).sort((a, b) => a - b)
+		: [];
+	return { years, months };
 };

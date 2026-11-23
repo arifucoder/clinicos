@@ -82,3 +82,9 @@ export interface BookAppointmentResult {
 	appointment: Appointment;
 	checkoutUrl: string | null; // ONLINE হলে Stripe link (api নিজেই রোগীকে email করে)
 }
+
+// GET /patient/appointments/periods → যে বছর/মাসে রোগীর appointment আছে (নতুনটা আগে)
+export interface AppointmentPeriod {
+	year: number;
+	months: number[]; // 1–12
+}

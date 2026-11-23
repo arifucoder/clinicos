@@ -2,9 +2,11 @@
 
 import { payMyAppointmentAction } from "@/actions/appointment.action";
 import { DataTable } from "@/components/shared/data-table/DataTable";
+import { DataTableSearch } from "@/components/shared/data-table/DataTableSearch";
+import { FilterChip } from "@/components/shared/data-table/FilterChip";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Button } from "@/components/ui/button";
-import { PORTAL_TAB_CONFIG } from "@/lib/portalAppointments";
+import { MONTH_LABELS, PORTAL_TAB_CONFIG } from "@/lib/portalAppointments";
 import type { PaginationMeta } from "@/types/api.types";
 import type { Appointment } from "@/types/appointment.types";
 import { PORTAL_APPOINTMENT_PAGE_SIZES, type PortalAppointmentsQuery } from "@/zod/appointment.validation";
@@ -19,10 +21,21 @@ interface PortalAppointmentTableProps {
 	data: Appointment[];
 	meta: PaginationMeta;
 	query: PortalAppointmentsQuery;
+	sortOrder: "asc" | "desc"; // URL-এর অথবা tab-এর default
 	nowMs: number;
+	years: number[]; // যে বছরগুলোতে appointment আছে
+	months: number[]; // বাছাই করা বছরের যে মাসগুলোতে appointment আছে (1–12)
 }
 
-export function PortalAppointmentTable({ data, meta, query, nowMs }: PortalAppointmentTableProps) {
+export function PortalAppointmentTable({
+	data,
+	meta,
+	query,
+	sortOrder,
+	nowMs,
+	years,
+	months,
+}: PortalAppointmentTableProps) {
 	const config = PORTAL_TAB_CONFIG[query.tab];
 	const [busyId, setBusyId] = useState<string | null>(null);
 	const [, startTransition] = useTransition();
@@ -56,6 +69,12 @@ export function PortalAppointmentTable({ data, meta, query, nowMs }: PortalAppoi
 	const emptyState =
 		meta.total > 0 ? (
 			<EmptyState icon={SearchX} title="Nothing on this page" description="Use the pagination below to go back." />
+		) : query.searchTerm || query.year ? (
+			<EmptyState
+				icon={SearchX}
+				title="No matching appointments"
+				description={`Nothing in "${config.label}" for these filters. Try another doctor's name, month or year.`}
+			/>
 		) : (
 			<EmptyState
 				icon={query.tab === "upcoming" ? CalendarDays : History}
@@ -78,10 +97,31 @@ export function PortalAppointmentTable({ data, meta, query, nowMs }: PortalAppoi
 				columns={columns}
 				data={data}
 				meta={meta}
-				sort={{ sortBy: "startAt", sortOrder: config.sortOrder }}
+				sort={{ sortBy: "startAt", sortOrder }}
 				pageSizes={PORTAL_APPOINTMENT_PAGE_SIZES}
 				mobileColumns={PORTAL_APPOINTMENT_MOBILE_COLUMNS}
 				emptyState={emptyState}
+				toolbar={
+					<>
+						<DataTableSearch placeholder="Search doctor or appointment no." />
+						{/* কোনো appointment-ই না থাকলে বাছার মতো বছর নেই */}
+						{years.length > 0 && (
+							<FilterChip
+								label="Year"
+								paramKey="year"
+								options={years.map((year) => ({ value: String(year), label: String(year) }))}
+							/>
+						)}
+						{/* মাস একা অর্থহীন ("কোন বছরের মার্চ?") → বছর বাছলে তবেই */}
+						{query.year && months.length > 0 && (
+							<FilterChip
+								label="Month"
+								paramKey="month"
+								options={months.map((month) => ({ value: String(month), label: MONTH_LABELS[month - 1] ?? "" }))}
+							/>
+						)}
+					</>
+				}
 			/>
 
 			<CancelMyAppointmentDialog appointment={cancelTarget} open={cancelOpen} onOpenChange={setCancelOpen} />

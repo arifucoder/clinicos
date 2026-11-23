@@ -1,28 +1,39 @@
 import { PORTAL_TAB_CONFIG } from "@/lib/portalAppointments";
-import { PORTAL_APPOINTMENT_TABS, type PortalAppointmentTab } from "@/zod/appointment.validation";
+import {
+	PORTAL_APPOINTMENT_TABS,
+	type PortalAppointmentTab,
+	type PortalAppointmentsQuery,
+} from "@/zod/appointment.validation";
 import { cn } from "cn";
 import Link from "next/link";
 
 interface PortalAppointmentTabsProps {
 	active: PortalAppointmentTab;
 	counts: Record<PortalAppointmentTab, number>;
+	query: Pick<PortalAppointmentsQuery, "searchTerm" | "year" | "month">;
 }
 
 // Link-ভিত্তিক tab (DoctorTodayTabs-এর মতো): URL-এ থাকে, back বাটনে ফেরা যায়
-export function PortalAppointmentTabs({ active, counts }: PortalAppointmentTabsProps) {
+export function PortalAppointmentTabs({ active, counts, query }: PortalAppointmentTabsProps) {
+	// search আর বছর/মাস tab বদলালেও থাকে; page, sort আর payment banner থাকে না
+	const keep = Object.fromEntries(
+		Object.entries({ searchTerm: query.searchTerm, year: query.year, month: query.month }).filter(
+			([, value]) => value !== undefined,
+		),
+	);
+
 	return (
-		<nav aria-label="Appointment list" className="flex gap-1 overflow-x-auto border-b border-border">
+		<nav aria-label="Appointment list" className="flex gap-1 overflow-x-auto overflow-y-hidden border-b border-border">
 			{PORTAL_APPOINTMENT_TABS.map((tab) => {
 				const isActive = tab === active;
 				return (
 					<Link
 						key={tab}
-						// শুধু tab: page আর payment banner নতুন tab-এ আসবে না
-						href={{ pathname: "/portal/appointments", query: { tab } }}
+						href={{ pathname: "/portal/appointments", query: { tab, ...keep } }}
 						scroll={false}
 						aria-current={isActive ? "page" : undefined}
 						className={cn(
-							"-mb-px flex shrink-0 items-center gap-2 border-b-2 px-3 py-2 text-sm font-medium transition-colors",
+							"-mb-px flex shrink-0 items-center gap-2 rounded-t-md border-b-2 px-3 py-2 text-sm font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-inset",
 							isActive
 								? "border-primary text-primary"
 								: "border-transparent text-muted-foreground hover:text-foreground",

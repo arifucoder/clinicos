@@ -58,3 +58,26 @@ export interface DoctorStats {
 	};
 	last7Days: { day: string; completed: number }[];
 }
+
+// api-র StatsService.getPatientStats-এর return (GET /patient/stats; রোগী session থেকে)
+export interface PatientStats {
+	nextAppointment: {
+		id: string;
+		appointmentNumber: string;
+		startAt: string;
+		status: AppointmentStatus; // PENDING_PAYMENT (hold চালু) | CONFIRMED | CHECKED_IN
+		holdExpiresAt: string | null;
+		doctor: { roomNumber: string | null; user: { name: string } };
+		isPaid: boolean;
+	} | null;
+	upcomingCount: number;
+	pendingPaymentCount: number;
+	completedCount: number;
+	lastVisit: {
+		id: string;
+		startAt: string;
+		doctor: { user: { name: string } };
+		prescription: { diagnosis: string | null; followUpDate: string | null } | null; // followUpDate: @db.Date
+	} | null;
+	totalPaidCents: number;
+}

@@ -129,7 +129,7 @@ export const doctorHistoryQuerySchema = baseListQuerySchema.extend({
 export type DoctorHistoryQuery = z.output<typeof doctorHistoryQuerySchema>;
 
 // ---------- Patient portal: My appointments ----------
-// URL: /portal/appointments?tab=past&page=2   (Stripe ফেরত: ?payment=success&appointment=<id>)
+// URL: /portal/appointments?tab=past&searchTerm=rahman&year=2026&month=11&sortOrder=asc&page=2   (Stripe ফেরত: ?payment=success&appointment=<id>)
 export const PORTAL_APPOINTMENT_TABS = ["upcoming", "past"] as const;
 export type PortalAppointmentTab = (typeof PORTAL_APPOINTMENT_TABS)[number];
 
@@ -138,6 +138,13 @@ export const PORTAL_APPOINTMENT_PAGE_SIZES = [10, 20, 50] as const;
 // sortBy/sortOrder URL থেকে নেওয়া হয় না: tab ঠিক করে (lib/portalAppointments.ts)
 export const portalAppointmentsQuerySchema = z.object({
 	tab: z.enum(PORTAL_APPOINTMENT_TABS).catch("upcoming"),
+	// api-র myAppointmentListConfig: doctor-এর নাম বা appointment no.
+	searchTerm: z.string().trim().max(100).optional().catch(undefined),
+	// বছর/মাস (clinic-এর calendar)। মাস শুধু বছরের সাথে মানে রাখে → page-এ বছর না থাকলে মাস বাদ
+	year: z.coerce.number().int().min(2000).max(2100).optional().catch(undefined),
+	month: z.coerce.number().int().min(1).max(12).optional().catch(undefined),
+	// না দিলে tab ঠিক করে (upcoming = asc, past = desc)
+	sortOrder: z.enum(["asc", "desc"]).optional().catch(undefined),
 	page: z.coerce.number().int().min(1).catch(1),
 	limit: z.coerce.number().int().min(1).max(50).catch(10),
 	// api-র payment.stripe.ts-এর success_url / cancel_url

@@ -2,7 +2,10 @@ import "server-only";
 
 import { httpClient } from "@/lib/axios/httpClient";
 import type { PrescriptionPayload } from "@/lib/prescriptionForm";
-import type { Appointment, AppointmentStatus, BookAppointmentResult, PaymentMethod } from "@/types/appointment.types";
+import type {
+	Appointment,
+	AppointmentPeriod,
+	AppointmentStatus, BookAppointmentResult, PaymentMethod } from "@/types/appointment.types";
 import type { DeskBookingPayload } from "@/zod/appointment.validation";
 // api-র appointmentListConfig-এর সাথে মিল
 export interface AppointmentListParams {
@@ -54,14 +57,23 @@ const getMyAppointment = (id: string) => httpClient.get<Appointment>(`/patient/a
 // api-র appointmentListConfig (patientId api নিজে বসায়)
 export interface MyAppointmentListParams {
 	status?: AppointmentStatus[];
+	searchTerm?: string; // doctor-এর নাম বা appointment no.
+	from?: string; // "YYYY-MM-DD" clinic-এর দিন, দুই প্রান্তই সহ
+	to?: string;
 	sortBy?: "startAt" | "createdAt";
 	sortOrder?: "asc" | "desc";
 	page?: number;
 	limit?: number;
 }
 
-const getMyAppointments = ({ status, ...rest }: MyAppointmentListParams) =>
-	httpClient.get<Appointment[]>("/patient/appointments", { params: { ...rest, status: status?.join(",") } });
+const getMyAppointments = ({ status, searchTerm, ...rest }: MyAppointmentListParams) =>
+	httpClient.get<Appointment[]>("/patient/appointments", {
+		params: { ...rest, status: status?.join(","), searchTerm: searchTerm || undefined },
+	});
+
+// রোগীর যে বছর/মাসে appointment আছে (নতুনটা আগে) → Year আর Month filter-এ শুধু এগুলো
+const getMyAppointmentPeriods = (status: AppointmentStatus[]) =>
+	httpClient.get<AppointmentPeriod[]>("/patient/appointments/periods", { params: { status: status.join(",") } });
 
 // reason না দিলে {} পাঠাই → api "Cancelled by patient" বসায়
 const cancelMyAppointment = (id: string, reason?: string) =>
@@ -83,6 +95,7 @@ export const AppointmentService = {
 	complete,
 	getMyAppointment,
 	getMyAppointments,
+	getMyAppointmentPeriods,
 	cancelMyAppointment,
 	payMyAppointment,
 };
