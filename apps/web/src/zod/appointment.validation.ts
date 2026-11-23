@@ -127,3 +127,32 @@ export const doctorHistoryQuerySchema = baseListQuerySchema.extend({
 	patientId: z.uuid().optional().catch(undefined),
 });
 export type DoctorHistoryQuery = z.output<typeof doctorHistoryQuerySchema>;
+
+// ---------- Patient portal: My appointments ----------
+// URL: /portal/appointments?tab=past&page=2   (Stripe ফেরত: ?payment=success&appointment=<id>)
+export const PORTAL_APPOINTMENT_TABS = ["upcoming", "past"] as const;
+export type PortalAppointmentTab = (typeof PORTAL_APPOINTMENT_TABS)[number];
+
+export const PORTAL_APPOINTMENT_PAGE_SIZES = [10, 20, 50] as const;
+
+// sortBy/sortOrder URL থেকে নেওয়া হয় না: tab ঠিক করে (lib/portalAppointments.ts)
+export const portalAppointmentsQuerySchema = z.object({
+	tab: z.enum(PORTAL_APPOINTMENT_TABS).catch("upcoming"),
+	page: z.coerce.number().int().min(1).catch(1),
+	limit: z.coerce.number().int().min(1).max(50).catch(10),
+	// api-র payment.stripe.ts-এর success_url / cancel_url
+	payment: z.enum(["success", "cancelled"]).optional().catch(undefined),
+	appointment: z.uuid().optional().catch(undefined),
+});
+export type PortalAppointmentsQuery = z.output<typeof portalAppointmentsQuerySchema>;
+
+// api-র cancelMyAppointmentSchema-র সাথে মিল: reason ঐচ্ছিক, দিলে 3–200
+export const cancelMyAppointmentSchema = z.object({
+	reason: z
+		.string()
+		.trim()
+		.max(200, "Keep the reason under 200 characters")
+		.transform((value) => value || undefined) // খালি → পাঠাই না (api "Cancelled by patient" বসায়)
+		.pipe(z.string().min(3, "Reason must be at least 3 characters").optional()),
+});
+export type CancelMyAppointmentPayload = z.output<typeof cancelMyAppointmentSchema>;

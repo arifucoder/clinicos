@@ -50,6 +50,25 @@ const savePrescription = (id: string, payload: PrescriptionPayload) =>
 const complete = (id: string) => httpClient.patch<Appointment>(`/appointments/${id}/complete`, {});
 // patient portal: patientId কখনো পাঠাই না, api session থেকে নেয় (IDOR-safe)
 const getMyAppointment = (id: string) => httpClient.get<Appointment>(`/patient/appointments/${id}`);
+
+// api-র appointmentListConfig (patientId api নিজে বসায়)
+export interface MyAppointmentListParams {
+	status?: AppointmentStatus[];
+	sortBy?: "startAt" | "createdAt";
+	sortOrder?: "asc" | "desc";
+	page?: number;
+	limit?: number;
+}
+
+const getMyAppointments = ({ status, ...rest }: MyAppointmentListParams) =>
+	httpClient.get<Appointment[]>("/patient/appointments", { params: { ...rest, status: status?.join(",") } });
+
+// reason না দিলে {} পাঠাই → api "Cancelled by patient" বসায়
+const cancelMyAppointment = (id: string, reason?: string) =>
+	httpClient.patch<Appointment>(`/patient/appointments/${id}/cancel`, reason ? { reason } : {});
+
+// Stripe Checkout session বানায় → checkoutUrl-এ browser পাঠাতে হয়
+const payMyAppointment = (id: string) => httpClient.post<BookAppointmentResult>(`/patient/appointments/${id}/pay`, {});
 export const AppointmentService = {
 	getAppointments,
 	getAppointment,
@@ -63,4 +82,7 @@ export const AppointmentService = {
 	savePrescription,
 	complete,
 	getMyAppointment,
+	getMyAppointments,
+	cancelMyAppointment,
+	payMyAppointment,
 };
