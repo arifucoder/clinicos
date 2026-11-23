@@ -2,16 +2,18 @@ import { formatClinicTime } from "@/lib/clinicDate";
 import { formatDate, pluralize } from "@/lib/format";
 import { BLOOD_GROUP_LABEL, GENDER_LABEL, ageFromDateOfBirth, formatDateOfBirth } from "@/lib/patientDisplay";
 import type { Appointment } from "@/types/appointment.types";
-import { TriangleAlert } from "lucide-react";
+import { ChevronRight, TriangleAlert } from "lucide-react";
+import Link from "next/link";
 
 interface PatientPanelProps {
 	appointment: Appointment;
-	history: Appointment[]; // এই রোগীর আগের COMPLETED appointment (নতুন আগে)
+	history: Appointment[]; // এই রোগীর আগের COMPLETED appointment (নতুন আগে), সর্বোচ্চ ৫টা
+	historyTotal: number; // মোট কতগুলো আগের visit (এই appointment বাদে) → বেশি হলে "View all"
 	today: string; // clinicToday() → বয়স হিসাব; server থেকে আসে, browser-এর ঘড়ি থেকে না
 }
 
 // server component: শুধু দেখায়, কোনো state নেই → "use client" লাগে না
-export function PatientPanel({ appointment, history, today }: PatientPanelProps) {
+export function PatientPanel({ appointment, history, historyTotal, today }: PatientPanelProps) {
 	const { patient } = appointment;
 
 	return (
@@ -75,24 +77,47 @@ export function PatientPanel({ appointment, history, today }: PatientPanelProps)
 				{history.length === 0 ? (
 					<p className="px-4 py-6 text-center text-sm text-muted-foreground">First visit with you.</p>
 				) : (
-					<ul className="divide-y divide-border">
-						{history.map((visit) => (
-							<li key={visit.id} className="space-y-1 px-4 py-3 text-sm">
-								<p className="text-xs text-muted-foreground">
-									{formatDate(visit.startAt)} · {visit.appointmentNumber}
-								</p>
-								<p className="font-medium text-foreground">
-									{visit.prescription?.diagnosis ?? "No diagnosis recorded"}
-								</p>
-								{visit.prescription && visit.prescription.items.length > 0 && (
-									<p className="text-xs text-muted-foreground">
-										{pluralize(visit.prescription.items.length, "medicine")}:{" "}
-										{visit.prescription.items.map((item) => item.medicineName).join(", ")}
-									</p>
-								)}
-							</li>
-						))}
-					</ul>
+					<>
+						<ul className="divide-y divide-border">
+							{history.map((visit) => (
+								<li key={visit.id}>
+									{/* পুরো row-ই link → সেই দিনের consultation/prescription খোলে */}
+									<Link
+										href={`/doctor/appointments/${visit.id}`}
+										className="group flex items-center gap-2 px-4 py-3 text-sm outline-none transition-colors hover:bg-muted/60 focus-visible:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-inset"
+									>
+										<div className="min-w-0 flex-1 space-y-1">
+											<p className="text-xs text-muted-foreground">
+												{formatDate(visit.startAt)} · {visit.appointmentNumber}
+											</p>
+											<p className="truncate font-medium text-foreground">
+												{visit.prescription?.diagnosis ?? "No diagnosis recorded"}
+											</p>
+											{visit.prescription && visit.prescription.items.length > 0 && (
+												<p className="truncate text-xs text-muted-foreground">
+													{pluralize(visit.prescription.items.length, "medicine")}:{" "}
+													{visit.prescription.items.map((item) => item.medicineName).join(", ")}
+												</p>
+											)}
+										</div>
+										<ChevronRight
+											className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5"
+											aria-hidden="true"
+										/>
+									</Link>
+								</li>
+							))}
+						</ul>
+						{/* ৫টার বেশি হলে list লম্বা করি না → History page-এ এই রোগীর সব visit */}
+						{historyTotal > history.length && (
+							<Link
+								href={`/doctor/appointments?patientId=${patient.id}`}
+								className="block border-t border-border px-4 py-3 text-center text-sm font-medium text-primary outline-none hover:bg-muted/60 focus-visible:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-inset"
+							>
+								View all {historyTotal} visits
+							</Link>
+						)}
+					</>
 				)}
 			</section>
 		</aside>

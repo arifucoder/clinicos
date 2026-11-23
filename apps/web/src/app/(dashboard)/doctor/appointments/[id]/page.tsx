@@ -56,6 +56,9 @@ async function ConsultationContent({ params }: ConsultationPageProps) {
 		limit: 6,
 	});
 	const history = historyResponse.data.filter((visit) => visit.id !== appointment.id).slice(0, 5);
+	// মোট থেকে এই appointment বাদ (নিজে COMPLETED হলে সেও গোনা হয়েছে)
+	const historyTotal =
+		(historyResponse.meta?.total ?? historyResponse.data.length) - (appointment.status === "COMPLETED" ? 1 : 0);
 
 	// httpClient আগেই connection() করেছে → এখানে new Date() নিরাপদ
 	const today = clinicToday(new Date());
@@ -79,7 +82,7 @@ async function ConsultationContent({ params }: ConsultationPageProps) {
 			</div>
 
 			<div className="grid gap-6 lg:grid-cols-[320px_1fr] lg:items-start">
-				<PatientPanel appointment={appointment} history={history} today={today} />
+				<PatientPanel appointment={appointment} history={history} historyTotal={historyTotal} today={today} />
 
 				{canWrite ? (
 					<PrescriptionForm appointment={appointment} today={today} />
