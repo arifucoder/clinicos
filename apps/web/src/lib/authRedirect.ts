@@ -11,8 +11,11 @@ const ROLE_HOME: Record<UserRole, string> = {
 // login করা থাকলে এগুলোতে ঢোকা যাবে না
 const AUTH_ONLY_ROUTES = ["/login", "/signup", "/verify-email", "/forgot-password", "/reset-password"];
 
-// যেকোনো role, শুধু login লাগবে
-const LOGGED_IN_ROUTES = ["/change-password", "/dashboard"];
+// সব role-এর একই page (dashboard shell-এর ভেতরে)
+export const CHANGE_PASSWORD_PATH = "/dashboard/change-password";
+
+// যেকোনো role, শুধু login লাগবে ("/dashboard/*" এর মধ্যেই change-password পড়ে)
+const LOGGED_IN_ROUTES = ["/dashboard"];
 
 // এলাকা অনুযায়ী কোন role ঢুকতে পারবে
 const ROLE_AREAS: { prefix: string; roles: readonly UserRole[] }[] = [

@@ -2,10 +2,11 @@
 
 import { toActionError, zodFieldErrors } from "@/lib/actionError";
 import { applyAuthCookies, clearAuthCookies } from "@/lib/authCookies";
-import { getPostLoginRedirect } from "@/lib/authRedirect";
+import { CHANGE_PASSWORD_PATH, getPostLoginRedirect } from "@/lib/authRedirect";
 import { AuthService } from "@/services/auth.service";
 import type { ActionError, ActionResult } from "@/types/api.types";
 import {
+	changePasswordSchema,
 	forgetPasswordSchema,
 	loginSchema,
 	registerSchema,
@@ -109,7 +110,7 @@ export async function loginAction(input: unknown, next?: unknown): Promise<Actio
 		}
 
 		const user = response.data;
-		const redirectTo = user.needPasswordChange ? "/change-password" : getPostLoginRedirect(user.role, next);
+		const redirectTo = user.needPasswordChange ? CHANGE_PASSWORD_PATH : getPostLoginRedirect(user.role, next);
 
 		return { success: true, message: response.message, data: { redirectTo } };
 	} catch (error) {
@@ -163,6 +164,36 @@ export async function resetPasswordAction(input: unknown): Promise<ActionResult>
 		return { success: true, message: response.message, data: null };
 	} catch (error) {
 		return toOtpActionError(error);
+	}
+}
+
+// api-র changePassword-এর message-এর সাথে হুবহু মিলতে হবে
+const WRONG_CURRENT_PASSWORD_MESSAGE = "Current password is incorrect";
+
+export async function changePasswordAction(input: unknown): Promise<ActionResult> {
+	const parsed = changePasswordSchema.safeParse(input);
+	if (!parsed.success) {
+		return {
+			success: false,
+			message: "Please fix the highlighted fields.",
+			fieldErrors: zodFieldErrors(parsed.error),
+		};
+	}
+
+	try {
+		const response = await AuthService.changePassword(parsed.data);
+		// cookie বদলায় না: api এই session রাখে, শুধু অন্য device-গুলো logout হয়
+		return { success: true, message: response.message, data: null };
+	} catch (error) {
+		// api ৪০০ দেয় field ছাড়া → ঠিক field-এর নিচে দেখাতে নিজে বসাই
+		if (isAxiosError(error) && error.response?.data?.message === WRONG_CURRENT_PASSWORD_MESSAGE) {
+			return {
+				success: false,
+				message: WRONG_CURRENT_PASSWORD_MESSAGE,
+				fieldErrors: { currentPassword: WRONG_CURRENT_PASSWORD_MESSAGE },
+			};
+		}
+		return toActionError(error);
 	}
 }
 
