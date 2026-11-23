@@ -53,7 +53,7 @@ function NavLinkList({
 							onClick={onNavigate}
 							aria-current={active ? "page" : undefined}
 							className={cn(
-								"rounded-md text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring",
+								"rounded-md text-sm font-medium whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring",
 								active ? "text-primary" : "text-body hover:text-foreground",
 								linkClassName,
 							)}

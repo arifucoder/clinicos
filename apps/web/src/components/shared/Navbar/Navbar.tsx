@@ -12,9 +12,10 @@ export function Navbar() {
 	return (
 		<header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur supports-backdrop-filter:bg-background/75">
 			<div className="mx-auto flex h-16 w-full max-w-7xl items-center gap-2 px-5 md:h-18 md:gap-10 md:px-8">
-				<Logo className="flex-1 md:flex-none" />
+				<Logo className="flex-1 lg:flex-none" />
 
-				<nav aria-label="Main" className="hidden flex-1 md:block">
+				{/* tablet (md)-এ চারটা link আর Book button একসাথে ধরে না → lg থেকে খোলা menu, তার নিচে hamburger */}
+				<nav aria-label="Main" className="hidden flex-1 lg:block">
 					<NavLinks items={publicNavItems} />
 				</nav>
 
