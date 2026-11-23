@@ -132,5 +132,7 @@ export const publicDoctorListQuerySchema = z.object({
 		.catch(undefined),
 	date: z.iso.date().optional().catch(undefined),
 	sort: z.enum(DOCTOR_SORT_KEYS).catch("name"),
+	// default: শুধু যাদের booking window-এ খালি slot আছে; "all" দিলে সবাই
+	show: z.enum(["open", "all"]).catch("open"),
 });
 export type PublicDoctorListQuery = z.output<typeof publicDoctorListQuerySchema>;

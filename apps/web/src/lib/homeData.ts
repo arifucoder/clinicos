@@ -20,13 +20,13 @@ export const getHomeSpecialties = cache(async () => {
 export const getDoctorsToday = cache(async () => {
 	await connection(); // "আজ" প্রতি request-এ নতুন (prerender না)
 	const { today } = getBookingWindow(new Date());
-	const response = await DoctorService.getPublicDoctors({ page: 1, sort: "name", date: today });
+	const response = await DoctorService.getPublicDoctors({ page: 1, sort: "name", date: today, show: "open" });
 	return { today, doctors: response.data, total: response.meta?.total ?? response.data.length };
 });
 
-// মোট active doctor (তারিখ ছাড়া)
+// মোট active doctor (তারিখ ছাড়া, slot থাকুক বা না থাকুক)
 export const getDoctorTotal = cache(async () => {
 	await connection();
-	const response = await DoctorService.getPublicDoctors({ page: 1, sort: "name" });
+	const response = await DoctorService.getPublicDoctors({ page: 1, sort: "name", show: "all" }, 1);
 	return response.meta?.total ?? response.data.length;
 });

@@ -31,6 +31,8 @@ export function NoDoctors({ query, bookingWindow, total }: NoDoctorsProps) {
 	}
 
 	const nextDay = query.date ? addDays(query.date, 1) : undefined;
+	// default ("open") filter-এর কারণে খালি → "সবাইকে দেখাও" সবচেয়ে কাজের পথ
+	const canShowAll = query.show === "open" && !query.date;
 	const canTryNextDay = nextDay !== undefined && nextDay <= bookingWindow.lastDate;
 
 	return (
@@ -38,15 +40,26 @@ export function NoDoctors({ query, bookingWindow, total }: NoDoctorsProps) {
 			<EmptyState
 				icon={query.date ? CalendarX : SearchX}
 				title={
-					query.date ? `No doctors free on ${formatDayLabel(query.date)}` : "No doctors match your search"
+					query.date
+						? `No doctors free on ${formatDayLabel(query.date)}`
+						: canShowAll
+							? "No open slots right now"
+							: "No doctors match your search"
 				}
 				description={
 					query.date
 						? "Every slot that day is taken or closed. Try the next day, or any day."
-						: "Try a different name or specialty, or clear the filters."
+						: canShowAll
+							? "Every matching doctor is fully booked for the next two weeks. You can still see their profiles."
+							: "Try a different name or specialty, or clear the filters."
 				}
 				action={
 					<div className="flex flex-wrap justify-center gap-2">
+						{canShowAll && (
+							<Button render={<Link href={buildDoctorsHref(query, { show: "all", page: 1 })} />} nativeButton={false}>
+								Show all doctors
+							</Button>
+						)}
 						{canTryNextDay && (
 							<Button render={<Link href={buildDoctorsHref(query, { date: nextDay, page: 1 })} />} nativeButton={false}>
 								Try {formatDayLabel(nextDay)}

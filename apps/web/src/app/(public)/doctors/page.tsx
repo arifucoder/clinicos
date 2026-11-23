@@ -4,12 +4,11 @@ import { DoctorFilters } from "@/components/modules/find-doctor/DoctorFilters";
 import { DoctorPagination } from "@/components/modules/find-doctor/DoctorPagination";
 import { DoctorSortSelect } from "@/components/modules/find-doctor/DoctorSortSelect";
 import { FindDoctorSkeleton } from "@/components/modules/find-doctor/FindDoctorSkeleton";
-import { MobileFilters } from "@/components/modules/find-doctor/MobileFilters";
 import { NoDoctors } from "@/components/modules/find-doctor/NoDoctors";
+import { SpecialtySelect } from "@/components/modules/find-doctor/SpecialtySelect";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDayLabel } from "@/lib/clinicDate";
-import { clampToWindow, DOCTOR_PAGE_SIZE, getBookingWindow } from "@/lib/findDoctor";
-import { pluralize } from "@/lib/format";
+import { clampToWindow, DOCTOR_GRID_PAGE_SIZE, getBookingWindow } from "@/lib/findDoctor";
 import { DoctorService } from "@/services/doctor.service";
 import { SpecialtyService } from "@/services/specialty.service";
 import { publicDoctorListQuerySchema } from "@/zod/doctor.validation";
@@ -28,13 +27,13 @@ type SearchParams = PageProps<"/doctors">["searchParams"];
 export default function FindDoctorPage({ searchParams }: PageProps<"/doctors">) {
 	return (
 		<>
-			{/* header static: build-এর সময়েই তৈরি (cacheComponents), শুধু নিচের অংশ request-এ stream হয় */}
+			{/* header static: build-এর সময়েই তৈরি (cacheComponents); toolbar আর list request-এ stream হয় */}
 			<section className="relative overflow-hidden border-b border-border bg-card">
 				<div
 					aria-hidden="true"
 					className="pointer-events-none absolute inset-0 hidden bg-[radial-gradient(#CBD5E1_1px,transparent_1.3px)] [background-size:22px_22px] [mask-image:linear-gradient(to_left,#000,transparent_60%)] md:block"
 				/>
-				<div className="relative mx-auto flex w-full max-w-7xl flex-col gap-5 px-5 py-6 md:flex-row md:items-end md:justify-between md:px-8 md:pt-8 md:pb-7">
+				<div className="relative mx-auto flex w-full max-w-7xl flex-col gap-5 px-5 py-6 md:px-8 md:pt-8 md:pb-7">
 					<div className="flex flex-col gap-2">
 						<nav aria-label="Breadcrumb" className="text-[13px] text-muted-foreground">
 							<Link href="/" className="rounded-sm hover:text-foreground">
@@ -52,12 +51,8 @@ export default function FindDoctorPage({ searchParams }: PageProps<"/doctors">) 
 					</div>
 
 					{/* useSearchParams() → Suspense লাগে */}
-					<Suspense fallback={<Skeleton className="h-12 w-full md:w-105" />}>
-						<DataTableSearch
-							placeholder="Doctor name or specialty"
-							className="sm:w-full md:w-105"
-							inputClassName="h-12 rounded-[10px] text-[15px] shadow-card"
-						/>
+					<Suspense fallback={<Skeleton className="h-12 w-full max-w-4xl" />}>
+						<Toolbar searchParams={searchParams} />
 					</Suspense>
 				</div>
 			</section>
@@ -71,83 +66,88 @@ export default function FindDoctorPage({ searchParams }: PageProps<"/doctors">) 
 	);
 }
 
+// search | Filter | Specialty — এক সারিতে (mobile-এ search উপরে, বাকি দুটো নিচে পাশাপাশি)
+async function Toolbar({ searchParams }: { searchParams: SearchParams }) {
+	const parsed = publicDoctorListQuerySchema.parse(await searchParams);
+	await connection(); // নিচের new Date() request-time-এ
+	const bookingWindow = getBookingWindow(new Date());
+	const date = clampToWindow(parsed.date, bookingWindow);
+	const specialties = await SpecialtyService.getPublicSpecialties()
+		.then((response) => response.data.map(({ name, slug, doctorCount }) => ({ name, slug, doctorCount })))
+		.catch(() => []);
+
+	return (
+		<div className="grid w-full max-w-4xl grid-cols-2 gap-3 sm:flex sm:items-center">
+			<DataTableSearch
+				placeholder="Search doctor name or specialty"
+				className="col-span-2 sm:w-full sm:flex-1"
+				inputClassName="h-12 rounded-[10px] text-[15px] shadow-card"
+			/>
+			<DoctorFilters date={date} show={parsed.show} bookingWindow={bookingWindow} />
+			<SpecialtySelect specialties={specialties} specialty={parsed.specialty} />
+		</div>
+	);
+}
+
 async function FindDoctorContent({ searchParams }: { searchParams: SearchParams }) {
 	const parsed = publicDoctorListQuerySchema.parse(await searchParams);
-	// "আজ" প্রতিটা request-এ নতুন করে হিসাব হতে হবে। connection() Next-কে বলে এটা request-time-এ চালাতে,
-	// prerender করে পুরনো তারিখ জমিয়ে না রাখতে (searchParams await করাই যথেষ্ট না)
+	// "আজ" প্রতিটা request-এ নতুন করে হিসাব হতে হবে (prerender করে পুরনো তারিখ জমিয়ে রাখা চলবে না)
 	await connection();
 	const bookingWindow = getBookingWindow(new Date());
 	const query = { ...parsed, date: clampToWindow(parsed.date, bookingWindow) };
 
-	// দুটো আলাদা request, একসাথে পাঠাই (waterfall না)
+	// দুটো আলাদা request, একসাথে (waterfall না)। specialty-র নামটা শুধু header-এর জন্য
 	const [doctorsResponse, specialtiesResponse] = await Promise.all([
-		DoctorService.getPublicDoctors(query),
-		SpecialtyService.getPublicSpecialties(),
+		DoctorService.getPublicDoctors(query, DOCTOR_GRID_PAGE_SIZE),
+		SpecialtyService.getPublicSpecialties().catch(() => null),
 	]);
 
 	const doctors = doctorsResponse.data;
 	const meta = doctorsResponse.meta ?? {
 		page: query.page,
-		limit: DOCTOR_PAGE_SIZE,
+		limit: DOCTOR_GRID_PAGE_SIZE,
 		total: doctors.length,
 		totalPages: 1,
 	};
-	// client component-এ শুধু যেটুকু লাগে
-	const specialties = specialtiesResponse.data.map(({ name, slug, doctorCount }) => ({ name, slug, doctorCount }));
-	const specialtyName = specialties.find((option) => option.slug === query.specialty)?.name;
+	const specialtyName = specialtiesResponse?.data.find((option) => option.slug === query.specialty)?.name;
 
-	const heading = query.date
-		? `${pluralize(meta.total, "doctor")} available ${query.date === bookingWindow.today ? "today" : `on ${formatDayLabel(query.date)}`}`
-		: pluralize(meta.total, "doctor");
-	const summary = [
-		specialtyName ?? "All specialties",
-		query.date ? formatDayLabel(query.date) : "Next 14 days",
-		query.searchTerm && `“${query.searchTerm}”`,
+	const pillLabel = specialtyName ? `${specialtyName} specialists` : "Doctors";
+	const scope = [
+		query.date ? `free on ${formatDayLabel(query.date)}` : query.show === "open" ? "with open slots" : "all doctors",
+		query.searchTerm && `matching “${query.searchTerm}”`,
 	]
 		.filter(Boolean)
 		.join(" · ");
 
-	const filterProps = { specialties, specialty: query.specialty, date: query.date, bookingWindow };
-
 	return (
-		<div className="grid items-start gap-6 lg:grid-cols-[300px_minmax(0,1fr)] lg:gap-8">
-			<aside
-				aria-label="Filters"
-				className="hidden rounded-xl border border-border bg-card shadow-card lg:sticky lg:top-24 lg:block"
-			>
-				<DoctorFilters {...filterProps} />
-			</aside>
+		<div className="flex flex-col gap-5">
+			<div className="flex flex-col gap-3 border-b border-border pb-4 sm:flex-row sm:items-center sm:justify-between">
+				<h2
+					id="results-heading"
+					className="flex w-fit items-center gap-2 rounded-lg border border-primary-soft bg-primary-soft/60 px-3.5 py-2 font-heading text-base font-bold text-foreground"
+				>
+					<span className="text-primary tabular-nums">{meta.total}</span>
+					{pillLabel}
+				</h2>
+				<p aria-live="polite" className="text-sm font-medium text-body">
+					{scope.charAt(0).toUpperCase() + scope.slice(1)}
+				</p>
+				<DoctorSortSelect sort={query.sort} />
+			</div>
 
-			<section aria-labelledby="results-heading" className="flex min-w-0 flex-col gap-4">
-				<div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-					<div className="flex flex-col gap-1">
-						<h2 id="results-heading" aria-live="polite" className="font-heading text-xl font-bold text-foreground">
-							{heading}
-						</h2>
-						<p className="text-sm text-body">{summary}</p>
-					</div>
-					<div className="grid grid-cols-2 gap-2 sm:flex lg:block">
-						<div className="lg:hidden">
-							<MobileFilters {...filterProps} resultCount={meta.total} />
-						</div>
-						<DoctorSortSelect sort={query.sort} />
-					</div>
-				</div>
+			{doctors.length > 0 ? (
+				<ul aria-labelledby="results-heading" className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+					{doctors.map((doctor) => (
+						<li key={doctor.id}>
+							<DoctorCard doctor={doctor} today={bookingWindow.today} />
+						</li>
+					))}
+				</ul>
+			) : (
+				<NoDoctors query={query} bookingWindow={bookingWindow} total={meta.total} />
+			)}
 
-				{doctors.length > 0 ? (
-					<ul className="flex flex-col gap-4">
-						{doctors.map((doctor) => (
-							<li key={doctor.id}>
-								<DoctorCard doctor={doctor} today={bookingWindow.today} />
-							</li>
-						))}
-					</ul>
-				) : (
-					<NoDoctors query={query} bookingWindow={bookingWindow} total={meta.total} />
-				)}
-
-				<DoctorPagination meta={meta} query={query} />
-			</section>
+			<DoctorPagination meta={meta} query={query} />
 		</div>
 	);
 }

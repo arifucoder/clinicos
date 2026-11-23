@@ -5,7 +5,9 @@ export const FIND_DOCTOR_PATH = "/doctors";
 
 // api-র SLOT_CONFIG.bookingWindowDays-এর সাথে মিল রাখো (আজ + ১৩ দিন)
 export const BOOKING_WINDOW_DAYS = 14;
-export const DOCTOR_PAGE_SIZE = 10;
+export const DOCTOR_PAGE_SIZE = 10; // home page-এর api call
+// find-doctor grid: ৩টা করে সারি → ১২ = ৪ সারি
+export const DOCTOR_GRID_PAGE_SIZE = 12;
 
 // URL-এ ছোট নাম (sort=fee-asc), api-তে যায় আসল field
 export const DOCTOR_SORTS: Record<DoctorSortKey, { label: string; sortBy: string; sortOrder: "asc" | "desc" }> = {
@@ -38,6 +40,7 @@ export const buildDoctorsHref = (query: PublicDoctorListQuery, patch: Partial<Pu
 	if (next.specialty) params.set("specialty", next.specialty);
 	if (next.date) params.set("date", next.date);
 	if (next.sort !== "name") params.set("sort", next.sort);
+	if (next.show === "all") params.set("show", "all");
 	if (next.page > 1) params.set("page", String(next.page));
 
 	const search = params.toString();

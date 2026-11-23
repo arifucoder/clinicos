@@ -38,13 +38,15 @@ const uploadMyPhoto = (body: FormData) =>
 const removeMyPhoto = () => httpClient.delete<unknown>("/doctors/me/photo");
 
 // public find-doctor page: login লাগে না, তাই cookie পাঠাই না (auth: false)
-const getPublicDoctors = (query: PublicDoctorListQuery) => {
+// show "open" → api-র ?available=true: শুধু যাদের খালি slot আছে (pagination api-ই করে)
+const getPublicDoctors = (query: PublicDoctorListQuery, limit = DOCTOR_PAGE_SIZE) => {
 	const { sortBy, sortOrder } = DOCTOR_SORTS[query.sort];
 	return httpClient.get<PublicDoctor[]>("/public/doctors", {
 		auth: false,
 		params: {
 			page: query.page,
-			limit: DOCTOR_PAGE_SIZE,
+			limit,
+			available: query.show === "open" ? true : undefined,
 			searchTerm: query.searchTerm || undefined,
 			specialty: query.specialty,
 			date: query.date,

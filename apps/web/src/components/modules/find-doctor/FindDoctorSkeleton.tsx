@@ -2,26 +2,25 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function FindDoctorSkeleton() {
 	return (
-		<div className="grid items-start gap-6 lg:grid-cols-[300px_minmax(0,1fr)] lg:gap-8" aria-busy="true">
-			<Skeleton className="hidden h-120 rounded-xl lg:block" />
-			<div className="flex flex-col gap-4">
-				<div className="flex items-end justify-between gap-3">
-					<div className="space-y-2">
-						<Skeleton className="h-6 w-56" />
-						<Skeleton className="h-4 w-40" />
-					</div>
-					<Skeleton className="hidden h-10 w-48 sm:block" />
-				</div>
-				<Skeleton className="h-10 w-full lg:hidden" />
-				{Array.from({ length: 4 }, (_, index) => (
-					<div key={index} className="flex gap-4 rounded-xl border border-border bg-card p-4 sm:gap-5 sm:px-6 sm:py-5">
-						<Skeleton className="size-14 shrink-0 rounded-full sm:size-18" />
-						<div className="flex-1 space-y-2">
-							<Skeleton className="h-5 w-48" />
-							<Skeleton className="h-4 w-32" />
-							<Skeleton className="h-4 w-full max-w-md" />
+		<div className="flex flex-col gap-5" aria-busy="true">
+			<div className="flex items-center justify-between gap-3 border-b border-border pb-4">
+				<Skeleton className="h-10 w-56 rounded-lg" />
+				<Skeleton className="hidden h-5 w-32 md:block" />
+				<Skeleton className="h-10 w-48" />
+			</div>
+			<div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+				{Array.from({ length: 6 }, (_, index) => (
+					<div key={index} className="overflow-hidden rounded-xl border border-border bg-card">
+						<div className="flex gap-4 p-5">
+							<Skeleton className="h-36 w-27 shrink-0 rounded-lg" />
+							<div className="flex-1 space-y-2.5">
+								<Skeleton className="h-5 w-40" />
+								<Skeleton className="h-5 w-24" />
+								<Skeleton className="h-4 w-full" />
+								<Skeleton className="h-4 w-32" />
+							</div>
 						</div>
-						<Skeleton className="hidden h-24 w-50 sm:block" />
+						<Skeleton className="h-17 rounded-none" />
 					</div>
 				))}
 			</div>
