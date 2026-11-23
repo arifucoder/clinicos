@@ -3,6 +3,7 @@ import {
 	CalendarDays,
 	CalendarPlus,
 	ClipboardList,
+	History,
 	House,
 	LayoutDashboard,
 	type LucideIcon,
@@ -65,8 +66,9 @@ const doctorNav: DashboardNavSection[] = [
 				href: "/doctor",
 				icon: ClipboardList,
 				exact: true,
-				alsoActiveOn: ["/doctor/appointments"],
 			},
+			// consultation page (/doctor/appointments/[id]) prefix মিলে এখানেই active দেখায়
+			{ title: "History", href: "/doctor/appointments", icon: History },
 			{ title: "My slots", href: "/doctor/slots", icon: CalendarDays },
 			{ title: "Profile", href: "/doctor/profile", icon: UserRound },
 		],
