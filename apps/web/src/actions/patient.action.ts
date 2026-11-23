@@ -4,7 +4,7 @@ import { toActionError, zodFieldErrors } from "@/lib/actionError";
 import { PatientService } from "@/services/patient.service";
 import type { ActionError, ActionResult, ApiErrorResponse } from "@/types/api.types";
 import type { RegisteredPatient, ResetPasswordResult } from "@/types/patient.types";
-import { createPatientSchema, patientIdSchema } from "@/zod/patient.validation";
+import { createPatientSchema, patientIdSchema, updateMyPatientProfileSchema } from "@/zod/patient.validation";
 import { isAxiosError } from "axios";
 import { revalidatePath } from "next/cache";
 import * as z from "zod";
@@ -81,5 +81,21 @@ export async function resetPatientPasswordAction(id: unknown): Promise<ActionRes
 		return { success: true, message: response.message, data: response.data };
 	} catch (error) {
 		return toPatientError(error);
+	}
+}
+
+// ---------- Patient portal ----------
+export async function updateMyPatientProfileAction(input: unknown): Promise<ActionResult> {
+	// action public POST endpoint → client-এর data আবার যাচাই
+	const parsed = updateMyPatientProfileSchema.safeParse(input);
+	if (!parsed.success) return fixFields(parsed.error);
+
+	try {
+		const response = await PatientService.updateMyProfile(parsed.data);
+		// "layout": profile, home-এর "Complete your profile" card, booking — সব নতুন হয়
+		revalidatePath("/portal", "layout");
+		return { success: true, message: response.message, data: null };
+	} catch (error) {
+		return toActionError(error);
 	}
 }
