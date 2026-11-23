@@ -60,3 +60,34 @@ export const resetPasswordFormSchema = z
 export type ForgetPasswordPayload = z.infer<typeof forgetPasswordSchema>;
 export type ResetPasswordPayload = z.infer<typeof resetPasswordSchema>;
 export type ResetPasswordFormValues = z.infer<typeof resetPasswordFormSchema>;
+
+// ---------- Change password (login করা অবস্থায়, সব role) ----------
+// action-এ যায় — api-র changePasswordSchema-র সাথে হুবহু মিল (একই refine)
+export const changePasswordSchema = z
+	.object({
+		currentPassword: z.string().min(1, "Current password is required").max(128, "Password is too long"),
+		newPassword: passwordSchema,
+	})
+	.refine((data) => data.currentPassword !== data.newPassword, {
+		path: ["newPassword"],
+		message: "New password must be different from the current password",
+	});
+
+// শুধু form-এর জন্য: confirmPassword কখনো server-এ যায় না
+export const changePasswordFormSchema = z
+	.object({
+		currentPassword: z.string().min(1, "Current password is required").max(128, "Password is too long"),
+		newPassword: passwordSchema,
+		confirmPassword: z.string().min(1, "Confirm your new password"),
+	})
+	.refine((data) => data.currentPassword !== data.newPassword, {
+		path: ["newPassword"],
+		message: "New password must be different from the current password",
+	})
+	.refine((data) => data.newPassword === data.confirmPassword, {
+		path: ["confirmPassword"],
+		message: "Passwords don't match",
+	});
+
+export type ChangePasswordPayload = z.infer<typeof changePasswordSchema>;
+export type ChangePasswordFormValues = z.infer<typeof changePasswordFormSchema>;

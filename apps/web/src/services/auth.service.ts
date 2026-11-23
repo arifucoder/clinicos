@@ -3,6 +3,7 @@ import "server-only";
 import type { UserRole } from "@/lib/authRedirect";
 import { httpClient } from "@/lib/axios/httpClient";
 import type {
+	ChangePasswordPayload,
 	ForgetPasswordPayload,
 	LoginPayload,
 	RegisterPayload,
@@ -65,6 +66,9 @@ const getMe = () => httpClient.get<MeResult>("/auth/me");
 
 const logout = () => httpClient.post<null>("/auth/logout", null);
 
+// login লাগে (auth: true)। api এই session রাখে, বাকি সব device-এর session মুছে দেয়
+const changePassword = (payload: ChangePasswordPayload) => httpClient.post<null>("/auth/change-password", payload);
+
 export const AuthService = {
 	registerPatient,
 	verifyEmail,
@@ -74,4 +78,5 @@ export const AuthService = {
 	resetPassword,
 	getMe,
 	logout,
+	changePassword,
 };
