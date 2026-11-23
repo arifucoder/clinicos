@@ -3,4 +3,5 @@ export const CLINIC_INFO = {
 	name: "ClinicOS General Hospital",
 	addressLine: "120 Riverside Avenue, Springfield, ST 00000",
 	phone: "(555) 010-0199",
+	tel: "+15550100199", // <a href="tel:…">-এর জন্য (দেশের code সহ)
 } as const;
