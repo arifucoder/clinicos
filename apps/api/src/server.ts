@@ -3,6 +3,7 @@ import type { Server } from "node:http";
 import app from "./app";
 import { envVars } from "./app/config/env";
 import { startPaymentJobs } from "./app/module/payment/payment.job";
+import { startSlotJobs } from "./app/module/slot/slot.job";
 
 const PORT = envVars.PORT;
 const SHUTDOWN_TIMEOUT_MS = 10_000;
@@ -15,7 +16,7 @@ const startServer = () => {
 			console.error("Failed to start server:", error);
 			process.exit(1);
 		}
-		cronTasks = startPaymentJobs();
+		cronTasks = [...startPaymentJobs(), ...startSlotJobs()];
 		console.info(`ClinicOS API running on http://localhost:${PORT}`);
 	});
 };
