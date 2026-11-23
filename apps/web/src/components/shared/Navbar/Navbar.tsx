@@ -5,7 +5,7 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import { MobileNav } from "./MobileNav";
-import { NavbarAuth, NavbarAuthSkeleton } from "./NavbarAuth";
+import { MobileNavAuth, NavbarAuth, NavbarAuthSkeleton } from "./NavbarAuth";
 import { NavLinks } from "./NavLinks";
 
 export function Navbar() {
@@ -34,7 +34,10 @@ export function Navbar() {
 						<ArrowRight className="hidden md:block" />
 					</Button>
 
-					<MobileNav />
+					{/* fallback: user আসার আগেই menu button কাজ করে (logged-out version) */}
+					<Suspense fallback={<MobileNav />}>
+						<MobileNavAuth />
+					</Suspense>
 				</div>
 			</div>
 		</header>

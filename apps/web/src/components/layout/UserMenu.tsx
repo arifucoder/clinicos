@@ -11,14 +11,20 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { CHANGE_PASSWORD_PATH } from "@/lib/authRedirect";
+import { CHANGE_PASSWORD_PATH, getHomeForRole } from "@/lib/authRedirect";
 import type { ShellUser } from "@/lib/userDisplay";
-import { ChevronDown, KeyRound, LogOut } from "lucide-react";
+import { ChevronDown, KeyRound, LayoutDashboard, LogOut } from "lucide-react";
 import Link from "next/link";
 import { useTransition } from "react";
 import { UserAvatar } from "./UserAvatar";
 
-export function UserMenu({ user }: { user: ShellUser }) {
+interface UserMenuProps {
+	user: ShellUser;
+	// public navbar-এ true; dashboard-এর ভেতরে sidebar থাকায় দরকার নেই
+	showDashboardLink?: boolean;
+}
+
+export function UserMenu({ user, showDashboardLink = false }: UserMenuProps) {
 	const [isPending, startTransition] = useTransition();
 
 	return (
@@ -46,6 +52,12 @@ export function UserMenu({ user }: { user: ShellUser }) {
 				</DropdownMenuGroup>
 
 				<DropdownMenuSeparator />
+				{showDashboardLink && (
+					<DropdownMenuItem render={<Link href={getHomeForRole(user.role)} />}>
+						<LayoutDashboard />
+						Dashboard
+					</DropdownMenuItem>
+				)}
 				<DropdownMenuItem render={<Link href={CHANGE_PASSWORD_PATH} />}>
 					<KeyRound />
 					Change password

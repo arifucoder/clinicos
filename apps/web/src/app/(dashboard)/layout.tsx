@@ -2,7 +2,7 @@ import { AppSidebar } from "@/components/layout/AppSidebar";
 import { DashboardShellSkeleton } from "@/components/layout/DashboardShellSkeleton";
 import { Topbar } from "@/components/layout/Topbar";
 import { getCurrentUser } from "@/lib/currentUser";
-import type { ShellUser } from "@/lib/userDisplay";
+import { toShellUser } from "@/lib/userDisplay";
 import { redirect } from "next/navigation";
 import { type ReactNode, Suspense } from "react";
 
@@ -19,9 +19,7 @@ async function DashboardShell({ children }: { children: ReactNode }) {
 	const me = await getCurrentUser();
 	if (!me) redirect("/session-expired");
 
-	// doctor-এর ছবি doctorProfile-এ; admin/patient-এর জন্য initials (SDLC: users.image ব্যবহার হয় না)
-	const image = me.doctorProfile?.photoUrl ?? me.image;
-	const user: ShellUser = { name: me.name, email: me.email, image, role: me.role };
+	const user = toShellUser(me);
 
 	return (
 		<div className="flex min-h-svh flex-1 bg-canvas print:bg-white">

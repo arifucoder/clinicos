@@ -5,12 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { publicNavItems } from "@/lib/publicNavItems";
-import { ArrowRight, Menu } from "lucide-react";
+import { ArrowRight, LayoutDashboard, Menu } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { NavLinks } from "./NavLinks";
 
-export function MobileNav() {
+interface MobileNavProps {
+	// logged in হলে role-এর home (/admin, /doctor, /portal); না হলে undefined
+	dashboardHref?: string;
+}
+
+export function MobileNav({ dashboardHref }: MobileNavProps) {
 	const [open, setOpen] = useState(false);
 	const close = () => setOpen(false);
 
@@ -42,14 +47,21 @@ export function MobileNav() {
 
 				<div className="flex flex-col gap-2 p-5">
 					<Button
-						render={<Link href="/login" />}
+						render={<Link href={dashboardHref ?? "/login"} />}
 						nativeButton={false}
 						variant="outline"
 						size="lg"
 						className="h-11 w-full"
 						onClick={close}
 					>
-						Log in
+						{dashboardHref ? (
+							<>
+								<LayoutDashboard />
+								Go to dashboard
+							</>
+						) : (
+							"Log in"
+						)}
 					</Button>
 					<Button
 						render={<Link href="/doctors" />}
