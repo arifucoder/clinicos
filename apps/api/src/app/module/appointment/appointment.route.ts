@@ -49,7 +49,6 @@ const patientRouter = Router();
 patientRouter.use(checkAuth(Role.PATIENT));
 
 patientRouter.get("/", AppointmentController.getMyAppointments);
-// "/:id"-এর আগে: নাহলে "periods"-কে id ধরে 400 দিত
 patientRouter.get("/periods", AppointmentController.getMyAppointmentPeriods);
 patientRouter.get("/:id", AppointmentController.getMyAppointmentById);
 patientRouter.patch(

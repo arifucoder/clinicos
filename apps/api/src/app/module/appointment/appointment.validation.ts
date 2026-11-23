@@ -49,7 +49,6 @@ const listQuerySchema = z.object({
 	date: z.iso.date("date must be in YYYY-MM-DD format").optional(),
 });
 
-// patient portal: মাস/বছর অনুযায়ী দেখা → clinic-এর দিন "YYYY-MM-DD", দুই প্রান্তই সহ
 const myListQuerySchema = z
 	.object({
 		from: z.iso.date("from must be in YYYY-MM-DD format").optional(),
@@ -60,7 +59,6 @@ const myListQuerySchema = z
 		path: ["from"],
 	});
 
-// GET /patient/appointments/periods?status=COMPLETED,CANCELLED → শুধু এই status-গুলোর বছর/মাস
 const myPeriodsQuerySchema = z.object({
 	status: z
 		.string()

@@ -36,8 +36,6 @@ const updateMyProfileSchema = z
 
 const publicDoctorQuerySchema = z.object({
 	date: z.iso.date("Date must be in YYYY-MM-DD format").optional(),
-	// "true": শুধু যাদের booking window-এ (বা ?date-এর দিনে) অন্তত একটা খালি slot আছে।
-	// না দিলে আগের মতো সব active doctor (পুরনো client ভাঙে না)
 	available: z
 		.enum(["true", "false"], "available must be true or false")
 		.transform((value) => value === "true")

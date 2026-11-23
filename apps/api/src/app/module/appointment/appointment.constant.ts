@@ -24,7 +24,6 @@ export const appointmentSelect = {
 			fullName: true,
 			phone: true,
 			allergies: true,
-			// consultation-এ doctor-এর বয়স/লিঙ্গ/রক্তের গ্রুপ লাগে (portal-এ রোগী নিজেরটাই দেখে)
 			dateOfBirth: true,
 			gender: true,
 			bloodGroup: true,
@@ -35,7 +34,6 @@ export const appointmentSelect = {
 		select: {
 			id: true,
 			roomNumber: true,
-			// prescription-এর কাগজে doctor-এর license আর specialty দেখায়
 			licenseNumber: true,
 			user: { select: { name: true } },
 			doctorSpecialties: {
@@ -81,7 +79,6 @@ export const appointmentSelect = {
 
 export type TAppointmentRow = Prisma.AppointmentGetPayload<{ select: typeof appointmentSelect }>;
 
-// doctorSpecialties-এর join table client-এ লুকাই → doctor.specialties: string[] (doctor module-এর মতো)
 export const toAppointmentResponse = ({ doctor: { doctorSpecialties, ...doctor }, ...appointment }: TAppointmentRow) => ({
 	...appointment,
 	doctor: { ...doctor, specialties: doctorSpecialties.map(({ specialty }) => specialty.name) },
@@ -105,8 +102,6 @@ export const appointmentListConfig = defineListConfig<
 	defaultSortOrder: "asc",
 });
 
-// patient portal: রোগী নিজের নাম/phone খুঁজবে না → doctor-এর নাম আর appointment no. দিয়ে খোঁজে।
-// patientId filter নেই: service session থেকে নিজে বসায় (client-এর patientId কখনো মানা হয় না)
 export const myAppointmentListConfig = defineListConfig<
 	Prisma.AppointmentWhereInput,
 	Prisma.AppointmentOrderByWithRelationInput

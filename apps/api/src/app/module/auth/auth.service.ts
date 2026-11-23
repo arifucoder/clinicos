@@ -136,7 +136,6 @@ const getMe = async (userId: string) => {
 			image: true,
 			role: true,
 			needPasswordChange: true,
-			// doctor-এর ছবি থাকে doctor_profiles-এ (users.image না) → topbar-এর avatar এখান থেকে
 			doctorProfile: { select: { id: true, photoUrl: true } },
 			patientProfile: {
 				select: {

@@ -27,12 +27,10 @@ const getAllSpecialties = async (rawQuery: unknown) => {
 	return { meta: buildMeta(total, q.page, q.limit), data };
 };
 
-// doctor module-এর publicDoctorWhere-এর সাথে একই নিয়ম: মোছা বা বন্ধ doctor গোনা হয় না
 const activeDoctorLink = {
 	doctorProfile: { user: { isDeleted: false, isActive: true } },
 } satisfies Prisma.DoctorSpecialtyWhereInput;
 
-// public find-doctor filter: শুধু active specialty যেখানে অন্তত একজন active doctor আছে, সাথে কতজন
 const getPublicSpecialties = async () => {
 	const rows = await prisma.specialty.findMany({
 		where: { isActive: true, isDeleted: false, doctorSpecialties: { some: activeDoctorLink } },

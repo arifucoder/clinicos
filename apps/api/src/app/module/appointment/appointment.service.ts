@@ -372,7 +372,6 @@ const getAppointmentById = async (authUser: TAuthPayload, id: string) => {
 const getMyAppointments = async (userId: string, rawQuery: unknown, range: { from?: string; to?: string } = {}) => {
 	const patientId = await findMyPatientId(userId);
 	const conditions: Prisma.AppointmentWhereInput[] = [{ patientId }];
-	// from–to দুই দিনই সহ (clinic-এর দিন); একটা না দিলে সেদিকে সীমা নেই
 	const startAt: { gte?: Date; lt?: Date } = {};
 	if (range.from) startAt.gte = clinicDayRange(range.from).gte;
 	if (range.to) startAt.lt = clinicDayRange(range.to).lt;
@@ -387,9 +386,6 @@ const getMyAppointments = async (userId: string, rawQuery: unknown, range: { fro
 	return { meta: buildMeta(total, q.page, q.limit), data: rows.map(toAppointmentResponse) };
 };
 
-// কোন বছরের কোন মাসে রোগীর appointment আছে (clinic-এর calendar), নতুনটা আগে:
-// [{ year: 2026, months: [11, 10] }, { year: 2025, months: [3] }]
-// একজন রোগীর appointment কম → শুধু startAt এনে JS-এ ভাগ করা যথেষ্ট (stats-এর মতোই)
 const getMyAppointmentPeriods = async (userId: string, statuses?: AppointmentStatus[]) => {
 	const patientId = await findMyPatientId(userId);
 	const rows = await prisma.appointment.findMany({
@@ -743,7 +739,6 @@ const undoCheckIn = async (id: string) => {
 		throw new AppError(httpStatus.CONFLICT, "The doctor has already started this consultation");
 	}
 
-	// শর্তসহ update: পড়া আর লেখার মাঝে doctor prescription save করে ফেললেও undo হবে না
 	const { count } = await prisma.appointment.updateMany({
 		where: { id, status: AppointmentStatus.CHECKED_IN, prescription: { is: null } },
 		data: { status: AppointmentStatus.CONFIRMED, checkedInAt: null, checkedInById: null },
