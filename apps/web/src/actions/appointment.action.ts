@@ -10,6 +10,7 @@ import { toPrescriptionPayload } from "@/lib/prescriptionForm";
 import {
 	appointmentIdSchema,
 	cancelAppointmentSchema,
+	cancelMyAppointmentSchema,
 	deskBookingSchema,
 	paymentMethodSchema,
 } from "@/zod/appointment.validation";
@@ -174,6 +175,49 @@ export async function completeAppointmentAction(id: unknown): Promise<ActionResu
 		return { success: true, message: response.message, data: null };
 	} catch (error) {
 		// 409 "Write the prescription before completing" / "just changed — refresh"
+		return toAppointmentError(error);
+	}
+}
+
+// ---------- Patient portal ----------
+// "layout": /portal (Home) আর /portal/appointments দুটোই নতুন হয়
+const revalidatePortal = () => revalidatePath("/portal", "layout");
+
+export async function cancelMyAppointmentAction(id: unknown, input: unknown): Promise<ActionResult> {
+	const parsedId = appointmentIdSchema.safeParse(id);
+	if (!parsedId.success) return invalidInput;
+
+	const parsed = cancelMyAppointmentSchema.safeParse(input);
+	if (!parsed.success) {
+		return {
+			success: false,
+			message: parsed.error.issues[0]?.message ?? "Invalid reason.",
+			fieldErrors: zodFieldErrors(parsed.error),
+		};
+	}
+
+	try {
+		// patientId পাঠাই না: api session থেকে নেয়, অন্য রোগীর appointment → 404 (IDOR-safe)
+		const response = await AppointmentService.cancelMyAppointment(parsedId.data, parsed.data.reason);
+		revalidatePortal();
+		return { success: true, message: response.message, data: null };
+	} catch (error) {
+		// 409 "Online cancellation closes 2 hours before…", "You paid at the front desk…" — api-র message-ই দেখাই
+		return toAppointmentError(error);
+	}
+}
+
+export async function payMyAppointmentAction(id: unknown): Promise<ActionResult<{ checkoutUrl: string }>> {
+	const parsedId = appointmentIdSchema.safeParse(id);
+	if (!parsedId.success) return invalidInput;
+
+	try {
+		const response = await AppointmentService.payMyAppointment(parsedId.data);
+		const { checkoutUrl } = response.data;
+		if (!checkoutUrl) return { success: false, message: "Couldn't start the payment. Please try again." };
+		return { success: true, message: response.message, data: { checkoutUrl } };
+	} catch (error) {
+		// 409 "already paid" / "The booking hold has ended — please book again"
 		return toAppointmentError(error);
 	}
 }
