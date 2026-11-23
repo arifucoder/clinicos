@@ -106,3 +106,24 @@ export const doctorTodayQuerySchema = baseListQuerySchema.omit({ sortOrder: true
 	limit: z.coerce.number().int().min(1).max(100).catch(20),
 });
 export type DoctorTodayQuery = z.output<typeof doctorTodayQuerySchema>;
+
+// ---------- Doctor: Appointment history ----------
+// URL: /doctor/appointments?status=…&patientId=…&searchTerm=…&sortOrder=asc&page=2&limit=20
+// EXPIRED বাদ: টাকা না দেওয়া hold, doctor-এর কাছে অর্থহীন। চলমানগুলো Today page-এ।
+export const DOCTOR_HISTORY_STATUSES = [
+	"COMPLETED",
+	"NO_SHOW",
+	"CANCELLED",
+] as const satisfies readonly AppointmentStatus[];
+
+export const DOCTOR_HISTORY_PAGE_SIZES = [20, 50, 100] as const;
+
+export const doctorHistoryQuerySchema = baseListQuerySchema.extend({
+	limit: z.coerce.number().int().min(1).max(100).catch(20),
+	sortBy: z.enum(["startAt"]).catch("startAt"),
+	sortOrder: z.enum(["asc", "desc"]).catch("desc"), // নতুনগুলো আগে
+	status: z.enum(DOCTOR_HISTORY_STATUSES).optional().catch(undefined),
+	// consultation-এর "View all visits" থেকে: এক রোগীর সব visit (api তবু শুধু এই doctor-এর দেয়)
+	patientId: z.uuid().optional().catch(undefined),
+});
+export type DoctorHistoryQuery = z.output<typeof doctorHistoryQuerySchema>;
