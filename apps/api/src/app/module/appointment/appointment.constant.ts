@@ -104,3 +104,18 @@ export const appointmentListConfig = defineListConfig<
 	defaultSortBy: "startAt",
 	defaultSortOrder: "asc",
 });
+
+// patient portal: রোগী নিজের নাম/phone খুঁজবে না → doctor-এর নাম আর appointment no. দিয়ে খোঁজে।
+// patientId filter নেই: service session থেকে নিজে বসায় (client-এর patientId কখনো মানা হয় না)
+export const myAppointmentListConfig = defineListConfig<
+	Prisma.AppointmentWhereInput,
+	Prisma.AppointmentOrderByWithRelationInput
+>({
+	searchableFields: ["appointmentNumber", "doctor.user.name"],
+	filters: {
+		status: { path: "status", type: "enum", op: "in", values: Object.values(AppointmentStatus) },
+	},
+	sortableFields: ["startAt", "createdAt", "appointmentNumber"],
+	defaultSortBy: "startAt",
+	defaultSortOrder: "asc",
+});

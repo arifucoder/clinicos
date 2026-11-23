@@ -1,4 +1,4 @@
-import { AppointmentPaymentMode, PaymentMethod } from "@/generated/prisma/enums";
+import { AppointmentPaymentMode, AppointmentStatus, PaymentMethod } from "@/generated/prisma/enums";
 import * as z from "zod";
 
 const bookAppointmentSchema = z
@@ -49,6 +49,26 @@ const listQuerySchema = z.object({
 	date: z.iso.date("date must be in YYYY-MM-DD format").optional(),
 });
 
+// patient portal: মাস/বছর অনুযায়ী দেখা → clinic-এর দিন "YYYY-MM-DD", দুই প্রান্তই সহ
+const myListQuerySchema = z
+	.object({
+		from: z.iso.date("from must be in YYYY-MM-DD format").optional(),
+		to: z.iso.date("to must be in YYYY-MM-DD format").optional(),
+	})
+	.refine((data) => !data.from || !data.to || data.from <= data.to, {
+		error: "from must be on or before to",
+		path: ["from"],
+	});
+
+// GET /patient/appointments/years?status=COMPLETED,CANCELLED → শুধু এই status-গুলোর বছর
+const myYearsQuerySchema = z.object({
+	status: z
+		.string()
+		.optional()
+		.transform((value) => (value ? value.split(",").map((item) => item.trim().toUpperCase()) : undefined))
+		.pipe(z.array(z.enum(AppointmentStatus, "status has an unknown value")).max(10).optional()),
+});
+
 export const AppointmentValidation = {
 	bookAppointmentSchema,
 	cancelAppointmentSchema,
@@ -56,4 +76,6 @@ export const AppointmentValidation = {
 	deskPaymentSchema,
 	prescriptionSchema,
 	listQuerySchema,
+	myListQuerySchema,
+	myYearsQuerySchema,
 };

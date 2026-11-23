@@ -22,6 +22,7 @@ import { addDaysToDate, clinicDateOf } from "../slot/slot.utils";
 import {
 	appointmentListConfig,
 	appointmentSelect,
+	myAppointmentListConfig,
 	type TAppointmentRow,
 	toAppointmentResponse,
 } from "./appointment.constant";
@@ -368,9 +369,15 @@ const getAppointmentById = async (authUser: TAuthPayload, id: string) => {
 	return toAppointmentResponse(await findAppointmentOrThrow({ id, ...scope }));
 };
 
-const getMyAppointments = async (userId: string, rawQuery: unknown) => {
+const getMyAppointments = async (userId: string, rawQuery: unknown, range: { from?: string; to?: string } = {}) => {
 	const patientId = await findMyPatientId(userId);
-	const q = buildListQuery(rawQuery, appointmentListConfig, { patientId });
+	const conditions: Prisma.AppointmentWhereInput[] = [{ patientId }];
+	// from–to দুই দিনই সহ (clinic-এর দিন); একটা না দিলে সেদিকে সীমা নেই
+	const startAt: { gte?: Date; lt?: Date } = {};
+	if (range.from) startAt.gte = clinicDayRange(range.from).gte;
+	if (range.to) startAt.lt = clinicDayRange(range.to).lt;
+	if (range.from || range.to) conditions.push({ startAt });
+	const q = buildListQuery(rawQuery, myAppointmentListConfig, { AND: conditions });
 
 	const [rows, total] = await Promise.all([
 		prisma.appointment.findMany({ ...q.args, select: appointmentSelect }),
@@ -378,6 +385,18 @@ const getMyAppointments = async (userId: string, rawQuery: unknown) => {
 	]);
 
 	return { meta: buildMeta(total, q.page, q.limit), data: rows.map(toAppointmentResponse) };
+};
+
+// কোন কোন বছরে রোগীর appointment আছে (clinic-এর calendar অনুযায়ী), নতুনটা আগে।
+// একজন রোগীর appointment কম → শুধু startAt এনে JS-এ বছর বের করা যথেষ্ট (stats-এর মতোই)
+const getMyAppointmentYears = async (userId: string, statuses?: AppointmentStatus[]) => {
+	const patientId = await findMyPatientId(userId);
+	const rows = await prisma.appointment.findMany({
+		where: { patientId, ...(statuses && { status: { in: statuses } }) },
+		select: { startAt: true },
+	});
+	const years = new Set(rows.map((row) => Number(clinicDateOf(row.startAt, TZ).slice(0, 4))));
+	return [...years].sort((a, b) => b - a);
 };
 
 const getMyAppointmentById = async (userId: string, id: string) => {
@@ -728,6 +747,7 @@ export const AppointmentService = {
 	getAppointments,
 	getAppointmentById,
 	getMyAppointments,
+	getMyAppointmentYears,
 	getMyAppointmentById,
 	cancelAppointment,
 	cancelMyAppointment,
