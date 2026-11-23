@@ -387,16 +387,29 @@ const getMyAppointments = async (userId: string, rawQuery: unknown, range: { fro
 	return { meta: buildMeta(total, q.page, q.limit), data: rows.map(toAppointmentResponse) };
 };
 
-// কোন কোন বছরে রোগীর appointment আছে (clinic-এর calendar অনুযায়ী), নতুনটা আগে।
-// একজন রোগীর appointment কম → শুধু startAt এনে JS-এ বছর বের করা যথেষ্ট (stats-এর মতোই)
-const getMyAppointmentYears = async (userId: string, statuses?: AppointmentStatus[]) => {
+// কোন বছরের কোন মাসে রোগীর appointment আছে (clinic-এর calendar), নতুনটা আগে:
+// [{ year: 2026, months: [11, 10] }, { year: 2025, months: [3] }]
+// একজন রোগীর appointment কম → শুধু startAt এনে JS-এ ভাগ করা যথেষ্ট (stats-এর মতোই)
+const getMyAppointmentPeriods = async (userId: string, statuses?: AppointmentStatus[]) => {
 	const patientId = await findMyPatientId(userId);
 	const rows = await prisma.appointment.findMany({
 		where: { patientId, ...(statuses && { status: { in: statuses } }) },
 		select: { startAt: true },
 	});
-	const years = new Set(rows.map((row) => Number(clinicDateOf(row.startAt, TZ).slice(0, 4))));
-	return [...years].sort((a, b) => b - a);
+
+	const byYear = new Map<number, Set<number>>();
+	for (const { startAt } of rows) {
+		const day = clinicDateOf(startAt, TZ); // "YYYY-MM-DD"
+		const year = Number(day.slice(0, 4));
+		const month = Number(day.slice(5, 7));
+		const months = byYear.get(year) ?? new Set<number>();
+		months.add(month);
+		byYear.set(year, months);
+	}
+
+	return [...byYear.entries()]
+		.sort(([a], [b]) => b - a)
+		.map(([year, months]) => ({ year, months: [...months].sort((a, b) => b - a) }));
 };
 
 const getMyAppointmentById = async (userId: string, id: string) => {
@@ -747,7 +760,7 @@ export const AppointmentService = {
 	getAppointments,
 	getAppointmentById,
 	getMyAppointments,
-	getMyAppointmentYears,
+	getMyAppointmentPeriods,
 	getMyAppointmentById,
 	cancelAppointment,
 	cancelMyAppointment,

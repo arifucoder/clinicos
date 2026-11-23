@@ -60,8 +60,8 @@ const myListQuerySchema = z
 		path: ["from"],
 	});
 
-// GET /patient/appointments/years?status=COMPLETED,CANCELLED → শুধু এই status-গুলোর বছর
-const myYearsQuerySchema = z.object({
+// GET /patient/appointments/periods?status=COMPLETED,CANCELLED → শুধু এই status-গুলোর বছর/মাস
+const myPeriodsQuerySchema = z.object({
 	status: z
 		.string()
 		.optional()
@@ -77,5 +77,5 @@ export const AppointmentValidation = {
 	prescriptionSchema,
 	listQuerySchema,
 	myListQuerySchema,
-	myYearsQuerySchema,
+	myPeriodsQuerySchema,
 };

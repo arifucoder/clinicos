@@ -86,11 +86,11 @@ const getMyAppointments = catchAsync(async (req, res) => {
 	sendResponse(res, { statusCode: httpStatus.OK, message: "Appointments retrieved successfully", meta, data });
 });
 
-const getMyAppointmentYears = catchAsync(async (req, res) => {
-	const { status } = AppointmentValidation.myYearsQuerySchema.parse(req.query);
-	const result = await AppointmentService.getMyAppointmentYears(getAuthUser(req).userId, status);
+const getMyAppointmentPeriods = catchAsync(async (req, res) => {
+	const { status } = AppointmentValidation.myPeriodsQuerySchema.parse(req.query);
+	const result = await AppointmentService.getMyAppointmentPeriods(getAuthUser(req).userId, status);
 
-	sendResponse(res, { statusCode: httpStatus.OK, message: "Appointment years retrieved successfully", data: result });
+	sendResponse(res, { statusCode: httpStatus.OK, message: "Appointment periods retrieved successfully", data: result });
 });
 
 const getMyAppointmentById = catchAsync(async (req, res) => {
@@ -131,7 +131,7 @@ export const AppointmentController = {
 	savePrescription,
 	markNoShow,
 	getMyAppointments,
-	getMyAppointmentYears,
+	getMyAppointmentPeriods,
 	getMyAppointmentById,
 	cancelMyAppointment,
 	payMyAppointment,
