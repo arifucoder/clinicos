@@ -48,3 +48,23 @@ export interface SlotDoctorOption {
 	name: string;
 	specialties: string;
 }
+
+// GET /doctors/:id/slots (public) — booked slot api দেখায়ই না; BLOCKED আসে কারণসহ
+export interface PublicSlot {
+	id: string;
+	startAt: string;
+	endAt: string;
+	status: "AVAILABLE" | "BLOCKED";
+	blockReason?: string | null;
+}
+
+export interface PublicSlotDay {
+	date: string; // clinic-এর তারিখ; যে দিনে কোনো slot নেই সেটা list-এ আসে না
+	slots: PublicSlot[];
+}
+
+export interface PublicSlotsResult {
+	from: string;
+	to: string;
+	days: PublicSlotDay[];
+}

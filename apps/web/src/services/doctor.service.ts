@@ -54,8 +54,11 @@ const getPublicDoctors = (query: PublicDoctorListQuery) => {
 	});
 };
 
+const getPublicDoctorById = (id: string) => httpClient.get<PublicDoctor>(`/public/doctors/${id}`, { auth: false });
+
 export const DoctorService = {
 	getPublicDoctors,
+	getPublicDoctorById,
 	getDoctors,
 	createDoctor,
 	updateDoctor,
