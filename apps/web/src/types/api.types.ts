@@ -20,7 +20,7 @@ export interface ActionError {
 	success: false;
 	message: string;
 	fieldErrors?: Record<string, string>;
-	code?: "EMAIL_NOT_VERIFIED" | "TOO_MANY_ATTEMPTS";
+	code?: "EMAIL_NOT_VERIFIED" | "TOO_MANY_ATTEMPTS" | "SLOT_TAKEN" | "PROFILE_INCOMPLETE";
 }
 
 export type ActionResult<TData = null> = { success: true; message: string; data: TData } | ActionError;

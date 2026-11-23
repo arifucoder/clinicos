@@ -37,13 +37,20 @@ export const getRoleArea = (pathname: string) => ROLE_AREAS.find((area) => match
 export const isProtectedRoute = (pathname: string) =>
 	getRoleArea(pathname) !== undefined || LOGGED_IN_ROUTES.some((route) => matchesPrefix(pathname, route));
 
+// "/portal/book?…" হ্যাঁ; "//evil.com", "/\\evil.com", "https://…" না (open redirect ঠেকাতে)
+export const isSafeRelativePath = (value: unknown): value is string =>
+	typeof value === "string" && value.startsWith("/") && !value.startsWith("//") && !value.startsWith("/\\");
+
+// login → signup → verify → login: পুরো পথে ?next= বয়ে নিয়ে যাই, যাতে শেষে booking-এ ফেরে
+export const withNext = (href: string, next: unknown) =>
+	isSafeRelativePath(next) ? `${href}${href.includes("?") ? "&" : "?"}next=${encodeURIComponent(next)}` : href;
+
 // ?next= শুধু নিজের site-এর path আর নিজের role-এর এলাকা হলে মানি (open redirect ঠেকাতে)
 export const getPostLoginRedirect = (role: UserRole, next: unknown): string => {
 	const home = getHomeForRole(role);
 
-	if (typeof next !== "string") return home;
-	const isRelative = next.startsWith("/") && !next.startsWith("//") && !next.startsWith("/\\");
+	if (!isSafeRelativePath(next)) return home;
 	const pathOnly = next.split("?")[0] ?? next;
 
-	return isRelative && matchesPrefix(pathOnly, home) ? next : home;
+	return matchesPrefix(pathOnly, home) ? next : home;
 };

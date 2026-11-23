@@ -88,3 +88,22 @@ export interface AppointmentPeriod {
 	year: number;
 	months: number[]; // 1–12
 }
+
+// রোগীর নিজের booking-এর পরে client-এ যা লাগে (পুরো Appointment পাঠাই না)
+export interface MyBookedAppointment {
+	id: string;
+	appointmentNumber: string;
+	status: AppointmentStatus;
+	startAt: string;
+	paymentMode: "AT_DESK" | "ONLINE";
+	feeCents: number;
+	patientName: string;
+	email: string;
+}
+
+// slot-এর যেটুকু booking page-এ লাগে
+export interface BookingSlot {
+	id: string;
+	startAt: string;
+	endAt: string;
+}

@@ -17,6 +17,7 @@ import {
 } from "@/zod/patient.validation";
 import { useForm } from "@tanstack/react-form";
 import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -35,7 +36,8 @@ const toFormValues = (profile: MyPatientProfile): MyPatientProfileFormValues => 
 
 const sectionTitle = "font-heading text-sm font-semibold text-foreground";
 
-export function MyProfileForm({ profile }: { profile: MyPatientProfile }) {
+export function MyProfileForm({ profile, returnTo }: { profile: MyPatientProfile; returnTo?: string }) {
+	const router = useRouter();
 	const [formError, setFormError] = useState<string | null>(null);
 	const { serverErrors, setServerErrors, clearServerError } = useServerFieldErrors();
 
@@ -50,6 +52,12 @@ export function MyProfileForm({ profile }: { profile: MyPatientProfile }) {
 			if (!result.success) {
 				if (result.fieldErrors) setServerErrors(result.fieldErrors);
 				else setFormError(result.message);
+				return;
+			}
+
+			if (returnTo) {
+				toast.success("Profile saved — back to your booking");
+				router.push(returnTo);
 				return;
 			}
 

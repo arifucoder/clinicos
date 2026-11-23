@@ -4,7 +4,9 @@ import type { PublicSlot, PublicSlotDay } from "@/types/slot.types";
 
 // /portal PATIENT-এর এলাকা: logged out হলে proxy /login?next=…-এ পাঠায়, login-এর পরে ঠিক এখানেই ফেরে
 export const PATIENT_BOOK_PATH = "/portal/book";
-export const bookSlotHref = (slotId: string) => `${PATIENT_BOOK_PATH}?slotId=${slotId}`;
+// doctorId-ও লাগে: slot-এর সময় আর doctor-এর তথ্য public endpoint থেকে আবার আনি (client-এর কথা বিশ্বাস না করে)
+export const bookSlotHref = (doctorId: string, slotId: string) =>
+	`${PATIENT_BOOK_PATH}?doctorId=${doctorId}&slotId=${slotId}`;
 
 const DAY_MINUTES = 24 * 60;
 const MINUTE_MS = 60_000;

@@ -163,3 +163,23 @@ export const cancelMyAppointmentSchema = z.object({
 		.pipe(z.string().min(3, "Reason must be at least 3 characters").optional()),
 });
 export type CancelMyAppointmentPayload = z.output<typeof cancelMyAppointmentSchema>;
+
+// ---------- Patient: নিজের booking (/portal/book?doctorId=…&slotId=…) ----------
+export const myBookingPageQuerySchema = z.object({
+	doctorId: z.uuid().optional().catch(undefined),
+	slotId: z.uuid().optional().catch(undefined),
+});
+
+// api-র bookAppointmentSchema থেকে রোগী যা পাঠাতে পারে। patientId নেই: api session থেকে নেয় (IDOR-safe)
+export const REASON_MAX = 500;
+export const myBookingSchema = z.object({
+	slotId: z.uuid("Pick a time first"),
+	paymentMode: z.enum(["AT_DESK", "ONLINE"], { error: "Choose how you'll pay" }),
+	reason: z
+		.string()
+		.trim()
+		.min(2, "Reason must be at least 2 characters")
+		.max(REASON_MAX, `Keep it under ${REASON_MAX} characters`)
+		.optional(),
+});
+export type MyBookingPayload = z.output<typeof myBookingSchema>;

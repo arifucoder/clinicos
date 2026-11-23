@@ -4,12 +4,13 @@ import { resendOtpAction, verifyEmailAction } from "@/actions/auth.action";
 import { OTP_LENGTH, OtpCodeInput } from "@/components/modules/auth/OtpCodeInput";
 import { Button } from "@/components/ui/button";
 import { useResendCountdown } from "@/hooks/useResendCountdown";
+import { withNext } from "@/lib/authRedirect";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
-export function VerifyEmailForm({ email }: { email: string }) {
+export function VerifyEmailForm({ email, next }: { email: string; next?: string }) {
 	const router = useRouter();
 	const [otp, setOtp] = useState("");
 	const [error, setError] = useState<string | null>(null);
@@ -33,7 +34,7 @@ export function VerifyEmailForm({ email }: { email: string }) {
 			}
 
 			toast.success("Email verified. Please log in.");
-			router.replace(`/login?email=${encodeURIComponent(email)}`);
+			router.replace(withNext(`/login?email=${encodeURIComponent(email)}`, next));
 		});
 	};
 

@@ -6,7 +6,7 @@ import type {
 	Appointment,
 	AppointmentPeriod,
 	AppointmentStatus, BookAppointmentResult, PaymentMethod } from "@/types/appointment.types";
-import type { DeskBookingPayload } from "@/zod/appointment.validation";
+import type { DeskBookingPayload, MyBookingPayload } from "@/zod/appointment.validation";
 // api-র appointmentListConfig-এর সাথে মিল
 export interface AppointmentListParams {
 	date?: string; // "YYYY-MM-DD", clinic-এর দিন
@@ -81,7 +81,11 @@ const cancelMyAppointment = (id: string, reason?: string) =>
 
 // Stripe Checkout session বানায় → checkoutUrl-এ browser পাঠাতে হয়
 const payMyAppointment = (id: string) => httpClient.post<BookAppointmentResult>(`/patient/appointments/${id}/pay`, {});
+// রোগী নিজে: POST /appointments (PATIENT role) — একই endpoint, কিন্তু patientId পাঠাই না
+const bookMine = (payload: MyBookingPayload) => httpClient.post<BookAppointmentResult>("/appointments", payload);
+
 export const AppointmentService = {
+	bookMine,
 	getAppointments,
 	getAppointment,
 	book,

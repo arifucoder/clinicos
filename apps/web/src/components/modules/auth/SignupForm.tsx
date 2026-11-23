@@ -5,6 +5,7 @@ import { PasswordInput } from "@/components/shared/PasswordInput";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { withNext } from "@/lib/authRedirect";
 import { type RegisterPayload, registerSchema } from "@/zod/auth.validation";
 import { type AnyFieldMeta, useForm } from "@tanstack/react-form";
 import { Loader2 } from "lucide-react";
@@ -18,7 +19,7 @@ const defaultValues: RegisterPayload = { name: "", email: "", password: "" };
 
 const inputClass = "h-11.5 rounded-lg px-3.5 text-[15px] md:text-[15px]";
 
-export function SignupForm() {
+export function SignupForm({ next }: { next?: string }) {
 	const router = useRouter();
 	const [serverErrors, setServerErrors] = useState<Record<string, string>>({});
 	const [formError, setFormError] = useState<string | null>(null);
@@ -40,7 +41,7 @@ export function SignupForm() {
 
 			toast.success(result.message);
 			const email = value.email.trim().toLowerCase();
-			router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+			router.push(withNext(`/verify-email?email=${encodeURIComponent(email)}`, next));
 		},
 	});
 

@@ -112,6 +112,7 @@ async function DoctorProfileContent({ params }: { params: Params }) {
 				</div>
 
 				<DoctorBooking
+					doctorId={doctor.id}
 					doctorName={doctor.name}
 					feeCents={doctor.consultationFeeCents}
 					roomNumber={doctor.roomNumber}

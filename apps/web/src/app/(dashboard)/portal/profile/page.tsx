@@ -2,7 +2,8 @@ import { MyProfileForm } from "@/components/modules/portal/MyProfileForm";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CHANGE_PASSWORD_PATH } from "@/lib/authRedirect";
+import { CHANGE_PASSWORD_PATH, isSafeRelativePath } from "@/lib/authRedirect";
+import { PATIENT_BOOK_PATH } from "@/lib/doctorProfile";
 import { formatDate } from "@/lib/format";
 import { PatientService } from "@/services/patient.service";
 import type { MyPatientProfile } from "@/types/patient.types";
@@ -13,7 +14,7 @@ import { type ReactNode, Suspense } from "react";
 
 export const metadata: Metadata = { title: "My profile" };
 
-export default function PortalProfilePage() {
+export default function PortalProfilePage({ searchParams }: PageProps<"/portal/profile">) {
 	return (
 		<div className="max-w-3xl space-y-5">
 			<PageHeader
@@ -26,13 +27,17 @@ export default function PortalProfilePage() {
 				}
 			/>
 			<Suspense fallback={<ProfileSkeleton />}>
-				<ProfileContent />
+				<ProfileContent searchParams={searchParams} />
 			</Suspense>
 		</div>
 	);
 }
 
-async function ProfileContent() {
+async function ProfileContent({ searchParams }: Pick<PageProps<"/portal/profile">, "searchParams">) {
+	// booking থেকে এলে save-এর পরে সেখানেই ফেরত (শুধু নিজের booking page — open redirect না)
+	const { next } = await searchParams;
+	const returnTo = isSafeRelativePath(next) && next.startsWith(`${PATIENT_BOOK_PATH}?`) ? next : undefined;
+
 	// id পাঠাই না: api session থেকে নিজের record দেয়। না পেলে error boundary (নিজের profile হারানোর কথা না)
 	const response = await PatientService.getMyProfile();
 	const profile = response.data;
@@ -45,13 +50,15 @@ async function ProfileContent() {
 					className="flex items-start gap-2 rounded-lg bg-warning-soft px-4 py-3 text-sm text-warning-foreground"
 				>
 					<Info className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-					Complete your profile to book an appointment — we need your phone, date of birth and gender.
+					{returnTo
+						? "Add your phone, date of birth and gender, then save — we'll take you back to your booking."
+						: "Complete your profile to book an appointment — we need your phone, date of birth and gender."}
 				</p>
 			)}
 
 			<AccountCard profile={profile} />
 			{/* key: save-এর পর server নতুন data দিলে form নতুন default নিয়ে বসে */}
-			<MyProfileForm key={profile.updatedAt} profile={profile} />
+			<MyProfileForm key={profile.updatedAt} profile={profile} returnTo={returnTo} />
 		</>
 	);
 }

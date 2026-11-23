@@ -20,6 +20,7 @@ import { useState } from "react";
 const WEEK = 7;
 
 interface DoctorBookingProps {
+	doctorId: string;
 	doctorName: string;
 	feeCents: number;
 	roomNumber: string | null;
@@ -81,7 +82,7 @@ export function DoctorBooking(props: DoctorBookingProps) {
 						<Button
 							size="lg"
 							className="h-11 px-5 font-semibold"
-							render={<Link href={bookSlotHref(selectedSlot.id)} />}
+							render={<Link href={bookSlotHref(props.doctorId, selectedSlot.id)} />}
 							nativeButton={false}
 						>
 							Continue
@@ -115,6 +116,7 @@ interface BookingPickerProps extends DoctorBookingProps {
 }
 
 function BookingPicker({
+	doctorId,
 	doctorName,
 	feeCents,
 	roomNumber,
@@ -288,7 +290,7 @@ function BookingPicker({
 					<Button
 						size="lg"
 						className="h-12 text-[15px] font-semibold"
-						render={<Link href={bookSlotHref(selectedSlot.id)} />}
+						render={<Link href={bookSlotHref(doctorId, selectedSlot.id)} />}
 						nativeButton={false}
 					>
 						Continue

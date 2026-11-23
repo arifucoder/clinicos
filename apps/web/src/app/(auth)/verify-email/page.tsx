@@ -1,5 +1,6 @@
 import { VerifyEmailForm } from "@/components/modules/auth/VerifyEmailForm";
 import { Skeleton } from "@/components/ui/skeleton";
+import { isSafeRelativePath, withNext } from "@/lib/authRedirect";
 import { resendOtpSchema } from "@/zod/auth.validation";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -18,7 +19,8 @@ export default function VerifyEmailPage({ searchParams }: PageProps<"/verify-ema
 }
 
 async function VerifyEmailContent({ searchParams }: Pick<PageProps<"/verify-email">, "searchParams">) {
-	const { email: rawEmail } = await searchParams;
+	const { email: rawEmail, next } = await searchParams;
+	const safeNext = isSafeRelativePath(next) ? next : undefined;
 
 	// URL-ও user input — বিশ্বাস না করে যাচাই
 	const parsed = resendOtpSchema.shape.email.safeParse(typeof rawEmail === "string" ? rawEmail : "");
@@ -33,11 +35,11 @@ async function VerifyEmailContent({ searchParams }: Pick<PageProps<"/verify-emai
 				</p>
 			</div>
 
-			<VerifyEmailForm email={parsed.data} />
+			<VerifyEmailForm email={parsed.data} next={safeNext} />
 
 			<p className="text-center text-xs text-muted-foreground">
 				Wrong email?{" "}
-				<Link href="/signup" className="font-medium text-primary underline-offset-4 hover:underline">
+				<Link href={withNext("/signup", safeNext)} className="font-medium text-primary underline-offset-4 hover:underline">
 					Sign up again
 				</Link>
 			</p>

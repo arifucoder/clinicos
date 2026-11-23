@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { type LoginPayload, loginSchema } from "@/zod/auth.validation";
 import { type AnyFieldMeta, useForm } from "@tanstack/react-form";
 import { Loader2 } from "lucide-react";
+import { withNext } from "@/lib/authRedirect";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -61,7 +62,7 @@ export function LoginForm({ defaultEmail, next }: LoginFormProps) {
 				return;
 			}
 			toast.success("We sent you a new code.");
-			router.push(`/verify-email?email=${encodeURIComponent(unverifiedEmail)}`);
+			router.push(withNext(`/verify-email?email=${encodeURIComponent(unverifiedEmail)}`, next));
 		});
 	};
 
