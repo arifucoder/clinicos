@@ -113,3 +113,24 @@ export type UpdateMyProfilePayload = z.output<typeof updateMyProfileSchema>;
 // api-র uploadPhoto.ts আর getValidatedPhoto.ts-এর সাথে মিল (এখানে শুধু UX, আসল যাচাই api-তে)
 export const PHOTO_MAX_BYTES = 2 * 1024 * 1024;
 export const PHOTO_TYPES: readonly string[] = ["image/jpeg", "image/png", "image/webp"];
+
+// ---------- Public find-doctor URL (/doctors?specialty=cardiology&date=2026-11-24&sort=fee-asc) ----------
+// api শুধু এগুলো বোঝে: searchTerm (নাম/specialty), specialty (একটা slug), date, sortBy (user.name | consultationFeeCents)
+export const DOCTOR_SORT_KEYS = ["name", "fee-asc", "fee-desc"] as const;
+export type DoctorSortKey = (typeof DOCTOR_SORT_KEYS)[number];
+
+// .catch(): URL-এ আজেবাজে value এলে page ভাঙে না, default বসে
+export const publicDoctorListQuerySchema = z.object({
+	page: z.coerce.number().int().min(1).catch(1),
+	searchTerm: z.string().trim().max(100).optional().catch(undefined),
+	specialty: z
+		.string()
+		.trim()
+		.regex(/^[a-z0-9-]+$/)
+		.max(100)
+		.optional()
+		.catch(undefined),
+	date: z.iso.date().optional().catch(undefined),
+	sort: z.enum(DOCTOR_SORT_KEYS).catch("name"),
+});
+export type PublicDoctorListQuery = z.output<typeof publicDoctorListQuerySchema>;

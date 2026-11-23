@@ -1,10 +1,12 @@
 import "server-only";
 
 import { httpClient } from "@/lib/axios/httpClient";
-import type { CreateDoctorResult, StaffDoctor } from "@/types/doctor.types";
+import { DOCTOR_PAGE_SIZE, DOCTOR_SORTS } from "@/lib/findDoctor";
+import type { CreateDoctorResult, PublicDoctor, StaffDoctor } from "@/types/doctor.types";
 import type {
 	CreateDoctorPayload,
 	DoctorListQuery,
+	PublicDoctorListQuery,
 	UpdateDoctorPayload,
 	UpdateMyProfilePayload,
 } from "@/zod/doctor.validation";
@@ -35,7 +37,25 @@ const uploadMyPhoto = (body: FormData) =>
 
 const removeMyPhoto = () => httpClient.delete<unknown>("/doctors/me/photo");
 
+// public find-doctor page: login লাগে না, তাই cookie পাঠাই না (auth: false)
+const getPublicDoctors = (query: PublicDoctorListQuery) => {
+	const { sortBy, sortOrder } = DOCTOR_SORTS[query.sort];
+	return httpClient.get<PublicDoctor[]>("/public/doctors", {
+		auth: false,
+		params: {
+			page: query.page,
+			limit: DOCTOR_PAGE_SIZE,
+			searchTerm: query.searchTerm || undefined,
+			specialty: query.specialty,
+			date: query.date,
+			sortBy,
+			sortOrder,
+		},
+	});
+};
+
 export const DoctorService = {
+	getPublicDoctors,
 	getDoctors,
 	createDoctor,
 	updateDoctor,

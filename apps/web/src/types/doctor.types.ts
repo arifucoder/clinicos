@@ -32,3 +32,21 @@ export interface CreateDoctorResult {
 	doctorProfile: { id: string };
 	emailSent: boolean;
 }
+
+// api-র publicDoctorSelect + toPublicDoctor (GET /public/doctors) — email/phone/license নেই
+export interface PublicSpecialtyRef {
+	name: string;
+	slug: string;
+	icon: string | null;
+}
+
+export interface PublicDoctor {
+	id: string; // doctorProfile.id
+	name: string;
+	consultationFeeCents: number;
+	roomNumber: string | null;
+	bio: string | null;
+	photoUrl: string | null;
+	specialties: PublicSpecialtyRef[];
+	nextAvailableAt: string | null; // পরের খালি slot (UTC ISO); ?date থাকলে সেই দিনের প্রথমটা
+}

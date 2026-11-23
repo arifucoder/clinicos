@@ -2,15 +2,23 @@
 
 import { Input } from "@/components/ui/input";
 import { useTableUrlState } from "@/hooks/useTableUrlState";
+import { cn } from "@/lib/utils";
 import { Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 interface DataTableSearchProps {
 	placeholder: string;
 	paramKey?: string;
+	className?: string;
+	inputClassName?: string;
 }
 
-export function DataTableSearch({ placeholder, paramKey = "searchTerm" }: DataTableSearchProps) {
+export function DataTableSearch({
+	placeholder,
+	paramKey = "searchTerm",
+	className,
+	inputClassName,
+}: DataTableSearchProps) {
 	const { searchParams, setParams } = useTableUrlState();
 	const [value, setValue] = useState(searchParams.get(paramKey) ?? "");
 	const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -19,7 +27,7 @@ export function DataTableSearch({ placeholder, paramKey = "searchTerm" }: DataTa
 	useEffect(() => () => clearTimeout(timer.current), []);
 
 	return (
-		<div className="relative w-full sm:w-72">
+		<div className={cn("relative w-full sm:w-72", className)}>
 			<Search
 				className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
 				aria-hidden="true"
@@ -36,7 +44,7 @@ export function DataTableSearch({ placeholder, paramKey = "searchTerm" }: DataTa
 					clearTimeout(timer.current);
 					timer.current = setTimeout(() => setParams({ [paramKey]: next.trim() || null }, { resetPage: true }), 300);
 				}}
-				className="h-9 bg-card pl-9"
+				className={cn("h-9 bg-card pl-9", inputClassName)}
 			/>
 		</div>
 	);

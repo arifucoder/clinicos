@@ -4,20 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useTableUrlState } from "@/hooks/useTableUrlState";
-import { formatClinicTime, formatDayLabel } from "@/lib/clinicDate";
+import {
+	formatClinicTime,
+	formatDayLabel,
+	fromCalendarDate as toDateString,
+	toCalendarDate as toLocalDate,
+} from "@/lib/clinicDate";
 import type { BookableSlot } from "@/lib/deskBooking";
 import { pluralize } from "@/lib/format";
 import { CalendarDays, ChevronDown } from "lucide-react";
 import { useState } from "react";
-
-// Calendar browser-এর local সময়ে কাজ করে (local midnight-এর Date)।
-// toISOString() দিলে ঢাকায় UTC-তে আগের দিন হয়ে যায় → তাই local getter/constructor।
-const toLocalDate = (date: string) => {
-	const [year, month, day] = date.split("-").map(Number);
-	return new Date(year, month - 1, day);
-};
-const toDateString = (day: Date) =>
-	`${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`;
 
 interface SlotPickerProps {
 	openDates: string[]; // যেসব দিনে খালি slot আছে

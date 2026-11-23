@@ -9,3 +9,11 @@ export interface Specialty {
 	createdAt: string;
 	updatedAt: string;
 }
+
+// GET /public/specialties — শুধু যেগুলোতে অন্তত একজন active doctor আছে
+export interface PublicSpecialty {
+	name: string;
+	slug: string;
+	icon: string | null;
+	doctorCount: number;
+}
