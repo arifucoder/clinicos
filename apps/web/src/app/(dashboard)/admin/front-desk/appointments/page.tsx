@@ -38,7 +38,6 @@ export default function AppointmentsPage({ searchParams }: PageProps<"/admin/fro
 async function AppointmentsContent({ searchParams }: { searchParams: SearchParams }) {
 	const query = appointmentListQuerySchema.parse(await searchParams);
 
-	// request-time-এ চালাও → এর পরে new Date() নিরাপদ
 	await connection();
 	const now = new Date();
 	const today = clinicToday(now);
@@ -79,7 +78,6 @@ async function AppointmentsContent({ searchParams }: { searchParams: SearchParam
 
 	return (
 		<div className="space-y-5">
-			{/* আজকের তালিকা প্রতি ৫ সেকেন্ডে নতুন (tab লুকানো থাকলে থামে); অন্য দিনের তালিকা বদলায় না → বন্ধ */}
 			<AutoRefresh enabled={date === today} />
 
 			<div className="space-y-1">

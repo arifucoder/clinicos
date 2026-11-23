@@ -9,7 +9,6 @@ const FEATURES = [
 	{ icon: FileText, title: "Prescriptions", text: "Read or print your prescription after the visit." },
 ];
 
-// appointment-এর আসল state machine: PENDING_PAYMENT → CONFIRMED → CHECKED_IN → COMPLETED
 const STEPS = [
 	{ label: "Booked", time: "Mon 18:02", state: "done" },
 	{ label: "Paid", time: "Mon 18:03", state: "done" },

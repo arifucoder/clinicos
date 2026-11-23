@@ -1,7 +1,6 @@
 import type { DateTileParts } from "@/lib/portalHome";
 import { cn } from "cn";
 
-// ক্যালেন্ডারের পাতার মতো: উপরে বার, মাঝে তারিখ, নিচে মাস। screen reader পুরো তারিখ পড়ে না → aria-hidden
 export function DateTile({ parts, tone = "primary" }: { parts: DateTileParts; tone?: "primary" | "muted" }) {
 	return (
 		<div

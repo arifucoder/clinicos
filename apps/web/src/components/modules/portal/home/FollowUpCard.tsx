@@ -23,7 +23,6 @@ export function FollowUpCard({ followUpDate, doctorName, booked }: FollowUpCardP
 			<div className="flex items-center gap-3">
 				<DateTile parts={tileFromCalendarDate(followUpDate)} />
 				<div className="min-w-0">
-					{/* calendar date, কোনো মুহূর্ত না → UTC formatter */}
 					<p className="font-medium text-foreground">{formatDateOfBirth(followUpDate)}</p>
 					<p className="text-xs text-muted-foreground">
 						Suggested by {doctorName} · {booked ? "booked" : "not booked yet"}

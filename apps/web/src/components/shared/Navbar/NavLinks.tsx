@@ -19,9 +19,6 @@ function isActive(href: string, pathname: string | null) {
 	return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-// cacheComponents: dynamic route-এ (/doctors/[id]) pathname prerender-এর সময় জানা থাকে না,
-// তাই usePathname()-কে Suspense-এর ভেতরে রাখতে হয়। fallback-এ একই link, শুধু active রং ছাড়া —
-// prerender করা HTML-এ menu পুরোটা থাকে, pathname এলে active link রং পায়।
 export function NavLinks(props: NavLinksProps) {
 	return (
 		<Suspense fallback={<NavLinkList {...props} pathname={null} />}>

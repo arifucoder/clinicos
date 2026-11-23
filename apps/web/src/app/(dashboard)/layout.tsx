@@ -7,7 +7,6 @@ import { redirect } from "next/navigation";
 import { type ReactNode, Suspense } from "react";
 
 export default function DashboardLayout({ children }: LayoutProps<"/">) {
-	// cacheComponents: cookie পড়া (request data) অবশ্যই Suspense-এর ভেতরে থাকতে হবে
 	return (
 		<Suspense fallback={<DashboardShellSkeleton />}>
 			<DashboardShell>{children}</DashboardShell>

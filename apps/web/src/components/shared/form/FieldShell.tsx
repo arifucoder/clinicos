@@ -10,7 +10,6 @@ interface FieldShellProps {
 	children: ReactNode;
 }
 
-// label + input + (error নয়তো hint): সব form-এ একই চেহারা আর একই aria নিয়ম
 export function FieldShell({ id, label, optional, error, hint, children }: FieldShellProps) {
 	const message = error ?? hint;
 

@@ -39,7 +39,6 @@ export function DeleteSpecialtyDialog({ specialty, open, onOpenChange }: DeleteS
 	};
 
 	return (
-		// চলাকালীন বন্ধ করতে দিই না
 		<AlertDialog open={open} onOpenChange={(next) => !isPending && onOpenChange(next)}>
 			<AlertDialogContent>
 				<AlertDialogHeader>

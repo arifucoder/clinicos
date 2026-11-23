@@ -20,7 +20,6 @@ import { UserAvatar } from "./UserAvatar";
 
 interface UserMenuProps {
 	user: ShellUser;
-	// public navbar-এ true; dashboard-এর ভেতরে sidebar থাকায় দরকার নেই
 	showDashboardLink?: boolean;
 }
 
@@ -43,7 +42,6 @@ export function UserMenu({ user, showDashboardLink = false }: UserMenuProps) {
 			</DropdownMenuTrigger>
 
 			<DropdownMenuContent align="end" className="w-60">
-				{/* Base UI-তে GroupLabel-কে Group-এর ভেতরে রাখতেই হবে */}
 				<DropdownMenuGroup>
 					<DropdownMenuLabel className="flex flex-col">
 						<span className="truncate text-sm font-semibold text-foreground">{user.name}</span>

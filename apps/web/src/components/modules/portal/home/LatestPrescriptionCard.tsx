@@ -4,7 +4,6 @@ import type { Appointment } from "@/types/appointment.types";
 import { Eye, Printer } from "lucide-react";
 import Link from "next/link";
 
-// সবচেয়ে নতুন prescription (Completed + prescription আছে এমন শেষ visit)
 export function LatestPrescriptionCard({ visit }: { visit: Appointment }) {
 	const prescription = visit.prescription;
 	if (!prescription) return null;
@@ -42,7 +41,6 @@ export function LatestPrescriptionCard({ visit }: { visit: Appointment }) {
 					<Eye aria-hidden="true" />
 					View
 				</Button>
-				{/* print page-এ "Print" → browser-এর dialog-এ "Save as PDF" */}
 				<Button variant="secondary" render={<Link href={href} />} nativeButton={false}>
 					<Printer aria-hidden="true" />
 					Print / PDF

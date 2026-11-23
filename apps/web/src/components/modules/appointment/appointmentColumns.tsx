@@ -19,7 +19,6 @@ function AppointmentStatusPill({ appointment }: { appointment: Appointment }) {
 	return <StatusPill tone={meta.tone}>{label}</StatusPill>;
 }
 
-// column id = api-র sortBy নাম ("startAt")
 export const getAppointmentColumns = (
 	handlers: AppointmentRowHandlers,
 ): ColumnDef<DataTableFeatures, Appointment>[] => [
@@ -55,7 +54,6 @@ export const getAppointmentColumns = (
 						)}
 					</div>
 					<p className="truncate text-xs text-muted-foreground tabular-nums">{patient.phone ?? patient.user.email}</p>
-					{/* mobile-এ doctor আর status column লুকানো → এখানে দেখাই */}
 					<div className="space-y-1 md:hidden">
 						<p className="text-xs text-body">{doctor.user.name}</p>
 						<AppointmentStatusPill appointment={row.original} />

@@ -13,8 +13,6 @@ export const BLOOD_GROUP_LABEL: Record<BloodGroup, string> = {
 	O_NEGATIVE: "O−",
 };
 
-// জন্মতারিখ একটা calendar date, কোনো মুহূর্ত না → timeZone: "UTC"।
-// clinic timezone দিলে UTC-র পেছনের zone-এ (যেমন New York) এক দিন আগের তারিখ দেখাত।
 const dateOnlyFormatter = new Intl.DateTimeFormat("en-GB", {
 	day: "2-digit",
 	month: "short",
@@ -23,7 +21,6 @@ const dateOnlyFormatter = new Intl.DateTimeFormat("en-GB", {
 });
 export const formatDateOfBirth = (iso: string) => dateOnlyFormatter.format(new Date(iso));
 
-// today = clinicToday() → "YYYY-MM-DD"
 export const ageFromDateOfBirth = (iso: string, today: string) => {
 	const [by, bm, bd] = [iso.slice(0, 4), iso.slice(5, 7), iso.slice(8, 10)].map(Number);
 	const [ty, tm, td] = [today.slice(0, 4), today.slice(5, 7), today.slice(8, 10)].map(Number);

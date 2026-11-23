@@ -25,7 +25,6 @@ async function PatientsContent({ searchParams }: { searchParams: SearchParams })
 	const query = patientListQuerySchema.parse(await searchParams);
 	const response = await PatientService.getPatients(query);
 	const meta = response.meta ?? { page: query.page, limit: query.limit, total: response.data.length, totalPages: 1 };
-	// "আজ" server-এ একবার হিসাব → সব row-এর বয়স একই দিন ধরে, hydration mismatch নেই
 	const today = clinicToday(new Date());
 
 	return (

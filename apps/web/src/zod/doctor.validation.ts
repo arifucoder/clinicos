@@ -2,7 +2,6 @@ import * as z from "zod";
 import { clearable, emailSchema, nameSchema, omitEmpty, phoneSchema } from "./common.validation";
 import { baseListQuerySchema, sortBySchema } from "./listQuery.validation";
 
-// api-র user.validation.ts (createDoctorSchema) আর doctor.validation.ts-এর সাথে মিল
 const MAX_FEE_CENTS = 10_000_000;
 export const MAX_SPECIALTIES = 5;
 
@@ -19,25 +18,20 @@ const licenseSchema = z
 const roomSchema = z.string().trim().max(20, "Room is too long");
 const bioSchema = z.string().trim().max(1000, "Keep the bio under 1000 characters");
 
-// "25.5" → 2550। 25.5 * 100-এর মতো float গুণ না; string ভেঙে integer বানাই
 export const dollarsToCents = (value: string): number => {
 	const [whole = "0", fraction = ""] = value.split(".");
 	return Number(whole) * 100 + Number(fraction.padEnd(2, "0"));
 };
 
-// 2550 → "25.50" (edit form-এর default value)
 export const centsToDollars = (cents: number): string =>
 	`${Math.floor(cents / 100)}.${String(cents % 100).padStart(2, "0")}`;
 
-// form-এ fee dollar-এ লেখে (string); api-তে যায় integer cents
 const feeSchema = z
 	.string()
 	.trim()
 	.regex(/^\d+(\.\d{1,2})?$/, { error: "Enter an amount like 25 or 25.50", abort: true })
 	.refine((value) => dollarsToCents(value) <= MAX_FEE_CENTS, { error: "Fee can't be more than $100,000" });
 
-// ---------- Form (browser) ----------
-// create আর edit একই schema (admin-এর মতো; edit-এ email readOnly)
 export const doctorFormSchema = z.object({
 	name: nameSchema,
 	email: emailSchema,
@@ -50,7 +44,6 @@ export const doctorFormSchema = z.object({
 });
 export type DoctorFormValues = z.input<typeof doctorFormSchema>;
 
-// ---------- Action (server): api যে আকার চায় ----------
 export const createDoctorSchema = z
 	.object({
 		name: nameSchema,
@@ -85,7 +78,6 @@ export type UpdateDoctorPayload = z.output<typeof updateDoctorSchema>;
 
 export const doctorIdSchema = z.uuid("Invalid doctor id");
 
-// ---------- URL ----------
 export const doctorListQuerySchema = baseListQuerySchema.extend({
 	sortBy: sortBySchema(["createdAt", "user.name", "consultationFeeCents"]), // api-র doctorListConfig
 	isActive: z.enum(["true", "false"]).optional().catch(undefined),
@@ -93,8 +85,6 @@ export const doctorListQuerySchema = baseListQuerySchema.extend({
 });
 export type DoctorListQuery = z.output<typeof doctorListQuerySchema>;
 
-// ---------- নিজের profile (doctor) ----------
-// api-র updateMyProfileSchema: শুধু name, phone, bio। license/fee/specialty/room admin-এর কাজ।
 export const myProfileFormSchema = z.object({
 	name: nameSchema,
 	phone: phoneSchema,
@@ -102,7 +92,6 @@ export const myProfileFormSchema = z.object({
 });
 export type MyProfileFormValues = z.input<typeof myProfileFormSchema>;
 
-// form সব সময় তিনটাই পাঠায় → "Nothing to update" লাগে না
 export const updateMyProfileSchema = z.object({
 	name: nameSchema,
 	phone: clearable(phoneSchema), // "" → null (মুছে ফেলো)
@@ -110,16 +99,12 @@ export const updateMyProfileSchema = z.object({
 });
 export type UpdateMyProfilePayload = z.output<typeof updateMyProfileSchema>;
 
-// api-র uploadPhoto.ts আর getValidatedPhoto.ts-এর সাথে মিল (এখানে শুধু UX, আসল যাচাই api-তে)
 export const PHOTO_MAX_BYTES = 2 * 1024 * 1024;
 export const PHOTO_TYPES: readonly string[] = ["image/jpeg", "image/png", "image/webp"];
 
-// ---------- Public find-doctor URL (/doctors?specialty=cardiology&date=2026-11-24&sort=fee-asc) ----------
-// api শুধু এগুলো বোঝে: searchTerm (নাম/specialty), specialty (একটা slug), date, sortBy (user.name | consultationFeeCents)
 export const DOCTOR_SORT_KEYS = ["name", "fee-asc", "fee-desc"] as const;
 export type DoctorSortKey = (typeof DOCTOR_SORT_KEYS)[number];
 
-// .catch(): URL-এ আজেবাজে value এলে page ভাঙে না, default বসে
 export const publicDoctorListQuerySchema = z.object({
 	page: z.coerce.number().int().min(1).catch(1),
 	searchTerm: z.string().trim().max(100).optional().catch(undefined),
@@ -132,7 +117,6 @@ export const publicDoctorListQuerySchema = z.object({
 		.catch(undefined),
 	date: z.iso.date().optional().catch(undefined),
 	sort: z.enum(DOCTOR_SORT_KEYS).catch("name"),
-	// default: শুধু যাদের booking window-এ খালি slot আছে; "all" দিলে সবাই
 	show: z.enum(["open", "all"]).catch("open"),
 });
 export type PublicDoctorListQuery = z.output<typeof publicDoctorListQuerySchema>;

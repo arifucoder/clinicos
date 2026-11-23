@@ -76,7 +76,6 @@ export function MyBookingFlow({ doctor, slot: initialSlot, alternatives: initial
 
 			if (!result.success) {
 				if (result.code === "SLOT_TAKEN") {
-					// অন্য কেউ আগে নিয়েছে: details রাখা থাকে, শুধু নতুন সময় বাছতে বলি
 					const next = await findAlternativeSlotsAction(doctor.id, target.startAt);
 					const options = next.success ? next.data.filter((option) => option.id !== target.id) : [];
 					setTakenSlot(target);
@@ -94,15 +93,12 @@ export function MyBookingFlow({ doctor, slot: initialSlot, alternatives: initial
 				return;
 			}
 
-			// online: Stripe-এর page-এ যাই; ফেরত আসে /portal/appointments?payment=… (api-র success_url)
 			if (result.data.checkoutUrl) {
 				window.location.assign(result.data.checkoutUrl);
 				return;
 			}
 
 			setBooked(result.data.appointment);
-			// URL-এ পুরনো slotId থেকে গেলে refresh করলে "That time was just taken" দেখাত (নিজেই নিয়েছে!)।
-			// তাই address bar-এ My visits বসাই, page না বদলে: refresh করলে সেখানে নতুন booking-টা দেখবে
 			window.history.replaceState(null, "", MY_APPOINTMENTS_PATH);
 			goTo("done");
 		});
@@ -117,7 +113,6 @@ export function MyBookingFlow({ doctor, slot: initialSlot, alternatives: initial
 			<div className="flex min-w-0 flex-col gap-5">
 				{step !== "taken" && <BookingSteps current={step === "payment" ? "payment" : "details"} />}
 
-				{/* mobile: summary উপরে (desktop-এ ডানে) */}
 				<div className="lg:hidden">
 					<BookingSummary doctor={doctor} slot={slot ?? takenSlot} taken={step === "taken" && Boolean(takenSlot)} />
 				</div>
@@ -345,7 +340,6 @@ export function MyBookingFlow({ doctor, slot: initialSlot, alternatives: initial
 									onClick={() => {
 										setSlot(chosenAlternative);
 										setTakenSlot(null);
-										// URL-এ নতুন slot, যাতে refresh/login-এ এটাই থাকে
 										router.replace(bookingPageHref(doctor.id, chosenAlternative.id), { scroll: false });
 										goTo("details");
 									}}

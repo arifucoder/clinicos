@@ -47,7 +47,6 @@ export function CollectFeeDialog({ appointment, open, onOpenChange }: CollectFee
 				return;
 			}
 
-			// দুটো আলাদা request: টাকা নেওয়া হয়ে গেছে, check-in fail করলেও সেটা ফেরত যায় না
 			const checkIn = await checkInAppointmentAction(appointment.id);
 			if (checkIn.success) toast.success(`Fee received · ${appointment.patient.fullName} checked in`);
 			else toast.warning(`Fee received, but check-in failed: ${checkIn.message}`);
@@ -59,7 +58,6 @@ export function CollectFeeDialog({ appointment, open, onOpenChange }: CollectFee
 		<Dialog
 			open={open}
 			onOpenChange={(next) => !isPending && onOpenChange(next)}
-			// বন্ধের animation শেষে default-এ ফেরো → পরের রোগীর জন্য আবার Cash + check-in
 			onOpenChangeComplete={(isOpen) => {
 				if (isOpen) return;
 				setMethod("CASH");
@@ -99,7 +97,6 @@ export function CollectFeeDialog({ appointment, open, onOpenChange }: CollectFee
 					</div>
 				</div>
 
-				{/* Base UI checkbox: <label>-এর ভেতরে রাখলে লেখায় click করলেও টিক পড়ে */}
 				<label className="flex cursor-pointer items-center gap-2.5 text-sm text-body">
 					<Checkbox
 						checked={checkInAfter}

@@ -9,7 +9,6 @@ export interface BookableSlot extends Pick<ManageSlot, "id" | "startAt" | "endAt
 	checkInOpen: boolean; // এখনই check-in করা যাবে কিনা (না গেলে toggle বন্ধ)
 }
 
-// Desk-এর নিয়ম (SDLC 3.10): OPEN আর endAt > now। Public endpoint ১ ঘণ্টার মধ্যের slot লুকায়।
 export const toBookableSlots = (days: ManageSlotDay[], now: Date): BookableSlot[] =>
 	days
 		.flatMap((day) => day.slots)
@@ -30,8 +29,6 @@ export interface BookableDay {
 	slots: BookableSlot[];
 }
 
-// ১৪ দিনের প্রতিটা দিন (খালি হলেও) + সেদিনের খালি slot।
-// dates[0]-এর আগের দিনে শুরু হয়ে এখনো চলছে এমন slot (রাতের shift) → dates[0]-এ (আজ) যোগ হয়।
 export const toBookableDays = (days: ManageSlotDay[], dates: string[], now: Date): BookableDay[] => {
 	const firstDate = dates[0];
 	const byDate = new Map<string, BookableSlot[]>();

@@ -29,7 +29,6 @@ export const metadata: Metadata = { title: "Book for patient" };
 
 type SearchParams = PageProps<"/admin/front-desk/book">["searchParams"];
 
-// slots/check-in page-এর মতোই: active doctor, নাম অনুযায়ী (api-র limit সর্বোচ্চ 100)
 const ACTIVE_DOCTORS_QUERY = doctorListQuerySchema.parse({
 	isActive: "true",
 	limit: 100,
@@ -37,7 +36,6 @@ const ACTIVE_DOCTORS_QUERY = doctorListQuerySchema.parse({
 	sortOrder: "asc",
 });
 
-// 404 → null (মোছা রোগী/appointment/doctor), বাকি error → error.tsx
 const orNullOn404 = async <T,>(load: () => Promise<{ data: T }>): Promise<T | null> => {
 	try {
 		return (await load()).data;
@@ -47,7 +45,6 @@ const orNullOn404 = async <T,>(load: () => Promise<{ data: T }>): Promise<T | nu
 	}
 };
 
-// পুরো booking window এক call-এ (+ আগের দিন, রাতের shift-এর জন্য) → কোন দিনে slot আছে জানা যায়
 const loadBookableDays = (doctorId: string, dates: string[], now: Date) =>
 	orNullOn404(() =>
 		SlotService.getManageSlots(doctorId, { from: addDays(dates[0], -1), to: dates[dates.length - 1] }),
@@ -68,7 +65,6 @@ async function BookContent({ searchParams }: { searchParams: SearchParams }) {
 	const now = new Date();
 	const today = clinicToday(now);
 
-	// ---------- শেষ: confirmation (URL-এ থাকে → refresh দিলেও হারায় না) ----------
 	if (query.booked) {
 		const appointment = await orNullOn404(() => AppointmentService.getAppointment(query.booked as string));
 		return (
@@ -82,7 +78,6 @@ async function BookContent({ searchParams }: { searchParams: SearchParams }) {
 		);
 	}
 
-	// ---------- ধাপ ১: রোগী ----------
 	if (!query.patientId) {
 		const patients = query.searchTerm
 			? (
@@ -104,10 +99,8 @@ async function BookContent({ searchParams }: { searchParams: SearchParams }) {
 		);
 	}
 
-	// ---------- ধাপ ২ + ৩ ----------
 	const dates = dateRange(today, BOOKING_DAYS);
 
-	// তিনটা call একটা আরেকটার উপর নির্ভর করে না → একসাথে
 	const [patient, doctorsResponse, bookableDays] = await Promise.all([
 		orNullOn404(() => PatientService.getPatient(query.patientId as string)),
 		DoctorService.getDoctors(ACTIVE_DOCTORS_QUERY),
@@ -122,7 +115,6 @@ async function BookContent({ searchParams }: { searchParams: SearchParams }) {
 		);
 	}
 
-	// client-এ শুধু যা লাগে
 	const doctors: SlotDoctorOption[] = doctorsResponse.data.map((doctor) => ({
 		id: doctor.id,
 		name: doctor.user.name,
@@ -130,12 +122,9 @@ async function BookContent({ searchParams }: { searchParams: SearchParams }) {
 	}));
 	const selectedDoctor = doctorsResponse.data.find((doctor) => doctor.id === query.doctorId);
 
-	// যেসব দিনে অন্তত একটা খালি slot আছে
 	const openDates = (bookableDays ?? []).filter((day) => day.slots.length > 0).map((day) => day.date);
-	// URL-এর তারিখে slot থাকলে সেটা, নইলে প্রথম যেদিন slot আছে (খালি দিন দেখিয়ে লাভ নেই)
 	const date = query.date && openDates.includes(query.date) ? query.date : (openDates[0] ?? today);
 	const slots = bookableDays?.find((day) => day.date === date)?.slots ?? [];
-	// doctor/তারিখ বদলালে পুরনো slotId তালিকায় থাকে না → null → ধাপ ৩ লুকায়
 	const selectedSlot = slots.find((slot) => slot.id === query.slotId) ?? null;
 
 	return (

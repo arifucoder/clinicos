@@ -40,7 +40,6 @@ export function PatientRowActions({
 				<MoreVertical />
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end" className="w-52">
-				{/* বন্ধ account-এর password reset অর্থহীন: login তো হবেই না */}
 				<DropdownMenuItem disabled={!isActive} onClick={() => onResetPassword(patient)}>
 					<KeyRound />
 					Reset password

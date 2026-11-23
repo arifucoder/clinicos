@@ -11,7 +11,6 @@ import { useState } from "react";
 import { NavLinks } from "./NavLinks";
 
 interface MobileNavProps {
-	// logged in হলে role-এর home (/admin, /doctor, /portal); না হলে undefined
 	dashboardHref?: string;
 }
 

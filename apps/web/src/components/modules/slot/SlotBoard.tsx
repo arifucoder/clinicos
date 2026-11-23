@@ -15,7 +15,6 @@ import { DeleteSlotsDialog } from "./DeleteSlotsDialog";
 
 type ChipTone = "open" | "booked" | "pending" | "blocked";
 
-// design: blue = open, teal = booked, amber = টাকার অপেক্ষা, rose = blocked
 const CHIP_TONE: Record<ChipTone, string> = {
 	open: "border-primary/20 bg-primary-soft text-primary-hover hover:border-primary/60",
 	booked: "border-transparent bg-success-soft text-success-foreground hover:border-success/60",
@@ -67,7 +66,6 @@ export function SlotBoard({
 	const nowMs = new Date(now).getTime();
 	const slotsById = useMemo(() => new Map(days.flatMap((day) => day.slots).map((slot) => [slot.id, slot])), [days]);
 
-	// revalidate-এর পরে যে slot আর নেই বা অতীত হয়ে গেছে, সেটা selection থেকে বাদ
 	const selected = [...selectedIds]
 		.map((id) => slotsById.get(id))
 		.filter((slot): slot is ManageSlot => slot !== undefined && !isPast(slot, nowMs));
@@ -222,7 +220,6 @@ function SlotChip({ slot, past, selected, onToggle }: SlotChipProps) {
 	const detail = slot.booking
 		? `${slot.booking.patient.fullName} · ${slot.booking.appointmentNumber}`
 		: slot.blockReason;
-	// screen reader: "09:00–09:15, Booked, Rahim · APT-0012, past"
 	const label = [time, TONE_LABEL[tone], detail, past ? "past" : null].filter(Boolean).join(", ");
 
 	return (

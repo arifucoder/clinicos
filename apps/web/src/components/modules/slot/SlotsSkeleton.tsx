@@ -2,7 +2,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { BOARD_DAYS } from "@/zod/slot.validation";
 import { cn } from "cn";
 
-// admin: picker + week nav; doctor: শুধু week nav
 export function SlotsSkeleton({ withPicker = false }: { withPicker?: boolean }) {
 	return (
 		<div className="space-y-5">

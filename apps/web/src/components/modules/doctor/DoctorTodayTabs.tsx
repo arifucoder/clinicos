@@ -8,7 +8,6 @@ interface DoctorTodayTabsProps {
 	counts: Record<DoctorTodayTab, number>;
 }
 
-// Link-ভিত্তিক tab (StaffTabs-এর মতো): JS ছাড়াও কাজ করে, URL-এ থাকে, back বাটনে ফেরা যায়
 export function DoctorTodayTabs({ active, counts }: DoctorTodayTabsProps) {
 	return (
 		<nav aria-label="Patient list" className="flex gap-1 overflow-x-auto border-b border-border">
@@ -17,7 +16,6 @@ export function DoctorTodayTabs({ active, counts }: DoctorTodayTabsProps) {
 				return (
 					<Link
 						key={tab}
-						// শুধু tab: আগের tab-এর page/search এখানে আসবে না
 						href={{ pathname: "/doctor", query: { tab } }}
 						scroll={false}
 						aria-current={isActive ? "page" : undefined}

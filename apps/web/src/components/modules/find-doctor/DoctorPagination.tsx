@@ -6,7 +6,6 @@ import type { PublicDoctorListQuery } from "@/zod/doctor.validation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
-// আসল <a href> link: JS ছাড়াও চলে, search engine-ও পরের page খুঁজে পায়
 export function DoctorPagination({ meta, query }: { meta: PaginationMeta; query: PublicDoctorListQuery }) {
 	const { page, limit, total, totalPages } = meta;
 	if (total === 0) return null;

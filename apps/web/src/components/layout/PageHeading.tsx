@@ -12,7 +12,6 @@ export function PageHeading({ role }: { role: UserRole }) {
 	const pathname = usePathname();
 	const current = findActiveNavItem(pathname, role);
 	if (!current) {
-		// menu-তে নেই কিন্তু সব role-এর page (user menu থেকে খোলে)
 		const title = SHARED_PAGE_TITLES[pathname];
 		return title ? <span className="truncate font-heading text-[17px] font-bold text-foreground">{title}</span> : null;
 	}
@@ -27,7 +26,6 @@ export function PageHeading({ role }: { role: UserRole }) {
 					</span>
 				</nav>
 			)}
-			{/* h1 না, span: আসল h1 প্রতিটা page নিজে দেবে (design-এ 28px "Patients") */}
 			<span className="truncate font-heading text-[17px] font-bold text-foreground">{current.item.title}</span>
 		</div>
 	);

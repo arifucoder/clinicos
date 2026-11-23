@@ -28,7 +28,6 @@ const STATUS_OPTIONS = [
 ];
 
 export function SpecialtyTable({ data, meta, query }: SpecialtyTableProps) {
-	// target আর open আলাদা: বন্ধ হওয়ার animation-এর সময় title হঠাৎ "New specialty" হয়ে যায় না
 	const [editTarget, setEditTarget] = useState<Specialty | null>(null);
 	const [editOpen, setEditOpen] = useState(false);
 	const [deleteTarget, setDeleteTarget] = useState<Specialty | null>(null);

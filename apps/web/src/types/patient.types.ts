@@ -1,4 +1,3 @@
-// api-র patientSelect-এর সাথে মিল (patient-record.service.ts)। Date JSON হয়ে string আসে।
 export type Gender = "MALE" | "FEMALE" | "OTHER";
 export type BloodGroup =
 	| "A_POSITIVE"
@@ -27,14 +26,12 @@ export interface PatientRecord {
 	user: { id: string; email: string; isActive: boolean; needPasswordChange: boolean };
 }
 
-// POST /patient-records → api-র response
 export interface CreatePatientResult {
 	patient: PatientRecord;
 	temporaryPassword: string;
 	emailSent: boolean;
 }
 
-// action → client: card দেখানোর জন্য শুধু যা লাগে
 export interface RegisteredPatient {
 	patientId: string;
 	fullName: string;
@@ -43,13 +40,11 @@ export interface RegisteredPatient {
 	emailSent: boolean;
 }
 
-// POST /patient-records/:id/reset-password
 export interface ResetPasswordResult {
 	temporaryPassword: string;
 	emailSent: boolean;
 }
 
-// GET/PATCH /patient/me → api-র myProfileSelect + toMyProfile (patient.service.ts)
 export interface MyPatientProfile {
 	id: string;
 	fullName: string;

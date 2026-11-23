@@ -42,7 +42,6 @@ export function CheckInToolbar({ doctors, doctorId, show }: CheckInToolbarProps)
 				)}
 			</div>
 
-			{/* default ("waiting") URL-এ রাখি না → URL ছোট থাকে */}
 			<div
 				role="group"
 				aria-label="Show"

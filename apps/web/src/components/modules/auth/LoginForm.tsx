@@ -48,7 +48,6 @@ export function LoginForm({ defaultEmail, next }: LoginFormProps) {
 
 			toast.success(result.message);
 			router.replace(result.data.redirectTo);
-			// navbar-এর মতো server component নতুন cookie দিয়ে আবার render হবে
 			router.refresh();
 		},
 	});

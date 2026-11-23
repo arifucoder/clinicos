@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreVertical, Pencil, Power, PowerOff, Trash2 } from "lucide-react";
 
-// table → columns-এ যা যায়; admin আর doctor দুই table-ই ব্যবহার করে
 export interface StaffRowHandlers<TRow> {
 	busyId: string | null;
 	onEdit: (row: TRow) => void;

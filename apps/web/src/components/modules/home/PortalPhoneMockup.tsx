@@ -1,6 +1,5 @@
 import { CalendarDays, CircleCheck } from "lucide-react";
 
-// সাজানো ছবি (illustration) — আসল data না। Portal-এর আসল জিনিস দেখায়: পরের visit, status, payment
 export function PortalPhoneMockup() {
 	return (
 		<div

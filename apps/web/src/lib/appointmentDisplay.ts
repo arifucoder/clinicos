@@ -6,7 +6,6 @@ export const PAYMENT_METHOD_LABEL: Record<PaymentMethod, string> = {
 	MOBILE: "Mobile",
 };
 
-// "Paid online" / "Paid at desk · Cash" / null (unpaid)
 export const paidLabel = (appointment: Appointment): string | null => {
 	const payment = appointment.payments.find((item) => item.status === "SUCCEEDED");
 	if (!payment) return null;
@@ -14,7 +13,6 @@ export const paidLabel = (appointment: Appointment): string | null => {
 	return payment.deskMethod ? `Paid at desk · ${PAYMENT_METHOD_LABEL[payment.deskMethod]}` : "Paid at desk";
 };
 
-// design: teal = live (checked in), amber = waiting (payment), rose = danger
 export const APPOINTMENT_STATUS_META: Record<AppointmentStatus, { label: string; tone: StatusTone }> = {
 	PENDING_PAYMENT: { label: "Awaiting payment", tone: "warning" },
 	CONFIRMED: { label: "Confirmed", tone: "info" },
@@ -27,7 +25,6 @@ export const APPOINTMENT_STATUS_META: Record<AppointmentStatus, { label: string;
 
 export const SOURCE_LABEL: Record<Appointment["source"], string> = { ONLINE: "Online", STAFF: "Front desk" };
 
-// api-র APPOINTMENT_CONFIG-এর সাথে একই মান রাখো (UI শুধু button লুকায়; আসল নিয়ম api-তে)
 const MINUTE_MS = 60_000;
 const CHECK_IN_OPENS_MINUTES_BEFORE = 120;
 const NO_SHOW_AFTER_MINUTES = 30;
@@ -35,14 +32,12 @@ const NO_SHOW_AFTER_MINUTES = 30;
 export const noShowOpensAt = (appointment: Appointment) =>
 	new Date(new Date(appointment.startAt).getTime() + NO_SHOW_AFTER_MINUTES * MINUTE_MS).toISOString();
 
-// কোন row-এ কোন action দেখাবে। nowMs server থেকে আসে → hydration mismatch হয় না
 export const getAppointmentAbilities = (appointment: Appointment, nowMs: number) => {
 	const startMs = new Date(appointment.startAt).getTime();
 	const holdActive =
 		appointment.status === "PENDING_PAYMENT" &&
 		appointment.holdExpiresAt !== null &&
 		new Date(appointment.holdExpiresAt).getTime() > nowMs;
-	// api-র recordDeskPayment / startOnlinePayment-এর একই শর্ত
 	const payable = !appointment.isPaid && (appointment.status === "CONFIRMED" || holdActive);
 
 	return {

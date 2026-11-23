@@ -40,21 +40,17 @@ export default function PortalAppointmentsPage({ searchParams }: PageProps<"/por
 }
 
 async function AppointmentsContent({ searchParams }: { searchParams: SearchParams }) {
-	// ভুল URL (?tab=xyz&page=-3) → crash না করে default
 	const query = portalAppointmentsQuerySchema.parse(await searchParams);
 
-	// request-time-এ চালাও → এর পরে new Date() নিরাপদ
 	await connection();
 	const nowMs = new Date().getTime();
 
 	const otherTab = query.tab === "upcoming" ? "past" : "upcoming";
 	const config = PORTAL_TAB_CONFIG[query.tab];
-	// মাস শুধু বছরের সাথে; URL-এ বছর ছাড়া মাস থাকলে উপেক্ষা
 	const month = query.year ? query.month : undefined;
 	const range = periodToRange(query.year, month);
 	const sortOrder = query.sortOrder ?? config.sortOrder;
 
-	// patientId পাঠাই না: api session থেকে নেয় (IDOR-safe)। অন্য tab থেকে শুধু মোট সংখ্যা (limit 1)
 	const [listResponse, otherResponse, periodsResponse] = await Promise.all([
 		AppointmentService.getMyAppointments({
 			status: config.statuses,
@@ -65,17 +61,13 @@ async function AppointmentsContent({ searchParams }: { searchParams: SearchParam
 			page: query.page,
 			limit: query.limit,
 		}),
-		// একই search → tab-এর সংখ্যা = মিলে যাওয়া appointment
 		AppointmentService.getMyAppointments({
 			status: PORTAL_TAB_CONFIG[otherTab].statuses,
 			searchTerm: query.searchTerm,
 			...range,
 			limit: 1,
 		}),
-		// Year/Month filter-এ শুধু যে বছর/মাসে এই tab-এর appointment আছে।
-		// এটা না পেলে পুরো page ভাঙবে না → শুধু chip লুকাবে (filter ঐচ্ছিক সুবিধা)
 		AppointmentService.getMyAppointmentPeriods(config.statuses).catch((error: unknown) => {
-			// পুরো AxiosError log করি না: ওতে request-এর Cookie header (accessToken) থাকে
 			const status = isAxiosError(error) ? error.response?.status : undefined;
 			console.error(`Could not load appointment periods (status ${status ?? "network error"})`);
 			return { data: [] as AppointmentPeriod[] };

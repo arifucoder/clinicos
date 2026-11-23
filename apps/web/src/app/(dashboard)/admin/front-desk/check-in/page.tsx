@@ -18,7 +18,6 @@ export const metadata: Metadata = { title: "Check-in" };
 
 type SearchParams = PageProps<"/admin/front-desk/check-in">["searchParams"];
 
-// slots page-এর মতোই: active doctor, নাম অনুযায়ী (api-র limit সর্বোচ্চ 100)
 const ACTIVE_DOCTORS_QUERY = doctorListQuerySchema.parse({
 	isActive: "true",
 	limit: 100,
@@ -37,15 +36,12 @@ export default function CheckInPage({ searchParams }: PageProps<"/admin/front-de
 async function CheckInContent({ searchParams }: { searchParams: SearchParams }) {
 	const query = checkInQuerySchema.parse(await searchParams);
 
-	// connection(): "এটা request-time-এ চালাও, prerender কোরো না" → এর পরেই new Date() নিরাপদ
 	await connection();
 	const today = clinicToday(new Date());
 
-	// search করলে checked-in-ও দেখাই: রোগী "আমি তো এসেছি" বললে যেন "No appointment" না দেখে
 	const includeArrived = query.show === "all" || !!query.searchTerm;
 	const status: AppointmentStatus[] = includeArrived ? ["CONFIRMED", "CHECKED_IN"] : ["CONFIRMED"];
 
-	// দুটো call একটা আরেকটার উপর নির্ভর করে না → একসাথে
 	const [appointmentsResponse, doctorsResponse] = await Promise.all([
 		AppointmentService.getAppointments({
 			date: today,
@@ -67,7 +63,6 @@ async function CheckInContent({ searchParams }: { searchParams: SearchParams }) 
 		totalPages: 1,
 	};
 
-	// client-এ শুধু যা লাগে
 	const doctors: SlotDoctorOption[] = doctorsResponse.data.map((doctor) => ({
 		id: doctor.id,
 		name: doctor.user.name,

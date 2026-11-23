@@ -8,7 +8,6 @@ interface PaymentReturnBannerProps {
 	appointment: Appointment | undefined; // এই page-এ না থাকলে undefined
 }
 
-// Stripe থেকে ফেরার পর। webhook redirect-এর একটু পরে আসতে পারে → paid না হওয়া পর্যন্ত ৫ সেকেন্ডে refresh
 export function PaymentReturnBanner({ payment, appointment }: PaymentReturnBannerProps) {
 	const confirming = payment === "success" && appointment !== undefined && !appointment.isPaid;
 
@@ -38,7 +37,6 @@ export function PaymentReturnBanner({ payment, appointment }: PaymentReturnBanne
 			<AutoRefresh enabled={confirming} />
 			{content.icon}
 			<p className="flex-1">{content.text}</p>
-			{/* query বাদ দিয়ে একই page → banner চলে যায় */}
 			<Link
 				href="/portal/appointments"
 				aria-label="Dismiss message"

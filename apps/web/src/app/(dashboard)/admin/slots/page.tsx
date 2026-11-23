@@ -22,7 +22,6 @@ export const metadata: Metadata = { title: "Doctors & slots" };
 
 type SearchParams = PageProps<"/admin/slots">["searchParams"];
 
-// picker-এর জন্য: active doctor, নাম অনুযায়ী (api-র limit সর্বোচ্চ 100)
 const ACTIVE_DOCTORS_QUERY = doctorListQuerySchema.parse({
 	isActive: "true",
 	limit: 100,
@@ -30,7 +29,6 @@ const ACTIVE_DOCTORS_QUERY = doctorListQuerySchema.parse({
 	sortOrder: "asc",
 });
 
-// ভুল/মোছা doctorId → error page না, সুন্দর empty state
 const loadSlots = async (doctorId: string, range: { from: string; to: string }) => {
 	try {
 		const response = await SlotService.getManageSlots(doctorId, range);
@@ -52,21 +50,17 @@ export default function AdminSlotsPage({ searchParams }: PageProps<"/admin/slots
 async function SlotsContent({ searchParams }: { searchParams: SearchParams }) {
 	const query = slotPageQuerySchema.parse(await searchParams);
 
-	// connection(): Next-কে বলি "এটা request-time-এ চালাও, prerender কোরো না"।
-	// এর পরেই new Date() নিরাপদ (httpClient-এর createInstance-এও একই নিয়ম)
 	await connection();
 	const now = new Date();
 	const today = clinicToday(now);
 	const from = query.from ?? today;
 	const to = addDays(from, BOARD_DAYS - 1);
 
-	// দুটো call একটা আরেকটার উপর নির্ভর করে না → একসাথে
 	const [doctorsResponse, slotDays] = await Promise.all([
 		DoctorService.getDoctors(ACTIVE_DOCTORS_QUERY),
 		query.doctorId ? loadSlots(query.doctorId, { from, to }) : Promise.resolve(null),
 	]);
 
-	// client-এ শুধু যা লাগে
 	const doctors: SlotDoctorOption[] = doctorsResponse.data.map((doctor) => ({
 		id: doctor.id,
 		name: doctor.user.name,
@@ -103,7 +97,6 @@ async function SlotsContent({ searchParams }: { searchParams: SearchParams }) {
 				</div>
 			) : (
 				<SlotBoard
-					// doctor বা সপ্তাহ বদলালে selection নতুন করে শুরু
 					key={`${query.doctorId}-${from}`}
 					doctorId={query.doctorId}
 					days={fillWeek(from, slotDays)}

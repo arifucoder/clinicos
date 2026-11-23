@@ -20,9 +20,7 @@ export interface DashboardNavItem {
 	title: string;
 	href: string;
 	icon: LucideIcon;
-	/** true: শুধু হুবহু এই URL-এ active (যেমন "/admin" যেন "/admin/staff"-এ active না দেখায়) */
 	exact?: boolean;
-	/** বাড়তি যেসব path-এ এই item active দেখাবে (যেমন consultation page → "Today's patients") */
 	alsoActiveOn?: string[];
 }
 
@@ -31,7 +29,6 @@ export interface DashboardNavSection {
 	items: DashboardNavItem[];
 }
 
-// SUPER_ADMIN আর ADMIN একই menu (SDLC 7.2)। কে কোন কাজ পারবে তা api ঠিক করে, menu না।
 const adminNav: DashboardNavSection[] = [
 	{
 		title: "Front desk",
@@ -67,7 +64,6 @@ const doctorNav: DashboardNavSection[] = [
 				icon: ClipboardList,
 				exact: true,
 			},
-			// consultation page (/doctor/appointments/[id]) prefix মিলে এখানেই active দেখায়
 			{ title: "History", href: "/doctor/appointments", icon: History },
 			{ title: "My slots", href: "/doctor/slots", icon: CalendarDays },
 			{ title: "Profile", href: "/doctor/profile", icon: UserRound },
@@ -86,7 +82,6 @@ const patientNav: DashboardNavSection[] = [
 	},
 ];
 
-// Record<UserRole, …>: নতুন role যোগ করলে এখানে menu না দেওয়া পর্যন্ত compile error
 export const dashboardNavItems: Record<UserRole, DashboardNavSection[]> = {
 	SUPER_ADMIN: adminNav,
 	ADMIN: adminNav,

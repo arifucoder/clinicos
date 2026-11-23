@@ -20,7 +20,6 @@ const EMAIL_TAKEN = "An account with this email already exists.";
 const LICENSE_TAKEN = "A doctor with this license number already exists.";
 const SPECIALTY_INACTIVE = "One of these specialties is no longer active. Refresh and pick again.";
 
-// api-র field নাম → form-এর field নাম (form-এ "fee" dollar-এ, api-তে cents)
 const toFormField = (key: string) => (key === "consultationFeeCents" ? "fee" : key);
 
 const toDoctorError = (error: unknown): ActionError => {
@@ -28,7 +27,6 @@ const toDoctorError = (error: unknown): ActionError => {
 		const status = error.response?.status;
 		const message = error.response?.data?.message ?? "";
 
-		// 409 দুই কারণে আসে: email আর license। message দেখে ঠিক field-এ বসাই
 		if (status === 409 && /license/i.test(message)) {
 			return { success: false, message: LICENSE_TAKEN, fieldErrors: { licenseNumber: LICENSE_TAKEN } };
 		}
@@ -114,14 +112,12 @@ export async function deleteDoctorAction(id: unknown): Promise<ActionResult> {
 
 const PROFILE_PATH = "/doctor/profile";
 
-// id নেই: api session থেকে নিজের profile বের করে (IDOR-safe)
 export async function updateMyProfileAction(input: unknown): Promise<ActionResult> {
 	const parsed = updateMyProfileSchema.safeParse(input);
 	if (!parsed.success) return fixFields(parsed.error);
 
 	try {
 		const response = await DoctorService.updateMyProfile(parsed.data);
-		// এই page আর layout (topbar-এর নাম) আবার render হয়
 		revalidatePath(PROFILE_PATH);
 		return { success: true, message: response.message, data: null };
 	} catch (error) {
@@ -137,7 +133,6 @@ export async function uploadMyPhotoAction(formData: FormData): Promise<ActionRes
 	}
 	if (photo.size > PHOTO_MAX_BYTES) return { success: false, message: "Photo must be 2 MB or smaller." };
 
-	// client-এর FormData সরাসরি না পাঠিয়ে নতুন বানাই → শুধু "photo" field যায়, বাড়তি কিছু না
 	const body = new FormData();
 	body.append("photo", photo, photo.name);
 

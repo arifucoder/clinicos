@@ -5,7 +5,6 @@ import { cn } from "@/lib/utils";
 
 const AXIS = ["00:00", "06:00", "12:00", "18:00", "24:00"];
 
-// slot টেবিল থেকে বানানো: কোন দিন কখন খালি সময় আছে (booked সময় api লুকায়, তাই "open times")
 export function OpenHours({ days, today }: { days: BookingDay[]; today: string }) {
 	return (
 		<section
@@ -19,7 +18,6 @@ export function OpenHours({ days, today }: { days: BookingDay[]; today: string }
 				<span className="text-[13px] text-muted-foreground">Clinic time ({CLINIC_TIME_ZONE})</span>
 			</div>
 
-			{/* ml-89 = row-এর padding 10 + day 110 + gap 8 + hours 220 + gap 8 = 356px → timeline column-এর ঠিক উপরে */}
 			<div
 				aria-hidden="true"
 				className="hidden justify-between text-[11px] font-medium text-muted-foreground sm:mr-2.5 sm:ml-89 sm:flex"

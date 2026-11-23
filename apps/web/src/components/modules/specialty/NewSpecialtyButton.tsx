@@ -5,7 +5,6 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 import { SpecialtyFormDialog } from "./SpecialtyFormDialog";
 
-// header (server component)-এ বসে, তাই dialog-এর state নিজের ভেতরে
 export function NewSpecialtyButton() {
 	const [open, setOpen] = useState(false);
 

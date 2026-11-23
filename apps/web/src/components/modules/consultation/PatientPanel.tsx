@@ -12,13 +12,11 @@ interface PatientPanelProps {
 	today: string; // clinicToday() → বয়স হিসাব; server থেকে আসে, browser-এর ঘড়ি থেকে না
 }
 
-// server component: শুধু দেখায়, কোনো state নেই → "use client" লাগে না
 export function PatientPanel({ appointment, history, historyTotal, today }: PatientPanelProps) {
 	const { patient } = appointment;
 
 	return (
 		<aside aria-label="Patient details" className="space-y-4">
-			{/* design: rose = allergy, সবার উপরে, চোখ এড়ানো চলবে না */}
 			{patient.allergies && (
 				<div className="flex gap-2 rounded-xl bg-danger-soft p-4 text-sm text-danger-foreground">
 					<TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
@@ -81,7 +79,6 @@ export function PatientPanel({ appointment, history, historyTotal, today }: Pati
 						<ul className="divide-y divide-border">
 							{history.map((visit) => (
 								<li key={visit.id}>
-									{/* পুরো row-ই link → সেই দিনের consultation/prescription খোলে */}
 									<Link
 										href={`/doctor/appointments/${visit.id}`}
 										className="group flex items-center gap-2 px-4 py-3 text-sm outline-none transition-colors hover:bg-muted/60 focus-visible:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-inset"
@@ -108,7 +105,6 @@ export function PatientPanel({ appointment, history, historyTotal, today }: Pati
 								</li>
 							))}
 						</ul>
-						{/* ৫টার বেশি হলে list লম্বা করি না → History page-এ এই রোগীর সব visit */}
 						{historyTotal > history.length && (
 							<Link
 								href={`/doctor/appointments?patientId=${patient.id}`}

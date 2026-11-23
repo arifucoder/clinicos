@@ -7,7 +7,6 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { StaffRowActions, type StaffRowHandlers } from "./StaffRowActions";
 import { StaffStatus } from "./StaffStatus";
 
-// column id = api-র sortBy নাম। mobile-এ শুধু doctor আর ⋮
 export const DOCTOR_MOBILE_COLUMNS = ["user.name", "actions"] as const;
 
 const doctorStatus = (doctor: StaffDoctor) => (
@@ -22,7 +21,6 @@ export const getDoctorColumns = (
 	handlers: StaffRowHandlers<StaffDoctor>,
 ): ColumnDef<DataTableFeatures, StaffDoctor>[] => [
 	{
-		// nested field: accessorKey না দিয়ে id + accessorFn, যাতে id হুবহু "user.name" থাকে (sortBy)
 		id: "user.name",
 		accessorFn: (doctor) => doctor.user.name,
 		enableSorting: true,
@@ -33,7 +31,6 @@ export const getDoctorColumns = (
 				<div className="min-w-0 space-y-1">
 					<p className="font-medium text-foreground">{doctor.user.name}</p>
 					<p className="truncate text-xs text-muted-foreground">{doctor.user.email}</p>
-					{/* mobile: লুকানো column-গুলোর মূল তথ্য এখানে */}
 					<div className="space-y-1.5 md:hidden">
 						<p className="text-xs text-body">
 							{doctor.specialties.map((specialty) => specialty.name).join(", ")} ·{" "}

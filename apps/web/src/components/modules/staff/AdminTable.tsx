@@ -24,7 +24,6 @@ interface AdminTableProps {
 }
 
 export function AdminTable({ data, meta, query }: AdminTableProps) {
-	// target আর open আলাদা: বন্ধ হওয়ার animation-এর সময় title হঠাৎ বদলে যায় না
 	const [editTarget, setEditTarget] = useState<StaffAdmin | null>(null);
 	const [editOpen, setEditOpen] = useState(false);
 	const [deleteTarget, setDeleteTarget] = useState<StaffAdmin | null>(null);

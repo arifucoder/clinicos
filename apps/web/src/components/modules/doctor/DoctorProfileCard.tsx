@@ -36,7 +36,6 @@ export function DoctorProfileCard({ doctor }: { doctor: StaffDoctor }) {
 					<StaffStatus isActive={user.isActive} needPasswordChange={false} isPaused={doctor.isPaused} />
 				</div>
 				<EditMyProfileButton
-					// null → "": form-এর input সব সময় string চায়
 					defaults={{ name: user.name, phone: user.phone ?? "", bio: doctor.bio ?? "" }}
 					photoUrl={doctor.photoUrl}
 				/>

@@ -6,7 +6,6 @@ import type * as z from "zod";
 
 const FALLBACK_MESSAGE = "Something went wrong. Please try again.";
 
-// Zod issue → { field: "first message" }
 export const zodFieldErrors = (error: z.ZodError): Record<string, string> => {
 	const fieldErrors: Record<string, string> = {};
 	for (const issue of error.issues) {
@@ -16,7 +15,6 @@ export const zodFieldErrors = (error: z.ZodError): Record<string, string> => {
 	return fieldErrors;
 };
 
-// যেকোনো error → client-এর জন্য নিরাপদ, একই আকারের result
 export const toActionError = (error: unknown): ActionError => {
 	if (isAxiosError<ApiErrorResponse>(error)) {
 		const response = error.response;
@@ -26,7 +24,6 @@ export const toActionError = (error: unknown): ActionError => {
 		}
 
 		if (response.status === 429) {
-			// OTP-র "Too many wrong attempts. Request a new code"-এর মতো নির্দিষ্ট message থাকলে সেটাই দেখাও
 			return {
 				success: false,
 				message: response.data?.message ?? "Too many attempts. Please wait a few minutes and try again.",

@@ -5,7 +5,6 @@ import { Banknote, CalendarDays, CheckCircle2, Clock, UserCheck, UserX } from "l
 
 export function AdminTodayStats({ today }: { today: AdminStats["today"] }) {
 	const counts = today.byStatus;
-	// PENDING_PAYMENT = ১৫ মিনিটের hold, এখনো পাকা booking না; CANCELLED/EXPIRED-ও বাদ
 	const booked = counts.CONFIRMED + counts.CHECKED_IN + counts.COMPLETED + counts.NO_SHOW;
 
 	const items: StatItem[] = [

@@ -1,7 +1,6 @@
 import type { ShellUser } from "@/lib/userDisplay";
 import { SidebarContent } from "./SidebarContent";
 
-// desktop (lg+) এ স্থির sidebar; ছোট screen-এ MobileSidebar
 export function AppSidebar({ user }: { user: ShellUser }) {
 	return (
 		<aside

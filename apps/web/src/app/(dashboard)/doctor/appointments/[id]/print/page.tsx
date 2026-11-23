@@ -23,7 +23,6 @@ export default function DoctorPrescriptionPrintPage({ params }: PrintPageProps) 
 	);
 }
 
-// api doctor-এর জন্য scope করে → অন্য doctor-এর appointment হলে 404
 async function getAppointmentOrNotFound(id: string): Promise<Appointment> {
 	try {
 		const response = await AppointmentService.getAppointment(id);
@@ -40,7 +39,6 @@ async function PrintContent({ params }: PrintPageProps) {
 
 	const appointment = await getAppointmentOrNotFound(id);
 
-	// httpClient আগেই connection() করেছে → new Date() নিরাপদ
 	const today = clinicToday(new Date());
 
 	return (

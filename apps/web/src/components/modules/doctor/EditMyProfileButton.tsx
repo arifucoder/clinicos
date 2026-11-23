@@ -46,7 +46,6 @@ export function EditMyProfileButton({ defaults, photoUrl }: EditMyProfileButtonP
 						<DialogDescription>License, fee, specialties and room are managed by the clinic.</DialogDescription>
 					</DialogHeader>
 
-					{/* photo আলাদা endpoint → বাছাই করলেই save হয়, নিচের "Save changes"-এর অপেক্ষা করে না */}
 					<div className="flex items-center gap-4 rounded-lg border border-border p-3">
 						<MyPhotoControl name={defaults.name} photoUrl={photoUrl} />
 						<p className="text-xs text-muted-foreground">
@@ -54,7 +53,6 @@ export function EditMyProfileButton({ defaults, photoUrl }: EditMyProfileButtonP
 						</p>
 					</div>
 
-					{/* dialog বন্ধ হলে form unmount হয় → আবার খুললে সর্বশেষ মান দিয়ে শুরু */}
 					{open && <MyProfileForm defaults={defaults} onDone={() => setOpen(false)} />}
 				</DialogContent>
 			</Dialog>

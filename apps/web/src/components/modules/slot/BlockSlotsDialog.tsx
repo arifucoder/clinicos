@@ -128,7 +128,6 @@ function BlockForm({ doctorId, slotIds, onDone }: BlockFormProps) {
 			<form.Field name="reason">
 				{(field) => {
 					const error = getClientError(field.state.meta) ?? serverErrors.reason;
-					// public slot picker-এও কারণ দেখায় (SDLC 3.9)
 					const hint = `Patients can see this. ${field.state.value.length}/200`;
 					return (
 						<FieldShell id="block-reason" label="Reason" error={error} hint={hint}>

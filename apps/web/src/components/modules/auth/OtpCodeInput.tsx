@@ -28,7 +28,6 @@ export function OtpCodeInput({ invalid, describedBy, ...props }: OtpCodeInputPro
 		>
 			<InputOTPGroup>
 				{Array.from({ length: OTP_LENGTH }, (_, index) => (
-					// slot-এ aria-invalid দিলে তবেই লাল border আসে
 					<InputOTPSlot key={index} index={index} aria-invalid={invalid} className="size-12 text-lg" />
 				))}
 			</InputOTPGroup>

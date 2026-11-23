@@ -3,7 +3,6 @@ import { Check } from "lucide-react";
 
 export type BookingStepKey = "details" | "payment";
 
-// Account step: login করেই এই page-এ আসা যায় → সবসময় ✓
 const STEPS = [
 	{ key: "account", label: "Account" },
 	{ key: "details", label: "Visit details" },

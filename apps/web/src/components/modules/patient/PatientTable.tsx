@@ -28,7 +28,6 @@ const GENDER_OPTIONS = GENDERS.map((value) => ({ value, label: GENDER_LABEL[valu
 const BLOOD_GROUP_OPTIONS = BLOOD_GROUPS.map((value) => ({ value, label: BLOOD_GROUP_LABEL[value] }));
 
 export function PatientTable({ data, meta, query, today }: PatientTableProps) {
-	// target আর open আলাদা: বন্ধ হওয়ার animation-এর সময় নাম হঠাৎ মুছে যায় না
 	const [resetTarget, setResetTarget] = useState<PatientRecord | null>(null);
 	const [resetOpen, setResetOpen] = useState(false);
 	const [busyId, setBusyId] = useState<string | null>(null);

@@ -34,7 +34,6 @@ import { toast } from "sonner";
 
 const FORM_FIELDS = new Set(["dates", "startTime", "endTime", "slotMinutes", "breaks"]);
 
-// satisfies না: dates: [] তাহলে never[] হয়ে যেত
 const DEFAULT_VALUES: OpenSlotsFormValues = {
 	dates: [],
 	startTime: "09:00",
@@ -94,7 +93,6 @@ function OpenSlotsForm({ doctorId, today, onDone }: OpenSlotsFormProps) {
 
 			const result = await openSlotsAction(doctorId, value);
 			if (!result.success) {
-				// field-এর error হলে field-এ; 409 overlap / 400 past হলে উপরে message
 				const fieldErrors = result.fieldErrors ?? {};
 				if (Object.keys(fieldErrors).some((key) => FORM_FIELDS.has(key))) setServerErrors(fieldErrors);
 				else setFormError(result.message);
@@ -252,7 +250,6 @@ function OpenSlotsForm({ doctorId, today, onDone }: OpenSlotsFormProps) {
 					</form.Field>
 				</div>
 
-				{/* "HH:mm" string-এ < তুলনা ঠিক কাজ করে (zero-padded) */}
 				<form.Subscribe
 					selector={(state) => state.values.endTime !== "" && state.values.endTime < state.values.startTime}
 				>

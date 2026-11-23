@@ -2,8 +2,6 @@
 
 import { ChevronDown, ChevronsUpDown, ChevronUp } from "lucide-react";
 
-// v9-এর Column<TFeatures, TData, TValue> generic জটিল। এখানে শুধু ৩টা method লাগে,
-// তাই সেটুকুর type লিখলাম। যেকোনো table-এর column এর সাথে মিলে যায় (structural typing)।
 interface SortableColumn {
 	getCanSort: () => boolean;
 	getIsSorted: () => false | "asc" | "desc";
@@ -23,7 +21,6 @@ export function DataTableColumnHeader({ column, title }: DataTableColumnHeaderPr
 	return (
 		<button
 			type="button"
-			// এখন asc হলে desc-এ যাও, নইলে asc
 			onClick={() => column.toggleSorting(sorted === "asc")}
 			className="-ml-1 inline-flex items-center gap-1 rounded px-1 py-0.5 outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring data-[sorted=true]:text-foreground"
 			data-sorted={!!sorted}

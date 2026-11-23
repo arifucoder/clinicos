@@ -13,10 +13,8 @@ import { Suspense } from "react";
 
 export const metadata: Metadata = { title: "My slots" };
 
-// api session থেকে নিজের doctorProfile বের করে → client কোনো id পাঠায় না
 const ME = "me";
 
-// এখানে doctor বাছাই নেই → URL-এ শুধু from
 const doctorSlotsQuerySchema = slotPageQuerySchema.pick({ from: true });
 
 type SearchParams = PageProps<"/doctor/slots">["searchParams"];
@@ -38,7 +36,6 @@ async function SlotsContent({ searchParams }: { searchParams: SearchParams }) {
 	const from = query.from ?? today;
 	const to = addDays(from, BOARD_DAYS - 1);
 
-	// নিজের profile হারানোর কথা না → 404 আলাদা করে ধরি না, error হলে error boundary
 	const response = await SlotService.getManageSlots(ME, { from, to });
 
 	return (
@@ -50,7 +47,6 @@ async function SlotsContent({ searchParams }: { searchParams: SearchParams }) {
 			</div>
 
 			<SlotBoard
-				// সপ্তাহ বদলালে selection নতুন করে শুরু
 				key={from}
 				doctorId={ME}
 				days={fillWeek(from, response.data)}

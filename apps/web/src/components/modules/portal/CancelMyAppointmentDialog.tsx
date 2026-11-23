@@ -35,7 +35,6 @@ export function CancelMyAppointmentDialog({ appointment, open, onOpenChange }: C
 		event.preventDefault();
 		if (!appointment) return;
 
-		// api-র একই নিয়ম আগে browser-এ → ভুল হলে request-ই যায় না
 		const parsed = cancelMyAppointmentSchema.safeParse({ reason });
 		if (!parsed.success) {
 			setError(parsed.error.issues[0]?.message);

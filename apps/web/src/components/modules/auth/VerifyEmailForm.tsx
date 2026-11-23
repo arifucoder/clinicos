@@ -28,7 +28,6 @@ export function VerifyEmailForm({ email, next }: { email: string; next?: string 
 			if (!result.success) {
 				setError(result.fieldErrors?.otp ?? result.message);
 				setOtp("");
-				// ৩ বার ভুল: এই code আর কাজ করবে না → সাথে সাথে Resend চালু
 				if (result.code === "TOO_MANY_ATTEMPTS") countdown.finish();
 				return;
 			}

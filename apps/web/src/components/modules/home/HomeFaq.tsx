@@ -2,7 +2,6 @@ import { CLINIC_INFO } from "@/lib/clinicInfo";
 import { ChevronDown } from "lucide-react";
 import { eyebrowClass, bigH2Class, sectionClass } from "./homeStyles";
 
-// উত্তরগুলো আসল নিয়ম থেকে (SDLC / api config): online booking-এ account লাগে, cancel ২ ঘণ্টা আগে পর্যন্ত, online hold ৩০ মিনিট
 const FAQS = [
 	{
 		q: "How do I book?",
@@ -26,7 +25,6 @@ const FAQS = [
 	},
 ];
 
-// id="faq": navbar-এর "For patients"। <details> → JS ছাড়াই খোলে/বন্ধ হয়, keyboard-ও কাজ করে
 export function HomeFaq() {
 	return (
 		<section id="faq" aria-labelledby="faq-heading" className="scroll-mt-20 border-t border-border">

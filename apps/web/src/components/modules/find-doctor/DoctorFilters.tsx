@@ -18,13 +18,11 @@ interface DoctorFiltersProps {
 
 const sectionTitle = "mb-2.5 text-[13px] font-semibold text-foreground";
 
-// "Filter" button + popover: তারিখ আর availability। specialty আলাদা dropdown-এ (toolbar-এ)
 export function DoctorFilters({ date, show, bookingWindow }: DoctorFiltersProps) {
 	const { today, tomorrow, lastDate } = bookingWindow;
 	const { setParams, isPending } = useTableUrlState();
 	const [calendarOpen, setCalendarOpen] = useState(false);
 
-	// filter বদলালে page 1-এ ফিরি
 	const update = (patch: { date?: string | null; show?: string | null }) => setParams(patch, { resetPage: true });
 
 	const isPicked = Boolean(date && date !== today && date !== tomorrow);
@@ -135,7 +133,6 @@ export function DoctorFilters({ date, show, bookingWindow }: DoctorFiltersProps)
 										defaultMonth={toCalendarDate(date ?? today)}
 										startMonth={toCalendarDate(today)}
 										endMonth={toCalendarDate(lastDate)}
-										// অতীত বা booking window-এর বাইরে → বন্ধ (api-ও এগুলো 400 দিত)
 										disabled={(day) => {
 											const value = fromCalendarDate(day);
 											return value < today || value > lastDate;

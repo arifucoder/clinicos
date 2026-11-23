@@ -27,7 +27,6 @@ export function ForgotPasswordForm({ defaultEmail }: { defaultEmail: string }) {
 				return;
 			}
 
-			// account থাকুক বা না থাকুক, একই পথ (user enumeration ঠেকাতে)
 			toast.success(result.message);
 			router.push(`/reset-password?email=${encodeURIComponent(value.email.trim().toLowerCase())}`);
 		},

@@ -10,7 +10,6 @@ import {
 import type { StaffAdmin } from "@/types/admin.types";
 import { MoreVertical, Power, PowerOff } from "lucide-react";
 
-// Edit আর Delete step 3-এ যোগ হবে
 export interface AdminRowHandlers {
 	onToggleActive: (admin: StaffAdmin) => void;
 	busyId: string | null;

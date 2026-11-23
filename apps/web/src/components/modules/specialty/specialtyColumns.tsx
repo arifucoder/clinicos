@@ -6,7 +6,6 @@ import type { Specialty } from "@/types/specialty.types";
 import type { ColumnDef } from "@tanstack/react-table";
 import { SpecialtyRowActions, type SpecialtyRowHandlers } from "./SpecialtyRowActions";
 
-// column id = api-র sortBy নাম ("name", "createdAt") → sort সরাসরি URL-এ যায়
 export const getSpecialtyColumns = (handlers: SpecialtyRowHandlers): ColumnDef<DataTableFeatures, Specialty>[] => [
 	{
 		accessorKey: "name",

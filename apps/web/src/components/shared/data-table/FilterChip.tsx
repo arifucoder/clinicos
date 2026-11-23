@@ -37,7 +37,6 @@ export function FilterChip({ label, paramKey, options }: FilterChipProps) {
 		</DropdownMenuContent>
 	);
 
-	// design: active chip = primary-soft + "×"; inactive = dashed border + chevron
 	if (active) {
 		return (
 			<span className="inline-flex h-8 items-center gap-0.5 rounded-full border border-primary/20 bg-primary-soft pr-1 pl-3 text-[13px] font-medium text-primary-hover">
@@ -47,7 +46,6 @@ export function FilterChip({ label, paramKey, options }: FilterChipProps) {
 					</DropdownMenuTrigger>
 					{menu}
 				</DropdownMenu>
-				{/* trigger-এর বাইরে আলাদা button: button-এর ভেতরে button রাখা যায় না */}
 				<button
 					type="button"
 					aria-label={`Clear ${label} filter`}

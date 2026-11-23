@@ -88,7 +88,6 @@ async function AvailabilityBadge() {
 	);
 }
 
-// next/form: JS থাকলে client-side navigation, না থাকলেও সাধারণ GET form হিসেবে /doctors?specialty=…&date=… খোলে
 async function HeroSearch() {
 	const specialties = await getHomeSpecialties().catch(() => []);
 	const { today } = await getDoctorsToday().catch(() => ({ today: undefined }));
@@ -150,7 +149,6 @@ async function HeroSearch() {
 	);
 }
 
-// আসল data: আজ সবার আগে কার slot খালি
 async function NextAvailableCard() {
 	const { doctors } = await getDoctorsToday().catch(() => ({ doctors: [] }));
 	const first = doctors

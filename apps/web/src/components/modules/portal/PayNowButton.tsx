@@ -13,7 +13,6 @@ interface PayNowButtonProps {
 	feeCents?: number;
 }
 
-// Stripe Checkout-এ পাঠায়। ফেরত আসে /portal/appointments?payment=… (api-র success_url)
 export function PayNowButton({ appointmentId, label = "Pay now", feeCents }: PayNowButtonProps) {
 	const [isPending, startTransition] = useTransition();
 	const [redirecting, setRedirecting] = useState(false);
@@ -29,7 +28,6 @@ export function PayNowButton({ appointmentId, label = "Pay now", feeCents }: Pay
 						toast.error(result.message);
 						return;
 					}
-					// Stripe-এর page load হওয়া পর্যন্ত button বন্ধ থাকুক → দুবার click হয় না
 					setRedirecting(true);
 					window.location.assign(result.data.checkoutUrl);
 				})

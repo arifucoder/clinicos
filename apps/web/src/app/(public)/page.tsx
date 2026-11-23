@@ -14,8 +14,6 @@ export const metadata: Metadata = {
 		"Find a doctor by specialty, see open times and book in two minutes. Pay online or at the clinic. Open 24/7.",
 };
 
-// static shell (text, illustration, FAQ) build-এর সময় তৈরি; api-র data (doctor, specialty, সংখ্যা)
-// প্রতিটা নিজের Suspense-এ stream হয় — api ধীর বা বন্ধ থাকলেও page খোলে
 export default function HomePage() {
 	return (
 		<>

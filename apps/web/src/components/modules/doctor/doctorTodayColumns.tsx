@@ -12,7 +12,6 @@ export const DOCTOR_TODAY_MOBILE_COLUMNS = ["startAt", "patient", "actions"] as 
 
 const consultationHref = (id: string) => `/doctor/appointments/${id}`;
 
-// প্রতিটা অবস্থায় doctor-এর জন্য দরকারি এক লাইন
 function StatusMeta({ appointment }: { appointment: Appointment }) {
 	switch (appointment.status) {
 		case "CHECKED_IN":
@@ -22,7 +21,6 @@ function StatusMeta({ appointment }: { appointment: Appointment }) {
 				</StatusPill>
 			);
 		case "CONFIRMED":
-			// check-in front desk-এর কাজ → doctor শুধু অবস্থা দেখে
 			return appointment.isPaid ? (
 				<StatusPill tone="success">Paid · waiting for front desk</StatusPill>
 			) : (
@@ -41,7 +39,6 @@ function StatusMeta({ appointment }: { appointment: Appointment }) {
 	}
 }
 
-// sort নেই: queue-র ক্রম tab ঠিক করে (DataTable-এর defaultColumn enableSorting: false)
 export const doctorTodayColumns: ColumnDef<DataTableFeatures, Appointment>[] = [
 	{
 		accessorKey: "startAt",
@@ -69,7 +66,6 @@ export const doctorTodayColumns: ColumnDef<DataTableFeatures, Appointment>[] = [
 					<p className="truncate text-xs text-muted-foreground tabular-nums">{patient.phone ?? patient.user.email}</p>
 					<div className="flex flex-wrap items-center gap-2">
 						<AllergyBadge allergies={patient.allergies} />
-						{/* mobile-এ status column লুকানো → এখানে দেখাই */}
 						<span className="md:hidden">
 							<StatusMeta appointment={row.original} />
 						</span>

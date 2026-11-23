@@ -41,7 +41,6 @@ export function SpecialtyFormDialog({ open, onOpenChange, specialty }: Specialty
 							: "Active specialties appear in “Find a doctor” and on doctor profiles."}
 					</DialogDescription>
 				</DialogHeader>
-				{/* key: অন্য row edit করলে form নতুন করে তৈরি হয়, পুরনো value থাকে না */}
 				<SpecialtyForm key={specialty?.id ?? "new"} specialty={specialty} onDone={() => onOpenChange(false)} />
 			</DialogContent>
 		</Dialog>

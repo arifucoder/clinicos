@@ -17,10 +17,8 @@ import {
 import { isAxiosError } from "axios";
 import { redirect } from "next/navigation";
 
-// api-র handleBetterAuthError-এর EMAIL_NOT_VERIFIED message-এর সাথে হুবহু মিলতে হবে
 const EMAIL_NOT_VERIFIED_MESSAGE = "Please verify your email before logging in";
 
-// OTP-ভিত্তিক action-এর error: ৪২৯ → code, field error ছাড়া ৪০০ → ভুল/মেয়াদ শেষ code
 const toOtpActionError = (error: unknown): ActionError => {
 	const result = toActionError(error);
 	if (!isAxiosError(error)) return result;
@@ -33,7 +31,6 @@ const toOtpActionError = (error: unknown): ActionError => {
 };
 
 export async function registerAction(input: unknown): Promise<ActionResult> {
-	// Server Action আসলে একটা public POST endpoint, তাই client-এর data বিশ্বাস করা যায় না
 	const parsed = registerSchema.safeParse(input);
 	if (!parsed.success) {
 		return {
@@ -117,7 +114,6 @@ export async function loginAction(input: unknown, next?: unknown): Promise<Actio
 		if (isAxiosError(error)) {
 			const status = error.response?.status;
 
-			// কোনটা ভুল (email না password) বলি না — user enumeration ঠেকাতে
 			if (status === 401) {
 				return { success: false, message: "Email or password is incorrect." };
 			}
@@ -159,7 +155,6 @@ export async function resetPasswordAction(input: unknown): Promise<ActionResult>
 
 	try {
 		const response = await AuthService.resetPassword(parsed.data);
-		// api সব session বাতিল করেছে → এই browser-এর পুরনো cookie-ও মুছি
 		await clearAuthCookies();
 		return { success: true, message: response.message, data: null };
 	} catch (error) {
@@ -167,7 +162,6 @@ export async function resetPasswordAction(input: unknown): Promise<ActionResult>
 	}
 }
 
-// api-র changePassword-এর message-এর সাথে হুবহু মিলতে হবে
 const WRONG_CURRENT_PASSWORD_MESSAGE = "Current password is incorrect";
 
 export async function changePasswordAction(input: unknown): Promise<ActionResult> {
@@ -182,10 +176,8 @@ export async function changePasswordAction(input: unknown): Promise<ActionResult
 
 	try {
 		const response = await AuthService.changePassword(parsed.data);
-		// cookie বদলায় না: api এই session রাখে, শুধু অন্য device-গুলো logout হয়
 		return { success: true, message: response.message, data: null };
 	} catch (error) {
-		// api ৪০০ দেয় field ছাড়া → ঠিক field-এর নিচে দেখাতে নিজে বসাই
 		if (isAxiosError(error) && error.response?.data?.message === WRONG_CURRENT_PASSWORD_MESSAGE) {
 			return {
 				success: false,
@@ -201,7 +193,6 @@ export async function logoutAction(): Promise<void> {
 	try {
 		await AuthService.logout(); // api-তে session row মোছা
 	} catch {
-		// api-তে না পৌঁছালেও এই browser থেকে logout হবে
 	}
 	await clearAuthCookies(); // BFF: api-র clear-cookie browser-এ পৌঁছায় না, তাই নিজে মুছি
 	redirect("/login"); // try-এর বাইরে রাখতে হবে, কারণ redirect() ভেতরে একটা error throw করে

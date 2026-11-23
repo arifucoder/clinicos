@@ -23,7 +23,6 @@ export function DataTableSearch({
 	const [value, setValue] = useState(searchParams.get(paramKey) ?? "");
 	const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-	// component চলে গেলে বাকি থাকা timer বাতিল
 	useEffect(() => () => clearTimeout(timer.current), []);
 
 	return (
@@ -40,7 +39,6 @@ export function DataTableSearch({
 				onChange={(event) => {
 					const next = event.target.value;
 					setValue(next);
-					// debounce: থামার 300ms পরে একবার URL বদলাও (প্রতি অক্ষরে api call না)
 					clearTimeout(timer.current);
 					timer.current = setTimeout(() => setParams({ [paramKey]: next.trim() || null }, { resetPage: true }), 300);
 				}}

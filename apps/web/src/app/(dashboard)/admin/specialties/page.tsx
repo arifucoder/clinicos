@@ -13,7 +13,6 @@ export const metadata: Metadata = { title: "Specialties" };
 type SearchParams = PageProps<"/admin/specialties">["searchParams"];
 
 export default function AdminSpecialtiesPage({ searchParams }: PageProps<"/admin/specialties">) {
-	// cacheComponents: searchParams আর cookie (request data) Suspense-এর ভেতরে পড়তে হয়
 	return (
 		<Suspense fallback={<SpecialtiesSkeleton />}>
 			<SpecialtiesContent searchParams={searchParams} />
@@ -22,7 +21,6 @@ export default function AdminSpecialtiesPage({ searchParams }: PageProps<"/admin
 }
 
 async function SpecialtiesContent({ searchParams }: { searchParams: SearchParams }) {
-	// .catch() থাকায় এটা কখনো throw করে না: ?page=abc → 1
 	const query = specialtyListQuerySchema.parse(await searchParams);
 	const response = await SpecialtyService.getSpecialties(query);
 	const meta = response.meta ?? { page: query.page, limit: query.limit, total: response.data.length, totalPages: 1 };

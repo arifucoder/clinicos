@@ -25,7 +25,6 @@ interface ResetPasswordDialogProps {
 
 export function ResetPasswordDialog({ patient, open, onOpenChange }: ResetPasswordDialogProps) {
 	const [isPending, startTransition] = useTransition();
-	// ধাপ ১: confirm → ধাপ ২: নতুন password (একবারই)
 	const [result, setResult] = useState<ResetPasswordResult | null>(null);
 
 	const handleReset = () => {
@@ -44,7 +43,6 @@ export function ResetPasswordDialog({ patient, open, onOpenChange }: ResetPasswo
 		<AlertDialog
 			open={open}
 			onOpenChange={(next) => !isPending && onOpenChange(next)}
-			// বন্ধের animation শেষ হলে password মুছি → বন্ধ হওয়ার সময় হঠাৎ confirm লেখা ফিরে আসে না
 			onOpenChangeComplete={(isOpen) => !isOpen && setResult(null)}
 		>
 			<AlertDialogContent>

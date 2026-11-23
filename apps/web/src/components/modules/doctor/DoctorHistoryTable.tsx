@@ -17,7 +17,6 @@ import {
 import { History, SearchX, X } from "lucide-react";
 import { DOCTOR_HISTORY_MOBILE_COLUMNS, doctorHistoryColumns } from "./doctorHistoryColumns";
 
-// শুধু history-র status → URL-এ CONFIRMED বসানোর option-ই থাকে না
 const STATUS_OPTIONS = DOCTOR_HISTORY_STATUSES.map((value) => ({
 	value,
 	label: APPOINTMENT_STATUS_META[value].label,
@@ -32,7 +31,6 @@ interface DoctorHistoryTableProps {
 export function DoctorHistoryTable({ data, meta, query }: DoctorHistoryTableProps) {
 	const { setParams } = useTableUrlState();
 	const hasFilters = !!(query.searchTerm || query.status || query.patientId);
-	// নাম আলাদা করে আনি না: filter-এর সব row একই রোগীর
 	const patientName = query.patientId ? data[0]?.patient.fullName : undefined;
 
 	const emptyState =

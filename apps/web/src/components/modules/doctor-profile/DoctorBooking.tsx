@@ -29,7 +29,6 @@ interface DoctorBookingProps {
 	today: string;
 }
 
-// desktop: ডানের sticky card; mobile: নিচের bar + bottom sheet। দুটো একই state ভাগ করে
 export function DoctorBooking(props: DoctorBookingProps) {
 	const { days, today, nextAvailableAt } = props;
 	const initialDate = firstOpenDate(days) ?? today;
@@ -65,7 +64,6 @@ export function DoctorBooking(props: DoctorBookingProps) {
 				{picker}
 			</aside>
 
-			{/* mobile: নিচে আটকানো bar */}
 			<div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card/95 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),12px)] backdrop-blur lg:hidden">
 				<div className="mx-auto flex max-w-xl items-center gap-3">
 					<div className="flex min-w-0 flex-1 flex-col">

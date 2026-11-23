@@ -63,7 +63,6 @@ export async function togglePatientStatusAction(id: unknown, isActive: unknown):
 	try {
 		const response = await PatientService.updateAccountStatus(parsedId.data, parsedActive.data);
 		revalidatePath(PATIENTS_PATH);
-		// api-র message: "Patient account activated" / "...deactivated and signed out"
 		return { success: true, message: response.message, data: null };
 	} catch (error) {
 		return toPatientError(error);
@@ -76,7 +75,6 @@ export async function resetPatientPasswordAction(id: unknown): Promise<ActionRes
 
 	try {
 		const response = await PatientService.resetPassword(parsedId.data);
-		// "Invited" pill আবার দেখাবে (needPasswordChange = true)
 		revalidatePath(PATIENTS_PATH);
 		return { success: true, message: response.message, data: response.data };
 	} catch (error) {
@@ -84,15 +82,12 @@ export async function resetPatientPasswordAction(id: unknown): Promise<ActionRes
 	}
 }
 
-// ---------- Patient portal ----------
 export async function updateMyPatientProfileAction(input: unknown): Promise<ActionResult> {
-	// action public POST endpoint → client-এর data আবার যাচাই
 	const parsed = updateMyPatientProfileSchema.safeParse(input);
 	if (!parsed.success) return fixFields(parsed.error);
 
 	try {
 		const response = await PatientService.updateMyProfile(parsed.data);
-		// "layout": profile, home-এর "Complete your profile" card, booking — সব নতুন হয়
 		revalidatePath("/portal", "layout");
 		return { success: true, message: response.message, data: null };
 	} catch (error) {

@@ -54,7 +54,6 @@ export function DoctorTable({ data, meta, query, specialties }: DoctorTableProps
 		},
 	});
 
-	// api specialty filter নেয় slug দিয়ে (doctorListConfig)
 	const specialtyOptions = specialties.map((specialty) => ({ label: specialty.name, value: specialty.slug }));
 	const hasFilters = !!query.searchTerm || !!query.isActive || !!query.specialty;
 
@@ -100,7 +99,6 @@ export function DoctorTable({ data, meta, query, specialties }: DoctorTableProps
 			<DoctorFormDialog open={editOpen} onOpenChange={setEditOpen} doctor={editTarget} specialties={specialties} />
 			<DeleteStaffDialog
 				kind="doctor"
-				// doctor.id = profile id (api এটাই চায়), নাম আসে user থেকে
 				target={deleteTarget && { id: deleteTarget.id, name: deleteTarget.user.name }}
 				open={deleteOpen}
 				onOpenChange={setDeleteOpen}

@@ -1,7 +1,6 @@
 import { CLINIC_TIME_ZONE } from "@/lib/format";
 import type { MyPatientProfile } from "@/types/patient.types";
 
-// ---------- Greeting (clinic-এর ঘড়ি, browser-এর না) ----------
 const hourFormatter = new Intl.DateTimeFormat("en-GB", { hour: "numeric", hourCycle: "h23", timeZone: CLINIC_TIME_ZONE });
 const longDateFormatter = new Intl.DateTimeFormat("en-GB", {
 	weekday: "long",
@@ -18,10 +17,8 @@ export const greetingFor = (now: Date) => {
 	return "Good evening";
 };
 
-// "Monday, 23 November"
 export const formatLongClinicDate = (now: Date) => longDateFormatter.format(now);
 
-// ---------- Date tile (ক্যালেন্ডারের পাতার মতো ছোট box) ----------
 export interface DateTileParts {
 	weekday: string; // "MON"
 	day: string; // "23"
@@ -39,13 +36,9 @@ const toTileParts = (formatter: Intl.DateTimeFormat, date: Date): DateTileParts 
 const clinicTileFormatter = tileFormatter(CLINIC_TIME_ZONE);
 const utcTileFormatter = tileFormatter("UTC");
 
-// একটা মুহূর্ত (startAt) → clinic-এর দিন
 export const tileFromInstant = (iso: string) => toTileParts(clinicTileFormatter, new Date(iso));
-// শুধু তারিখ (@db.Date, যেমন followUpDate) → UTC, নাহলে কিছু timezone-এ এক দিন সরে যায়
 export const tileFromCalendarDate = (iso: string) => toTileParts(utcTileFormatter, new Date(iso));
 
-// ---------- Profile completeness ----------
-// booking-এর আগে লাগে (api-র isProfileComplete)
 const REQUIRED_FIELDS = [
 	{ key: "phone", label: "phone number" },
 	{ key: "dateOfBirth", label: "date of birth" },
@@ -63,7 +56,6 @@ export const profileCompleteness = (profile: MyPatientProfile) => {
 	return { percent: Math.round((filled / total) * 100), missingRequired };
 };
 
-// ["phone number", "date of birth"] → "Phone number and date of birth"
 export const joinWithAnd = (items: readonly string[]) => {
 	const text = items.length <= 1 ? (items[0] ?? "") : `${items.slice(0, -1).join(", ")} and ${items.at(-1)}`;
 	return text.charAt(0).toUpperCase() + text.slice(1);

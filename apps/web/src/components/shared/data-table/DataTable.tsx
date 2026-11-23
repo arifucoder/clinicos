@@ -39,10 +39,8 @@ export function DataTable<TData extends { id: string }>({
 		columns,
 		data,
 		getRowId: (row) => row.id,
-		// sort api করে; TanStack শুধু দেখায়
 		manualSorting: true,
 		enableSortingRemoval: false,
-		// default-এ কোনো column sortable না; column নিজে enableSorting: true দেবে
 		defaultColumn: { enableSorting: false },
 		state: { sorting },
 		onSortingChange: (updater) => {

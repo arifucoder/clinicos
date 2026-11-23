@@ -29,7 +29,6 @@ export default function ConsultationPage({ params }: ConsultationPageProps) {
 	);
 }
 
-// api doctor-এর জন্য scope করে: অন্য doctor-এর appointment → 404 → আমাদের not-found
 async function getAppointmentOrNotFound(id: string) {
 	try {
 		const response = await AppointmentService.getAppointment(id);
@@ -42,12 +41,10 @@ async function getAppointmentOrNotFound(id: string) {
 
 async function ConsultationContent({ params }: ConsultationPageProps) {
 	const { id } = await params;
-	// ভুল id-তে api-তে যাওয়ার দরকার নেই
 	if (!appointmentIdSchema.safeParse(id).success) notFound();
 
 	const appointment = await getAppointmentOrNotFound(id);
 
-	// আগের visit: api doctor-কে শুধু নিজের appointment দেয় → "আপনার কাছে আগের visit"
 	const historyResponse = await AppointmentService.getAppointments({
 		patientId: appointment.patient.id,
 		status: ["COMPLETED"],
@@ -56,11 +53,9 @@ async function ConsultationContent({ params }: ConsultationPageProps) {
 		limit: 6,
 	});
 	const history = historyResponse.data.filter((visit) => visit.id !== appointment.id).slice(0, 5);
-	// মোট থেকে এই appointment বাদ (নিজে COMPLETED হলে সেও গোনা হয়েছে)
 	const historyTotal =
 		(historyResponse.meta?.total ?? historyResponse.data.length) - (appointment.status === "COMPLETED" ? 1 : 0);
 
-	// httpClient আগেই connection() করেছে → এখানে new Date() নিরাপদ
 	const today = clinicToday(new Date());
 	const status = APPOINTMENT_STATUS_META[appointment.status];
 	const canWrite = appointment.status === "CHECKED_IN" || appointment.status === "COMPLETED";

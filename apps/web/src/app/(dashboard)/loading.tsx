@@ -9,13 +9,11 @@ export default function DashboardLoading() {
 			<span className="sr-only">Loading…</span>
 
 			<div aria-hidden="true" className="space-y-6">
-				{/* Page header */}
 				<div className="space-y-2">
 					<Skeleton className="h-7 w-48 bg-border" />
 					<Skeleton className="h-4 w-72 max-w-full bg-border" />
 				</div>
 
-				{/* Stat cards */}
 				<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 					{Array.from({ length: STAT_CARD_COUNT }, (_, i) => (
 						<div key={i} className="rounded-xl border border-border bg-card p-5 shadow-card">
@@ -25,7 +23,6 @@ export default function DashboardLoading() {
 					))}
 				</div>
 
-				{/* Table */}
 				<div className="rounded-xl border border-border bg-card shadow-card">
 					<div className="flex items-center justify-between gap-4 border-b border-border p-4">
 						<Skeleton className="h-5 w-40" />

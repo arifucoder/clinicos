@@ -20,10 +20,8 @@ export default function DoctorHistoryPage({ searchParams }: PageProps<"/doctor/a
 }
 
 async function HistoryContent({ searchParams }: { searchParams: SearchParams }) {
-	// ভুল URL (?status=CONFIRMED&page=-3) → crash না করে default
 	const query = doctorHistoryQuerySchema.parse(await searchParams);
 
-	// date পাঠাই না → সব দিনের। doctorId পাঠাই না → api session থেকে নিজের doctor বসায় (IDOR-safe)
 	const response = await AppointmentService.getAppointments({
 		status: query.status ? [query.status] : [...DOCTOR_HISTORY_STATUSES],
 		patientId: query.patientId,

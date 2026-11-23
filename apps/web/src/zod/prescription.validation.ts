@@ -1,8 +1,5 @@
 import * as z from "zod";
 
-// form-এ সব input string (খালি = ""); api-র shape-এ বদলায় lib/prescriptionForm.ts
-// সীমাগুলো api-র prescriptionSchema-র সাথে মিল
-
 const durationDays = z
 	.string()
 	.trim()
@@ -20,7 +17,6 @@ export const prescriptionItemFormSchema = z.object({
 
 export const prescriptionFormSchema = z.object({
 	symptoms: z.string().trim().max(1000, "Keep it under 1000 characters"),
-	// SDLC FR-4: diagnosis বাধ্যতামূলক
 	diagnosis: z.string().trim().min(1, "Diagnosis is required").max(1000, "Keep it under 1000 characters"),
 	advice: z.string().trim().max(1000, "Keep it under 1000 characters"),
 	followUpDate: z.union([z.literal(""), z.iso.date("Pick a valid date")]),

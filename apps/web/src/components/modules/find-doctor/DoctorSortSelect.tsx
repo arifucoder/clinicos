@@ -17,7 +17,6 @@ export function DoctorSortSelect({ sort }: { sort: DoctorSortKey }) {
 				value={sort}
 				disabled={isPending}
 				onValueChange={(value) => {
-					// default ("name") URL-এ রাখি না
 					if (typeof value === "string") setParams({ sort: value === "name" ? null : value }, { resetPage: true });
 				}}
 			>

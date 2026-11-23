@@ -10,7 +10,6 @@ import { Suspense } from "react";
 
 export const metadata: Metadata = { title: "Change password" };
 
-// সব role-এর একই page: proxy শুধু login দেখে ("/dashboard" LOGGED_IN_ROUTES-এ)
 export default function ChangePasswordPage() {
 	return (
 		<div className="max-w-xl space-y-5">
@@ -23,7 +22,6 @@ export default function ChangePasswordPage() {
 }
 
 async function ChangePasswordContent() {
-	// layout-ও একই call করে; cache() থাকায় api-তে যায় একবারই
 	const me = await getCurrentUser();
 	if (!me) redirect("/session-expired");
 

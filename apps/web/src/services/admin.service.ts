@@ -7,7 +7,6 @@ import type { AdminListQuery, CreateAdminPayload, UpdateAdminPayload } from "@/z
 const getAdmins = (query: AdminListQuery) =>
 	httpClient.get<StaffAdmin[]>("/admins", { params: { ...query, searchTerm: query.searchTerm || undefined } });
 
-// create আছে user module-এ, বাকিগুলো admin module-এ (api-র route যেমন)
 const createAdmin = (payload: CreateAdminPayload) => httpClient.post<CreateAdminResult>("/users/admins", payload);
 
 const updateAdmin = (id: string, payload: UpdateAdminPayload) => httpClient.patch<StaffAdmin>(`/admins/${id}`, payload);

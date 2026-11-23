@@ -5,7 +5,6 @@ import { CLINIC_TIME_ZONE, formatDate, pluralize } from "@/lib/format";
 import { ageFromDateOfBirth, BLOOD_GROUP_LABEL, GENDER_LABEL } from "@/lib/patientDisplay";
 import type { Appointment, AppointmentPrescription } from "@/types/appointment.types";
 
-// appointment একটা মুহূর্ত → clinic timezone-এ "Sat 14 Nov 2026"
 const visitDateFormatter = new Intl.DateTimeFormat("en-GB", {
 	weekday: "short",
 	day: "numeric",
@@ -14,7 +13,6 @@ const visitDateFormatter = new Intl.DateTimeFormat("en-GB", {
 	timeZone: CLINIC_TIME_ZONE,
 });
 
-// follow-up একটা calendar date (@db.Date) → timeZone: "UTC", নইলে এক দিন সরে যেতে পারে
 const followUpFormatter = new Intl.DateTimeFormat("en-GB", {
 	weekday: "short",
 	day: "numeric",
@@ -26,7 +24,6 @@ const followUpFormatter = new Intl.DateTimeFormat("en-GB", {
 export const formatVisitDate = (iso: string) => visitDateFormatter.format(new Date(iso));
 export const formatFollowUp = (iso: string) => followUpFormatter.format(new Date(iso));
 
-// "Dr. Nadia Rahman" → "N. Rahman" (signature-এর জায়গায়)
 const signatureName = (name: string) => {
 	const parts = name
 		.replace(/^dr\.?\s*/i, "")
@@ -44,8 +41,6 @@ interface PrescriptionSheetProps {
 	today: string; // "YYYY-MM-DD", বয়স হিসাবের জন্য (server থেকে)
 }
 
-// কাগজটা: screen-এ সাদা পাতা, print-এ পুরো A4। dark mode-এও সাদা থাকে, তাই slate রং সরাসরি।
-// print-এ A4-এর চওড়া ~700px → শুধু sm: breakpoint ব্যবহার করি (lg: print-এ কাজ করবে না)
 export function PrescriptionSheet({ appointment, prescription, today }: PrescriptionSheetProps) {
 	const { patient, doctor } = appointment;
 	const patientMeta = [
@@ -62,7 +57,6 @@ export function PrescriptionSheet({ appointment, prescription, today }: Prescrip
 			aria-label="Prescription"
 			className="mx-auto w-full max-w-[760px] bg-white px-6 py-8 text-slate-900 shadow-md sm:px-14 sm:py-14 print:max-w-none print:p-0 print:shadow-none"
 		>
-			{/* ---------- Hospital header ---------- */}
 			<header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
 				<div className="flex items-center gap-2.5">
 					<LogoMark className="size-9" />
@@ -81,7 +75,6 @@ export function PrescriptionSheet({ appointment, prescription, today }: Prescrip
 				</div>
 			</header>
 
-			{/* ---------- Doctor ---------- */}
 			<section className="mt-6 flex flex-col gap-2 border-t border-slate-200 pt-6 sm:flex-row sm:items-end sm:justify-between">
 				<div>
 					<p className="font-heading text-[17px] font-bold">{doctor.user.name}</p>
@@ -92,7 +85,6 @@ export function PrescriptionSheet({ appointment, prescription, today }: Prescrip
 				</p>
 			</section>
 
-			{/* ---------- Patient + Visit ---------- */}
 			<section className="mt-6 grid gap-5 border-y border-slate-200 py-6 sm:grid-cols-2">
 				<div>
 					<p className={label}>Patient</p>
@@ -109,7 +101,6 @@ export function PrescriptionSheet({ appointment, prescription, today }: Prescrip
 				</div>
 			</section>
 
-			{/* ---------- Allergy: rose, চোখ এড়ানো চলবে না ---------- */}
 			{patient.allergies && (
 				<div
 					role="note"
@@ -119,7 +110,6 @@ export function PrescriptionSheet({ appointment, prescription, today }: Prescrip
 				</div>
 			)}
 
-			{/* ---------- Complaints/Diagnosis | Rx ---------- */}
 			<section className="mt-6 grid gap-6 sm:grid-cols-[170px_1fr]">
 				<div className="space-y-6 sm:border-r sm:border-slate-200 sm:pr-6">
 					{prescription.symptoms && (
@@ -150,7 +140,6 @@ export function PrescriptionSheet({ appointment, prescription, today }: Prescrip
 								].filter(Boolean);
 								return (
 									<li
-										// items-এর id api পাঠায় না; ক্রম sortOrder দিয়ে স্থির, তাই index চলবে
 										key={`${index}-${item.medicineName}`}
 										className="grid grid-cols-[1.5rem_1fr_auto] gap-x-3 border-b border-slate-100 py-3 break-inside-avoid"
 									>
@@ -170,7 +159,6 @@ export function PrescriptionSheet({ appointment, prescription, today }: Prescrip
 				</div>
 			</section>
 
-			{/* ---------- Advice ---------- */}
 			{prescription.advice && (
 				<section className="mt-6 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 break-inside-avoid">
 					<p className={label}>Advice</p>
@@ -184,7 +172,6 @@ export function PrescriptionSheet({ appointment, prescription, today }: Prescrip
 				</p>
 			)}
 
-			{/* ---------- Signature ---------- */}
 			<footer className="mt-10 break-inside-avoid">
 				<div className="ml-auto w-56 text-center">
 					<p className="font-heading text-[22px] font-semibold text-blue-900 italic">

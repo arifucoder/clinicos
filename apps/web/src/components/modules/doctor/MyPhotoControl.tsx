@@ -30,7 +30,6 @@ export function MyPhotoControl({ name, photoUrl }: MyPhotoControlProps) {
 		event.target.value = ""; // একই file আবার বাছলেও onChange চলবে
 		if (!file) return;
 
-		// আগেই থামাই: 5 MB file server-এ পাঠিয়ে তারপর error পাওয়ার দরকার নেই
 		if (!PHOTO_TYPES.includes(file.type)) {
 			toast.error("Only JPEG, PNG or WebP images are allowed.");
 			return;

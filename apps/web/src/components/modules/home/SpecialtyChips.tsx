@@ -7,7 +7,6 @@ import { Suspense } from "react";
 import { eyebrowClass, h2Class, sectionClass } from "./homeStyles";
 import { SpecialtyIcon } from "./SpecialtyIcon";
 
-// id="services": navbar-এর "Services" link এখানে আসে
 export function SpecialtyChips() {
 	return (
 		<section id="services" aria-labelledby="specialties-heading" className={`${sectionClass} scroll-mt-24 pt-14 pb-6 md:pt-16`}>
@@ -40,7 +39,6 @@ async function ChipList() {
 	}
 
 	return (
-		// mobile-এ পাশে scroll; desktop-এ wrap
 		<ul className="-mx-5 flex gap-2.5 overflow-x-auto px-5 pb-1 md:mx-0 md:flex-wrap md:overflow-visible md:px-0">
 			{specialties.map((specialty) => (
 				<li key={specialty.slug} className="shrink-0">

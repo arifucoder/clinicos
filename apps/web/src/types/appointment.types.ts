@@ -1,6 +1,5 @@
 import type { BloodGroup, Gender } from "@/types/patient.types";
 
-// api-র appointmentSelect + toAppointmentResponse (appointment.constant.ts)। Date JSON হয়ে string আসে।
 export type AppointmentStatus =
 	| "PENDING_PAYMENT"
 	| "CONFIRMED"
@@ -77,19 +76,16 @@ export interface Appointment {
 	isPaid: boolean; // api হিসাব করে পাঠায়: কোনো SUCCEEDED payment আছে কিনা
 }
 
-// POST /appointments → api-র response
 export interface BookAppointmentResult {
 	appointment: Appointment;
 	checkoutUrl: string | null; // ONLINE হলে Stripe link (api নিজেই রোগীকে email করে)
 }
 
-// GET /patient/appointments/periods → যে বছর/মাসে রোগীর appointment আছে (নতুনটা আগে)
 export interface AppointmentPeriod {
 	year: number;
 	months: number[]; // 1–12
 }
 
-// রোগীর নিজের booking-এর পরে client-এ যা লাগে (পুরো Appointment পাঠাই না)
 export interface MyBookedAppointment {
 	id: string;
 	appointmentNumber: string;
@@ -101,7 +97,6 @@ export interface MyBookedAppointment {
 	email: string;
 }
 
-// slot-এর যেটুকু booking page-এ লাগে
 export interface BookingSlot {
 	id: string;
 	startAt: string;

@@ -7,7 +7,6 @@ import { sectionClass } from "./homeStyles";
 const statClass = "flex flex-col gap-1.5 py-2 md:px-8 md:first:pl-0 md:last:pr-0";
 const numberClass = "font-heading text-4xl leading-none font-bold tracking-[-0.03em] text-foreground md:text-[44px]";
 
-// design-এর "40+ doctors", "12 min wait" ছিল demo সংখ্যা → এখানে আসল সংখ্যা (api থেকে) বা আসল নিয়ম (config)
 export function AtAGlance() {
 	return (
 		<section aria-label="At a glance" className={`${sectionClass} py-14 md:py-16`}>

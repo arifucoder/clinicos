@@ -6,7 +6,6 @@ import Link from "next/link";
 
 const shortDate = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", timeZone: CLINIC_TIME_ZONE });
 
-// শেষ কয়েকটা COMPLETED visit; প্রতিটা row prescription খোলে
 export function RecentVisitsCard({ visits }: { visits: Appointment[] }) {
 	return (
 		<section aria-labelledby="visits-heading" className="rounded-xl border border-border bg-card shadow-card">

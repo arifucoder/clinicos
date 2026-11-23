@@ -13,7 +13,6 @@ const refreshSession = async (refreshToken: string, sessionToken: string): Promi
 	if (!baseUrl) return { ok: false, clearSession: false };
 
 	try {
-		// proxy-তে httpClient চলে না (ওটা next/headers-এর cookies() ব্যবহার করে), তাই সাধারণ fetch
 		const response = await fetch(`${baseUrl}/auth/refresh-token`, {
 			method: "POST",
 			headers: {
@@ -29,16 +28,13 @@ const refreshSession = async (refreshToken: string, sessionToken: string): Promi
 		if (response.status === 401 || response.status === 403) return { ok: false, clearSession: true };
 		if (!response.ok) return { ok: false, clearSession: false };
 
-		// getSetCookie(): প্রতিটা Set-Cookie আলাদা item; get("set-cookie") সব জুড়ে এক string বানাত
 		const cookies = parseAuthSetCookies(response.headers.getSetCookie());
 		return cookies.length > 0 ? { ok: true, cookies } : { ok: false, clearSession: false };
 	} catch {
-		// network error বা timeout: session হয়তো ঠিকই আছে, তাই cookie মুছি না
 		return { ok: false, clearSession: false };
 	}
 };
 
-// কোথায় redirect করতে হবে; দরকার না থাকলে null
 const getRedirectPath = (pathname: string, search: string, payload: AccessTokenPayload | null): string | null => {
 	if (payload) {
 		const home = getHomeForRole(payload.role);
@@ -57,7 +53,6 @@ const getRedirectPath = (pathname: string, search: string, payload: AccessTokenP
 	return null;
 };
 
-// browser-এর জন্য: response-এ নতুন cookie বসানো বা পুরনো মোছা
 const writeResponseCookies = (response: NextResponse, newCookies: ParsedCookie[], clearSession: boolean) => {
 	for (const cookie of newCookies) {
 		response.cookies.set(cookie.name, cookie.value, { ...AUTH_COOKIE_OPTIONS, ...toCookieLifetime(cookie) });
@@ -78,7 +73,6 @@ export async function proxy(request: NextRequest) {
 	let newCookies: ParsedCookie[] = [];
 	let clearSession = false;
 
-	// ১. access token নেই বা শেষ হয়ে আসছে → refresh
 	if ((!payload || isExpiringSoon(payload.exp)) && refreshToken && sessionToken) {
 		const outcome = await refreshSession(refreshToken, sessionToken);
 
@@ -92,10 +86,8 @@ export async function proxy(request: NextRequest) {
 		}
 	}
 
-	// refresh হয়নি আর token-এর মেয়াদ সত্যিই শেষ → logout ধরে নিই
 	if (payload && isExpired(payload.exp)) payload = null;
 
-	// ২ আর ৩. route-এর নিয়ম
 	const redirectPath = getRedirectPath(pathname, search, payload);
 	if (redirectPath) {
 		const response = NextResponse.redirect(new URL(redirectPath, request.url));
@@ -103,7 +95,6 @@ export async function proxy(request: NextRequest) {
 		return response;
 	}
 
-	// এই একই render-এর server component যেন নতুন token দেখে → request-এর cookie-ও বদলাই
 	for (const cookie of newCookies) request.cookies.set(cookie.name, cookie.value);
 	if (clearSession) {
 		for (const name of Object.values(AUTH_COOKIES)) request.cookies.delete(name);
@@ -115,6 +106,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-	// static file আর ছবি বাদ: ওগুলোতে auth লাগে না, প্রতিবার proxy চালানো অপচয়
 	matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)"],
 };

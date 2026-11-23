@@ -9,7 +9,6 @@ import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 export function WeekNav({ from, today }: { from: string; today: string }) {
 	const { setParams, isPending } = useTableUrlState();
 	const to = addDays(from, BOARD_DAYS - 1);
-	// আজ হলে URL থেকে from মুছি (default = আজ) → URL পরিষ্কার থাকে
 	const go = (date: string) => setParams({ from: date === today ? null : date });
 
 	return (

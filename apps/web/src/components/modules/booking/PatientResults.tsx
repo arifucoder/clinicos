@@ -49,7 +49,6 @@ export function PatientResults({ searchTerm, patients }: PatientResultsProps) {
 									{[patient.phone, patient.user.email].filter(Boolean).join(" · ")}
 								</p>
 							</div>
-							{/* বন্ধ account-এ api 404 দেয় → আগেই আটকাই */}
 							{patient.user.isActive ? (
 								<Button size="sm" render={<Link href={`${BOOK_PATH}?patientId=${patient.id}`} />} nativeButton={false}>
 									Select

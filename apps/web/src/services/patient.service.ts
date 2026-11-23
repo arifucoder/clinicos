@@ -10,7 +10,6 @@ import type {
 
 const getPatients = (query: PatientListQuery) =>
 	httpClient.get<PatientRecord[]>("/patient-records", {
-		// "" পাঠালে URL-এ ?searchTerm= যায়; undefined হলে axios নিজেই বাদ দেয়
 		params: { ...query, searchTerm: query.searchTerm || undefined },
 	});
 
@@ -20,12 +19,10 @@ const createPatient = (payload: CreatePatientPayload) =>
 const updateAccountStatus = (id: string, isActive: boolean) =>
 	httpClient.patch<PatientRecord>(`/patient-records/${id}/account-status`, { isActive });
 
-// httpClient.post-এ data required; api এই route-এ body পড়ে না, তাই খালি object
 const resetPassword = (id: string) => httpClient.post<ResetPasswordResult>(`/patient-records/${id}/reset-password`, {});
 
 const getPatient = (id: string) => httpClient.get<PatientRecord>(`/patient-records/${id}`);
 
-// patient portal: id পাঠাই না, api session থেকে নিজের record বের করে (IDOR-safe)
 const getMyProfile = () => httpClient.get<MyPatientProfile>("/patient/me");
 
 const updateMyProfile = (payload: UpdateMyPatientProfilePayload) =>

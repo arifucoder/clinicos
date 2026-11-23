@@ -20,7 +20,6 @@ export interface PortalAppointmentHandlers {
 	onCancel: (appointment: Appointment) => void;
 }
 
-// browser-এর timezone না, clinic-এর দিন
 const formatClinicDay = (iso: string) => formatDayLabel(clinicToday(new Date(iso)));
 
 function StatusCell({ appointment }: { appointment: Appointment }) {
@@ -39,7 +38,6 @@ function StatusCell({ appointment }: { appointment: Appointment }) {
 	);
 }
 
-// শুধু তারিখে sort (column id = api-র sortBy "startAt"); default ক্রম tab ঠিক করে
 export const getPortalAppointmentColumns = (
 	handlers: PortalAppointmentHandlers,
 ): ColumnDef<DataTableFeatures, Appointment>[] => [
@@ -71,7 +69,6 @@ export const getPortalAppointmentColumns = (
 						<p className="truncate text-xs text-muted-foreground">{doctor.specialties.join(", ")}</p>
 					)}
 					{doctor.roomNumber && <p className="text-xs text-body">Room {doctor.roomNumber}</p>}
-					{/* mobile-এ status column লুকানো → এখানে দেখাই */}
 					<div className="pt-1 md:hidden">
 						<StatusCell appointment={row.original} />
 					</div>

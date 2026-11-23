@@ -33,7 +33,6 @@ export function SlotPicker({ openDates, firstDate, lastDate, date, today, slots,
 	const handleSelect = (day: Date) => {
 		setOpen(false);
 		const next = toDateString(day);
-		// তারিখ বদলালে আগের slot অর্থহীন; আজ হলে URL-এ রাখি না
 		setParams({ date: next === today ? null : next, slotId: null });
 	};
 
@@ -58,7 +57,6 @@ export function SlotPicker({ openDates, firstDate, lastDate, date, today, slots,
 						defaultMonth={toLocalDate(date)}
 						startMonth={toLocalDate(firstDate)}
 						endMonth={toLocalDate(lastDate)}
-						// slot নেই, অতীত বা ১৪ দিনের বাইরে → সব বন্ধ (openSet-এ শুধু খোলা দিন)
 						disabled={(day) => !openSet.has(toDateString(day))}
 						onSelect={handleSelect}
 					/>

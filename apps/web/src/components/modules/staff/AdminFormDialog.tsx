@@ -43,7 +43,6 @@ export function AdminFormDialog({ open, onOpenChange, admin }: AdminFormDialogPr
 							: "We email them a temporary password. They must change it on first login."}
 					</DialogDescription>
 				</DialogHeader>
-				{/* key: অন্য row edit করলে form নতুন করে তৈরি হয় */}
 				<AdminForm key={admin?.id ?? "new"} admin={admin} onDone={() => onOpenChange(false)} />
 			</DialogContent>
 		</Dialog>
@@ -71,14 +70,12 @@ function AdminForm({ admin, onDone }: { admin?: StaffAdmin | null; onDone: () =>
 			setServerErrors({});
 
 			if (admin) {
-				// value-তে email থাকলেও action-এর schema সেটা ফেলে দেয়
 				const result = await updateAdminAction(admin.id, value);
 				if (!result.success) return showError(result);
 				toast.success(result.message);
 			} else {
 				const result = await createAdminAction(value);
 				if (!result.success) return showError(result);
-				// email না গেলেও account তৈরি হয়েছে → সবুজ না, হলুদ toast
 				if (result.data.emailSent) toast.success(result.message);
 				else toast.warning(result.message);
 			}

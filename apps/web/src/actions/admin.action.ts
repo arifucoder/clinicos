@@ -35,7 +35,6 @@ export async function createAdminAction(input: unknown): Promise<ActionResult<{ 
 	try {
 		const response = await AdminService.createAdmin(parsed.data);
 		revalidatePath(STAFF_PATH);
-		// emailSent false হলেও user তৈরি হয়েছে → UI warning toast দেখাবে
 		return { success: true, message: response.message, data: { emailSent: response.data.emailSent } };
 	} catch (error) {
 		return toAdminError(error);

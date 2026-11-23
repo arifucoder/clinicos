@@ -8,15 +8,12 @@ import type { ReactNode } from "react";
 
 const consultationHref = (id: string) => `/doctor/appointments/${id}`;
 
-// ---------- ছোট অংশ ----------
-
 function CountBadge({ count }: { count: number }) {
 	return (
 		<span className="rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-body tabular-nums">{count}</span>
 	);
 }
 
-// design: rose = danger/allergy — doctor-এর চোখ এড়ানো চলবে না
 function AllergyBadge({ allergies }: { allergies: string | null }) {
 	if (!allergies) return null;
 	return (
@@ -62,8 +59,6 @@ interface SectionProps {
 	appointments: Appointment[];
 }
 
-// ---------- ① Checked in ----------
-
 export function CheckedInSection({ appointments }: SectionProps) {
 	return (
 		<section aria-labelledby="checked-in-heading" className="rounded-xl border border-border bg-card">
@@ -101,9 +96,6 @@ export function CheckedInSection({ appointments }: SectionProps) {
 	);
 }
 
-// ---------- ② Not arrived yet ----------
-
-// check-in front desk-এর কাজ (api: ADMINS) → doctor শুধু অবস্থা দেখে
 export function NotArrivedSection({ appointments }: SectionProps) {
 	return (
 		<section aria-labelledby="not-arrived-heading" className="rounded-xl border border-border bg-card">
@@ -137,10 +129,6 @@ export function NotArrivedSection({ appointments }: SectionProps) {
 	);
 }
 
-// ---------- ③ Completed today (গুটানো) ----------
-
-// <details>: JS ছাড়াই খোলা/বন্ধ, keyboard-এ কাজ করে। open অবস্থা DOM-এ থাকে →
-// AutoRefresh-এর router.refresh()-এর পরেও খোলা থাকলে খোলাই থাকে
 export function CompletedSection({ appointments }: SectionProps) {
 	return (
 		<details className="group rounded-xl border border-border bg-card">

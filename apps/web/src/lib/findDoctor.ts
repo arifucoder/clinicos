@@ -3,13 +3,10 @@ import type { DoctorSortKey, PublicDoctorListQuery } from "@/zod/doctor.validati
 
 export const FIND_DOCTOR_PATH = "/doctors";
 
-// api-র SLOT_CONFIG.bookingWindowDays-এর সাথে মিল রাখো (আজ + ১৩ দিন)
 export const BOOKING_WINDOW_DAYS = 14;
 export const DOCTOR_PAGE_SIZE = 10; // home page-এর api call
-// find-doctor grid: ৩টা করে সারি → ১২ = ৪ সারি
 export const DOCTOR_GRID_PAGE_SIZE = 12;
 
-// URL-এ ছোট নাম (sort=fee-asc), api-তে যায় আসল field
 export const DOCTOR_SORTS: Record<DoctorSortKey, { label: string; sortBy: string; sortOrder: "asc" | "desc" }> = {
 	name: { label: "Name (A–Z)", sortBy: "user.name", sortOrder: "asc" },
 	"fee-asc": { label: "Fee: low to high", sortBy: "consultationFeeCents", sortOrder: "asc" },
@@ -27,11 +24,9 @@ export const getBookingWindow = (now: Date): BookingWindow => {
 	return { today, tomorrow: addDays(today, 1), lastDate: addDays(today, BOOKING_WINDOW_DAYS - 1) };
 };
 
-// পুরনো bookmark-এর তারিখ (অতীত বা ১৪ দিনের বাইরে) বাদ দিই — না হলে api 400 দিত আর page ভেঙে যেত
 export const clampToWindow = (date: string | undefined, window: BookingWindow) =>
 	date && date >= window.today && date <= window.lastDate ? date : undefined;
 
-// server component-এর Link-এর জন্য (pagination, empty state)। default value URL-এ রাখি না
 export const buildDoctorsHref = (query: PublicDoctorListQuery, patch: Partial<PublicDoctorListQuery> = {}) => {
 	const next = { ...query, ...patch };
 	const params = new URLSearchParams();

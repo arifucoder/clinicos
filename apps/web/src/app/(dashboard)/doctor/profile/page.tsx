@@ -38,7 +38,6 @@ export default function DoctorProfilePage() {
 }
 
 async function ProfileContent() {
-	// নিজের profile হারানোর কথা না → 404 আলাদা না ধরে error boundary-তে যেতে দিই (slots page-এর মতো)
 	const response = await DoctorService.getMyProfile();
 	return <DoctorProfileCard doctor={response.data} />;
 }

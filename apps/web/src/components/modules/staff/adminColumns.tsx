@@ -6,7 +6,6 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { StaffRowActions, type StaffRowHandlers } from "./StaffRowActions";
 import { StaffStatus } from "./StaffStatus";
 
-// mobile-এ শুধু এই দুটো column; বাকি তথ্য "name" cell-এর ভেতরে md:hidden হয়ে দেখায়
 export const ADMIN_MOBILE_COLUMNS = ["name", "actions"] as const;
 
 export const getAdminColumns = (handlers: StaffRowHandlers<StaffAdmin>): ColumnDef<DataTableFeatures, StaffAdmin>[] => [

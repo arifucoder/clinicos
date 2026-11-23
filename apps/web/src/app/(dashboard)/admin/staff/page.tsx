@@ -23,7 +23,6 @@ export const metadata: Metadata = { title: "Staff" };
 type SearchParams = PageProps<"/admin/staff">["searchParams"];
 type Params = Awaited<SearchParams>;
 
-// form আর filter-এর জন্য: সব active specialty, নাম অনুযায়ী
 const ACTIVE_SPECIALTIES_QUERY = specialtyListQuerySchema.parse({
 	isActive: "true",
 	limit: 100,
@@ -49,7 +48,6 @@ export default function AdminStaffPage({ searchParams }: PageProps<"/admin/staff
 async function StaffContent({ searchParams }: { searchParams: SearchParams }) {
 	const [user, params] = await Promise.all([getCurrentUser(), searchParams]);
 	const isSuperAdmin = user?.role === "SUPER_ADMIN";
-	// ADMIN ?tab=admins লিখলেও doctors দেখবে (UI-র সুবিধা; আসল বাধা api-র 403)
 	const tab = isSuperAdmin ? staffTabSchema.parse(params.tab) : "doctors";
 	const tabs = <StaffTabs active={tab} showAdmins={isSuperAdmin} />;
 
@@ -76,13 +74,11 @@ async function AdminsSection({ params, tabs }: { params: Params; tabs: ReactNode
 
 async function DoctorsSection({ params, tabs }: { params: Params; tabs: ReactNode }) {
 	const query = doctorListQuerySchema.parse(params);
-	// দুটো আলাদা call, একটা আরেকটার উপর নির্ভর করে না → একসাথে
 	const [doctors, specialtyResponse] = await Promise.all([
 		DoctorService.getDoctors(query),
 		SpecialtyService.getSpecialties(ACTIVE_SPECIALTIES_QUERY),
 	]);
 	const meta = doctors.meta ?? fallbackMeta(query, doctors.data.length);
-	// client-এ শুধু যা লাগে (description, icon পাঠাই না)
 	const specialties: SpecialtyRef[] = specialtyResponse.data.map(({ id, name, slug }) => ({ id, name, slug }));
 
 	return (

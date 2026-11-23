@@ -11,10 +11,6 @@ const REQUEST_TIMEOUT_MS = 15_000;
 export interface ApiRequestOptions {
 	params?: Record<string, unknown>;
 	headers?: Record<string, string>;
-	/**
-	 * true (default): browser-এর auth cookie backend-এ পাঠায়, request-time-এ চলে।
-	 * false: cookie ছাড়া public call (register, doctor list)। "use cache" function-এর ভেতরে চলে।
-	 */
 	auth?: boolean;
 }
 
@@ -23,8 +19,6 @@ export interface ApiResponseWithCookies<TData> {
 	setCookies: string[];
 }
 
-// module load-এর সময় না, প্রথম request-এর সময় চেক করা হয়।
-// Docker build-এ API_BASE_URL থাকে না (শুধু runtime env), তাই উপরে throw করলে build ভেঙে যেত।
 const getBaseUrl = (): string => {
 	const baseURL = process.env.API_BASE_URL;
 	if (!baseURL) {
@@ -33,9 +27,6 @@ const getBaseUrl = (): string => {
 	return baseURL;
 };
 
-// browser-এর cookie Next server-এ আসে, কিন্তু axios নিজে থেকে backend-এ পাঠায় না।
-// শুধু checkAuth-এর দরকারি দুটো cookie পাঠাই, সব cookie না।
-// refreshToken পাঠাই না: ওটা শুধু refresh endpoint-এর জন্য, proxy সেটা সামলায়।
 const getAuthCookieHeader = async (): Promise<string | undefined> => {
 	const cookieStore = await cookies();
 
@@ -53,7 +44,6 @@ const createInstance = async (auth: boolean): Promise<AxiosInstance> => {
 	let cookieHeader: string | undefined;
 
 	if (auth) {
-		// axios ভেতরে Date.now() ব্যবহার করে। connection() Next-কে বলে এটা request-time-এ চালাতে, prerender না করতে।
 		await connection();
 		cookieHeader = await getAuthCookieHeader();
 	}
@@ -68,7 +58,6 @@ const createInstance = async (auth: boolean): Promise<AxiosInstance> => {
 	});
 };
 
-// পুরো error log কোরো না: error.config.data-তে request body থাকে (password)
 const logRequestError = (method: Method, endpoint: string, error: unknown) => {
 	if (axios.isAxiosError(error)) {
 		console.error(`[httpClient] ${method} ${endpoint} failed`, {
@@ -111,8 +100,6 @@ const request = async <TData>(
 	return response.data;
 };
 
-// login / refresh / verify-email: api-র Set-Cookie header দরকার, কারণ BFF-এ সেই cookie
-// browser-এ নিজে থেকে যায় না। Action এগুলো পড়ে Next-এর cookies().set() দিয়ে বসাবে।
 const requestWithCookies = async <TData>(
 	method: Method,
 	endpoint: string,

@@ -27,7 +27,6 @@ type SearchParams = PageProps<"/doctors">["searchParams"];
 export default function FindDoctorPage({ searchParams }: PageProps<"/doctors">) {
 	return (
 		<>
-			{/* header static: build-এর সময়েই তৈরি (cacheComponents); toolbar আর list request-এ stream হয় */}
 			<section className="relative overflow-hidden border-b border-border bg-card">
 				<div
 					aria-hidden="true"
@@ -50,7 +49,6 @@ export default function FindDoctorPage({ searchParams }: PageProps<"/doctors">) 
 						<p className="text-base text-body">Pick a doctor and see their next open slot.</p>
 					</div>
 
-					{/* useSearchParams() → Suspense লাগে */}
 					<Suspense fallback={<Skeleton className="h-12 w-full max-w-4xl" />}>
 						<Toolbar searchParams={searchParams} />
 					</Suspense>
@@ -66,7 +64,6 @@ export default function FindDoctorPage({ searchParams }: PageProps<"/doctors">) 
 	);
 }
 
-// search | Filter | Specialty — এক সারিতে (mobile-এ search উপরে, বাকি দুটো নিচে পাশাপাশি)
 async function Toolbar({ searchParams }: { searchParams: SearchParams }) {
 	const parsed = publicDoctorListQuerySchema.parse(await searchParams);
 	await connection(); // নিচের new Date() request-time-এ
@@ -91,12 +88,10 @@ async function Toolbar({ searchParams }: { searchParams: SearchParams }) {
 
 async function FindDoctorContent({ searchParams }: { searchParams: SearchParams }) {
 	const parsed = publicDoctorListQuerySchema.parse(await searchParams);
-	// "আজ" প্রতিটা request-এ নতুন করে হিসাব হতে হবে (prerender করে পুরনো তারিখ জমিয়ে রাখা চলবে না)
 	await connection();
 	const bookingWindow = getBookingWindow(new Date());
 	const query = { ...parsed, date: clampToWindow(parsed.date, bookingWindow) };
 
-	// দুটো আলাদা request, একসাথে (waterfall না)। specialty-র নামটা শুধু header-এর জন্য
 	const [doctorsResponse, specialtiesResponse] = await Promise.all([
 		DoctorService.getPublicDoctors(query, DOCTOR_GRID_PAGE_SIZE),
 		SpecialtyService.getPublicSpecialties().catch(() => null),

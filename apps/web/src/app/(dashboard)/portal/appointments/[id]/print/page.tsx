@@ -23,7 +23,6 @@ export default function PortalPrescriptionPrintPage({ params }: PrintPageProps) 
 	);
 }
 
-// patientId পাঠাই না, api session থেকে নেয়। অন্য রোগীর appointment → 404 (IDOR-safe)
 async function getMyAppointmentOrNotFound(id: string): Promise<Appointment> {
 	try {
 		const response = await AppointmentService.getMyAppointment(id);

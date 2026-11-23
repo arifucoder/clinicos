@@ -9,12 +9,10 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { Droplet } from "lucide-react";
 import { PatientRowActions, type PatientRowHandlers } from "./PatientRowActions";
 
-// mobile-এ শুধু এই দুটো column; বাকি তথ্য "fullName" cell-এর ভেতরে md:hidden হয়ে দেখায়
 export const PATIENT_MOBILE_COLUMNS = ["fullName", "actions"] as const;
 
 const Dash = () => <span className="text-muted-foreground">—</span>;
 
-// column id = api-র sortBy নাম ("fullName", "dateOfBirth", "createdAt")
 export const getPatientColumns = (
 	today: string,
 	handlers: PatientRowHandlers,
@@ -53,7 +51,6 @@ export const getPatientColumns = (
 		header: ({ column }) => <DataTableColumnHeader column={column} title="Age / gender" />,
 		cell: ({ row }) => {
 			const { dateOfBirth, gender } = row.original;
-			// self sign-up-এ profile incomplete হতে পারে → দুটোই null
 			if (!dateOfBirth && !gender) return <Dash />;
 			return (
 				<div className="text-sm whitespace-nowrap">
@@ -77,12 +74,10 @@ export const getPatientColumns = (
 					{bloodGroup && (
 						<span className="inline-flex items-center gap-1 text-sm font-medium whitespace-nowrap text-body">
 							<Droplet className="size-3.5 text-danger" aria-hidden="true" />
-							{/* screen reader পড়বে "Blood group B+", শুধু "B+" না */}
 							<span className="sr-only">Blood group </span>
 							{BLOOD_GROUP_LABEL[bloodGroup]}
 						</span>
 					)}
-					{/* rose = allergy (design system); hover করলে পুরো লেখা */}
 					{allergies && (
 						<span title={allergies}>
 							<StatusPill tone="danger">Allergy</StatusPill>

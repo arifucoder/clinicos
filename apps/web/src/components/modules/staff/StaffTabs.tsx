@@ -18,7 +18,6 @@ export function StaffTabs({ active, showAdmins }: { active: StaffTab; showAdmins
 				return (
 					<Link
 						key={tab.value}
-						// শুধু tab: অন্য tab-এর page/search/sort এখানে আসবে না
 						href={{ pathname: "/admin/staff", query: { tab: tab.value } }}
 						aria-current={isActive ? "page" : undefined}
 						className={cn(

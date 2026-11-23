@@ -10,7 +10,6 @@ import * as z from "zod";
 
 const SPECIALTIES_PATH = "/admin/specialties";
 
-// api-তে name @unique কিন্তু delete soft → মুছে ফেলা নামও আবার নেওয়া যায় না
 const DUPLICATE_NAME =
 	"A specialty with this name already exists (it may have been deleted earlier). Try another name.";
 

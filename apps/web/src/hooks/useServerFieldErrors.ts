@@ -2,7 +2,6 @@
 
 import { useCallback, useState } from "react";
 
-// action-এর fieldErrors (যেমন 409 → email) রাখে; user সেই field-এ লিখলেই মুছে যায়
 export function useServerFieldErrors() {
 	const [serverErrors, setServerErrors] = useState<Record<string, string>>({});
 

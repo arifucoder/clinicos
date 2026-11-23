@@ -20,18 +20,15 @@ export default function AuthLayout({ children }: LayoutProps<"/">) {
 function AuthShowcase() {
 	return (
 		<aside className="relative hidden overflow-hidden bg-primary-soft lg:flex lg:flex-col lg:items-center lg:justify-center lg:px-12">
-			{/* পেছনের dot pattern, কিনারায় মিলিয়ে যায় */}
 			<div
 				aria-hidden="true"
 				className="absolute inset-0 bg-[radial-gradient(var(--color-primary)_1px,transparent_1px)] opacity-20 bg-size-[22px_22px] mask-[radial-gradient(ellipse_at_center,black_35%,transparent_75%)]"
 			/>
-			{/* বড় নরম গোল আলো */}
 			<div
 				aria-hidden="true"
 				className="absolute top-17 left-1/2 size-155 -translate-x-1/2 rounded-full bg-[radial-gradient(circle,white_0%,transparent_70%)]"
 			/>
 
-			{/* Product snippet — শুধু সাজানো, তাই aria-hidden */}
 			<div aria-hidden="true" className="relative h-97.5 w-102">
 				<div className="absolute top-0 left-10 w-92 overflow-hidden rounded-[20px] bg-slate-900 p-6 text-white shadow-[0_30px_60px_-20px_rgb(15_23_42/0.4)]">
 					<div className="absolute -top-16 -right-10 size-55 rounded-full bg-primary/40 blur-3xl" />

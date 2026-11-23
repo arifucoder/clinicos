@@ -12,7 +12,6 @@ import type { PaginationMeta } from "@/types/api.types";
 import { cn } from "cn";
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 
-// 1 … 4 5 6 … 20
 const getPageNumbers = (current: number, total: number): (number | "ellipsis")[] => {
 	if (total <= 7) return Array.from({ length: total }, (_, index) => index + 1);
 

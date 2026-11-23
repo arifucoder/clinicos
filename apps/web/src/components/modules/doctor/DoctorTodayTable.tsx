@@ -48,7 +48,6 @@ export function DoctorTodayTable({ data, meta, query }: DoctorTodayTableProps) {
 			mobileColumns={DOCTOR_TODAY_MOBILE_COLUMNS}
 			emptyState={emptyState}
 			toolbar={
-				// key: tab বদলালে search box নতুন করে বসে (নাহলে আগের লেখা box-এ থেকে যায়)
 				<DataTableSearch key={query.tab} placeholder="Search name, phone or appointment no." />
 			}
 		/>

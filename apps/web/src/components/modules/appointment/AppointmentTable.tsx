@@ -43,7 +43,6 @@ interface AppointmentTableProps {
 	doctors: SlotDoctorOption[];
 }
 
-// dialog-এর target আর open আলাদা: বন্ধের animation-এর সময় নাম হঠাৎ মুছে যায় না
 function useDialogTarget() {
 	const [target, setTarget] = useState<Appointment | null>(null);
 	const [open, setOpen] = useState(false);

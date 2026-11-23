@@ -9,7 +9,6 @@ export interface ParsedCookie {
 
 const ALLOWED_COOKIES = new Set<string>(Object.values(AUTH_COOKIES));
 
-// "accessToken=abc; Max-Age=900; Path=/; HttpOnly; SameSite=Lax" → { name, value, maxAge }
 export const parseSetCookie = (header: string): ParsedCookie | null => {
 	const parts = header.split(";");
 	const pair = parts[0] ?? "";
@@ -43,13 +42,11 @@ export const parseSetCookie = (header: string): ParsedCookie | null => {
 	return cookie;
 };
 
-// api-র সব Set-Cookie থেকে শুধু আমাদের তিনটা auth cookie রাখে (allowlist)
 export const parseAuthSetCookies = (headers: string[]): ParsedCookie[] =>
 	headers
 		.map(parseSetCookie)
 		.filter((cookie): cookie is ParsedCookie => cookie !== null && ALLOWED_COOKIES.has(cookie.name));
 
-// Max-Age থাকলে সেটাই, না থাকলে Expires
 export const toCookieLifetime = (cookie: ParsedCookie) => ({
 	maxAge: cookie.maxAge,
 	expires: cookie.maxAge === undefined ? cookie.expires : undefined,

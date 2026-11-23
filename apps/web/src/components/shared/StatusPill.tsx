@@ -1,7 +1,6 @@
 import { cn } from "cn";
 import type { ReactNode } from "react";
 
-// design: teal = active/live, blue = info/invited, gray = নেই, amber = waiting, rose = danger
 const tones = {
 	success: { pill: "bg-success-soft text-success-foreground", dot: "bg-success" },
 	info: { pill: "bg-primary-soft text-primary-hover", dot: "bg-primary" },

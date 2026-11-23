@@ -1,11 +1,8 @@
 import type { UserRole } from "@/lib/authRedirect";
 import type { MeResult } from "@/services/auth.service";
 
-// client component-এ শুধু এটুকু যাবে। পুরো MeResult পাঠানোর দরকার নেই
 export type ShellUser = Pick<MeResult, "name" | "email" | "image" | "role">;
 
-// doctor-এর ছবি doctorProfile-এ; admin/patient-এর জন্য initials (SDLC: users.image ব্যবহার হয় না)
-// dashboard layout আর public navbar দুজনেই এটা ব্যবহার করে
 export const toShellUser = (me: MeResult): ShellUser => ({
 	name: me.name,
 	email: me.email,

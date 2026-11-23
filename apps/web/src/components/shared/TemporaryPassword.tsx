@@ -5,7 +5,6 @@ import { Check, Copy } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-// একবার দেখানো temporary password + copy। patient register আর reset password দুই জায়গায় লাগে।
 export function TemporaryPassword({ password }: { password: string }) {
 	const [copied, setCopied] = useState(false);
 
@@ -17,7 +16,6 @@ export function TemporaryPassword({ password }: { password: string }) {
 
 	const handleCopy = async () => {
 		try {
-			// clipboard শুধু secure context-এ চলে (https বা localhost)
 			await navigator.clipboard.writeText(password);
 			setCopied(true);
 			toast.success("Password copied");

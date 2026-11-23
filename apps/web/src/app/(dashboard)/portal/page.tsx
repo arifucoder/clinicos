@@ -30,8 +30,6 @@ export default function PatientDashboardPortalPage() {
 }
 
 async function HomeContent() {
-	// কোনো call-এ id যায় না: api session থেকে রোগী বের করে (IDOR-safe)
-	// getCurrentUser cache()-এ → layout-এর সাথে একই request-এ api-তে একবারই
 	const [me, statsResponse, profileResponse, visitsResponse] = await Promise.all([
 		getCurrentUser(),
 		StatsService.getPatientStats(),
@@ -47,12 +45,10 @@ async function HomeContent() {
 	const profile = profileResponse.data;
 	const visits = visitsResponse.data;
 
-	// stats শুধু id/সময় দেয়; card-এ specialty, fee, payment-এর পুরো তথ্য লাগে → পুরো appointment আনি
 	const nextAppointment = stats.nextAppointment
 		? (await AppointmentService.getMyAppointment(stats.nextAppointment.id)).data
 		: null;
 
-	// request-time-এ চালাও → এর পরে new Date() নিরাপদ
 	await connection();
 	const now = new Date();
 	const nowMs = now.getTime();
@@ -62,9 +58,7 @@ async function HomeContent() {
 
 	const latestWithPrescription = visits.find((visit) => visit.prescription !== null);
 	const followUpDate = latestWithPrescription?.prescription?.followUpDate ?? null;
-	// @db.Date → "YYYY-MM-DD" অংশ তুলনা; আজ বা পরে হলে দেখাই
 	const followUpDue = followUpDate !== null && followUpDate.slice(0, 10) >= today;
-	// একই doctor-এর সাথে আসন্ন appointment থাকলে ধরে নিই follow-up book করা হয়েছে
 	const followUpBooked =
 		nextAppointment !== null && nextAppointment.doctor.id === latestWithPrescription?.doctor.id;
 

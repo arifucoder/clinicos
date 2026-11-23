@@ -17,10 +17,7 @@ interface SpecialtyPickerProps {
 	onBlur: () => void;
 }
 
-// অনেক specialty → search করা যায় এমন multi-select (Base UI Combobox)।
-// form রাখে শুধু id (string[]); combobox-কে দিই পুরো object, যাতে chip-এ নাম দেখায়।
 export function SpecialtyPicker({ id, options, value, max, error, onChange, onBlur }: SpecialtyPickerProps) {
-	// popup-টা input-এর নিচে না, পুরো chips box-এর নিচে বসবে, আর একই চওড়া হবে
 	const anchorRef = useRef<HTMLDivElement>(null);
 	const selected = options.filter((option) => value.includes(option.id));
 	const atLimit = value.length >= max;
@@ -76,7 +73,6 @@ export function SpecialtyPicker({ id, options, value, max, error, onChange, onBl
 				</Combobox.Chips>
 
 				<Combobox.Portal>
-					{/* z-50: dialog-এর (z-50) পরে portal হয়, তাই উপরে দেখায় */}
 					<Combobox.Positioner anchor={anchorRef} sideOffset={4} className="isolate z-50 outline-none">
 						<Combobox.Popup className="max-h-[min(var(--available-height),16rem)] w-(--anchor-width) overflow-y-auto rounded-md bg-popover p-1 text-sm text-popover-foreground shadow-md ring-1 ring-foreground/10">
 							<Combobox.Empty className="px-2 py-3 text-center text-muted-foreground empty:hidden">
@@ -89,7 +85,6 @@ export function SpecialtyPicker({ id, options, value, max, error, onChange, onBl
 										<Combobox.Item
 											key={specialty.id}
 											value={specialty}
-											// ৫টা হয়ে গেলে নতুন নেওয়া যায় না, কিন্তু বাছাই করা গুলো বাদ দেওয়া যায়
 											disabled={atLimit && !isSelected}
 											className="flex cursor-default items-center gap-2 rounded px-2 py-1.5 outline-none select-none data-disabled:opacity-50 data-highlighted:bg-accent data-highlighted:text-accent-foreground"
 										>

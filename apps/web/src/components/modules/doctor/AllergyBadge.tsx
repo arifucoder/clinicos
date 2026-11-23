@@ -1,6 +1,5 @@
 import { TriangleAlert } from "lucide-react";
 
-// design: rose = danger/allergy, doctor-এর চোখ এড়ানো চলবে না
 export function AllergyBadge({ allergies }: { allergies: string | null }) {
 	if (!allergies) return null;
 	return (

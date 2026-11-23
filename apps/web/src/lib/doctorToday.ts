@@ -10,7 +10,6 @@ interface DoctorTabConfig {
 	emptyDescription: string;
 }
 
-// tab → api query। slot-ই queue (SDLC): waiting আর not-arrived সময়ের ক্রমে, completed-এ শেষেরটা আগে
 export const DOCTOR_TAB_CONFIG: Record<DoctorTodayTab, DoctorTabConfig> = {
 	waiting: {
 		label: "Waiting",
@@ -35,7 +34,6 @@ export const DOCTOR_TAB_CONFIG: Record<DoctorTodayTab, DoctorTabConfig> = {
 	},
 };
 
-// tab-এর সংখ্যা stats থেকে → আলাদা request লাগে না
 export const doctorTabCounts = (today: DoctorStats["today"]): Record<DoctorTodayTab, number> => ({
 	waiting: today.waiting,
 	"not-arrived": today.notArrived,

@@ -40,7 +40,6 @@ export function PortalAppointmentTable({
 	const [busyId, setBusyId] = useState<string | null>(null);
 	const [, startTransition] = useTransition();
 
-	// dialog-এর target আর open আলাদা: বন্ধের animation-এর সময় লেখা হঠাৎ মুছে যায় না
 	const [cancelTarget, setCancelTarget] = useState<Appointment | null>(null);
 	const [cancelOpen, setCancelOpen] = useState(false);
 
@@ -60,7 +59,6 @@ export function PortalAppointmentTable({
 					toast.error(result.message);
 					return;
 				}
-				// Stripe-এর page-এ যাই; busy থাকুক যাতে দুবার click না হয়
 				window.location.assign(result.data.checkoutUrl);
 			});
 		},
@@ -104,7 +102,6 @@ export function PortalAppointmentTable({
 				toolbar={
 					<>
 						<DataTableSearch placeholder="Search doctor or appointment no." />
-						{/* কোনো appointment-ই না থাকলে বাছার মতো বছর নেই */}
 						{years.length > 0 && (
 							<FilterChip
 								label="Year"
@@ -112,7 +109,6 @@ export function PortalAppointmentTable({
 								options={years.map((year) => ({ value: String(year), label: String(year) }))}
 							/>
 						)}
-						{/* মাস একা অর্থহীন ("কোন বছরের মার্চ?") → বছর বাছলে তবেই */}
 						{query.year && months.length > 0 && (
 							<FilterChip
 								label="Month"

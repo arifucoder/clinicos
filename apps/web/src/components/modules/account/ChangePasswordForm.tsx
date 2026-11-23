@@ -16,7 +16,6 @@ type FieldName = keyof ChangePasswordFormValues;
 const EMPTY_VALUES = { currentPassword: "", newPassword: "", confirmPassword: "" } satisfies ChangePasswordFormValues;
 
 interface ChangePasswordFormProps {
-	// temporary password দিয়ে প্রথম login হলে: বদলানোর পর নিজের home-এ পাঠাই
 	redirectTo?: string;
 }
 
@@ -32,7 +31,6 @@ export function ChangePasswordForm({ redirectTo }: ChangePasswordFormProps) {
 			setFormError(null);
 			setServerErrors({});
 
-			// confirmPassword পাঠাই না — ওটা শুধু টাইপের ভুল ধরার জন্য
 			const result = await changePasswordAction({
 				currentPassword: value.currentPassword,
 				newPassword: value.newPassword,

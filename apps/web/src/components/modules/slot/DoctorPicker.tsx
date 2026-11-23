@@ -10,7 +10,6 @@ interface DoctorPickerProps {
 	value?: string;
 }
 
-// নাম বা specialty — "cardio" লিখলেও Cardiology-র সব doctor আসবে
 const matchesDoctor = (doctor: SlotDoctorOption, query: string) => {
 	const term = query.trim().toLowerCase();
 	return term === "" || doctor.name.toLowerCase().includes(term) || doctor.specialties.toLowerCase().includes(term);
@@ -18,7 +17,6 @@ const matchesDoctor = (doctor: SlotDoctorOption, query: string) => {
 
 export function DoctorPicker({ doctors, value }: DoctorPickerProps) {
 	const { setParams, isPending } = useTableUrlState();
-	// URL-এ শুধু id থাকে → তালিকা থেকে পুরো object খুঁজি (না পেলে null = কিছু বাছাই নেই)
 	const selected = doctors.find((doctor) => doctor.id === value) ?? null;
 
 	return (
@@ -54,7 +52,6 @@ export function DoctorPicker({ doctors, value }: DoctorPickerProps) {
 			<Combobox.Portal>
 				<Combobox.Positioner sideOffset={4} className="z-50">
 					<Combobox.Popup className="max-h-80 w-(--anchor-width) overflow-y-auto rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-md">
-						{/* Empty সবসময় render হয়, ভেতরে লেখা থাকে শুধু ফল না থাকলে → empty:hidden */}
 						<Combobox.Empty className="px-2 py-6 text-center text-sm text-muted-foreground empty:hidden">
 							No doctor matches your search.
 						</Combobox.Empty>

@@ -55,7 +55,6 @@ export function PaymentStep({ patientId, patientName, doctorName, feeCents, date
 
 			if (!result.success) {
 				toast.error(result.message);
-				// slot অন্য কেউ নিয়ে থাকলে নতুন তালিকা আনি → ওই chip চলে যায়
 				router.refresh();
 				return;
 			}

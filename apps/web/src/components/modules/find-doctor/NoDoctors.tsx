@@ -31,7 +31,6 @@ export function NoDoctors({ query, bookingWindow, total }: NoDoctorsProps) {
 	}
 
 	const nextDay = query.date ? addDays(query.date, 1) : undefined;
-	// default ("open") filter-এর কারণে খালি → "সবাইকে দেখাও" সবচেয়ে কাজের পথ
 	const canShowAll = query.show === "open" && !query.date;
 	const canTryNextDay = nextDay !== undefined && nextDay <= bookingWindow.lastDate;
 

@@ -2,16 +2,13 @@ import { addDays, dateRange, formatClinicTime } from "@/lib/clinicDate";
 import { BOOKING_WINDOW_DAYS } from "@/lib/findDoctor";
 import type { PublicSlot, PublicSlotDay } from "@/types/slot.types";
 
-// /portal PATIENT-এর এলাকা: logged out হলে proxy /login?next=…-এ পাঠায়, login-এর পরে ঠিক এখানেই ফেরে
 export const PATIENT_BOOK_PATH = "/portal/book";
-// doctorId-ও লাগে: slot-এর সময় আর doctor-এর তথ্য public endpoint থেকে আবার আনি (client-এর কথা বিশ্বাস না করে)
 export const bookSlotHref = (doctorId: string, slotId: string) =>
 	`${PATIENT_BOOK_PATH}?doctorId=${doctorId}&slotId=${slotId}`;
 
 const DAY_MINUTES = 24 * 60;
 const MINUTE_MS = 60_000;
 
-// "17:30" (clinic time) → 1050
 export const clinicMinutes = (iso: string) => {
 	const [hours = 0, minutes = 0] = formatClinicTime(iso).split(":").map(Number);
 	return hours * 60 + minutes;
@@ -36,7 +33,6 @@ export interface BookingDay {
 	availableCount: number;
 }
 
-// api শুধু slot-ওয়ালা দিন পাঠায় → পুরো window-এর প্রতিটা দিন বানাই (খালি দিনও দেখাতে হবে)
 export const toBookingDays = (days: PublicSlotDay[], today: string): BookingDay[] => {
 	const byDate = new Map(days.map((day) => [day.date, day.slots]));
 	return dateRange(today, BOOKING_WINDOW_DAYS).map((date) => {
@@ -51,7 +47,6 @@ export interface OpenWindow {
 	width: number;
 }
 
-// পাশাপাশি খালি slot জোড়া লাগাই (আগেরটার endAt == পরেরটার startAt) → "09:00 – 13:00"
 export const toOpenWindows = (slots: PublicSlot[]): OpenWindow[] => {
 	const available = slots.filter((slot) => slot.status === "AVAILABLE");
 	const merged: { startAt: string; endAt: string }[] = [];
@@ -65,7 +60,6 @@ export const toOpenWindows = (slots: PublicSlot[]): OpenWindow[] => {
 	return merged.map(({ startAt, endAt }) => {
 		const start = clinicMinutes(startAt);
 		const duration = (Date.parse(endAt) - Date.parse(startAt)) / MINUTE_MS;
-		// মাঝরাত পেরোলে (overnight) bar দিনের শেষে কেটে দিই
 		const end = Math.min(start + duration, DAY_MINUTES);
 		return {
 			label: `${formatClinicTime(startAt)} – ${formatClinicTime(endAt)}`,

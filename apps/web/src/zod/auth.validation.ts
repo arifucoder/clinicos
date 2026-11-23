@@ -28,7 +28,6 @@ export type ResendOtpPayload = z.infer<typeof resendOtpSchema>;
 
 export const loginSchema = z.object({
 	email: emailSchema,
-	// এখানে min 8 না: login শুধু মিলিয়ে দেখে, নতুন নিয়ম চাপায় না (api-ও min 1)
 	password: z.string().min(1, "Password is required").max(128, "Password is too long"),
 });
 
@@ -38,14 +37,12 @@ export const forgetPasswordSchema = z.object({
 	email: emailSchema,
 });
 
-// action-এ যায় — api-র resetPasswordSchema-র সাথে হুবহু মিল
 export const resetPasswordSchema = z.object({
 	email: emailSchema,
 	otp: otpSchema,
 	newPassword: passwordSchema,
 });
 
-// শুধু form-এর জন্য: confirmPassword কখনো server-এ যায় না
 export const resetPasswordFormSchema = z
 	.object({
 		otp: otpSchema,
@@ -61,8 +58,6 @@ export type ForgetPasswordPayload = z.infer<typeof forgetPasswordSchema>;
 export type ResetPasswordPayload = z.infer<typeof resetPasswordSchema>;
 export type ResetPasswordFormValues = z.infer<typeof resetPasswordFormSchema>;
 
-// ---------- Change password (login করা অবস্থায়, সব role) ----------
-// action-এ যায় — api-র changePasswordSchema-র সাথে হুবহু মিল (একই refine)
 export const changePasswordSchema = z
 	.object({
 		currentPassword: z.string().min(1, "Current password is required").max(128, "Password is too long"),
@@ -73,7 +68,6 @@ export const changePasswordSchema = z
 		message: "New password must be different from the current password",
 	});
 
-// শুধু form-এর জন্য: confirmPassword কখনো server-এ যায় না
 export const changePasswordFormSchema = z
 	.object({
 		currentPassword: z.string().min(1, "Current password is required").max(128, "Password is too long"),

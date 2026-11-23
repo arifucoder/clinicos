@@ -4,7 +4,6 @@ const nextConfig: NextConfig = {
 	output: "standalone",
 	cacheComponents: true,
 	partialPrefetching: true,
-	// পুরনো "Today" page (/admin/front-desk) সরানো হয়েছে → bookmark থাকলে appointments-এ পাঠাই
 	experimental: {
 		serverActions: { bodySizeLimit: "3mb" },
 	},

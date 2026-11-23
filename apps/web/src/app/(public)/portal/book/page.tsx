@@ -18,8 +18,6 @@ import { Suspense } from "react";
 
 export const metadata: Metadata = { title: "Book a visit" };
 
-// URL /portal/book কিন্তু (public) group-এ: design-এর মতো public navbar, dashboard sidebar না।
-// তবু /portal-এর নিচে, তাই proxy.ts শুধু PATIENT ঢুকতে দেয় (logged out → /login?next=…)
 export default function MyBookingPage({ searchParams }: PageProps<"/portal/book">) {
 	return (
 		<div className="mx-auto w-full max-w-7xl px-4 pt-5 pb-20 md:px-8 md:pt-8">
@@ -34,7 +32,6 @@ async function BookingContent({ searchParams }: Pick<PageProps<"/portal/book">, 
 	const { doctorId, slotId } = myBookingPageQuerySchema.parse(await searchParams);
 	if (!doctorId || !slotId) return <BadLink />;
 
-	// তিনটা আলাদা request, একসাথে। patient: cookie দিয়ে (auth), বাকি দুটো public
 	const [profileResponse, doctor, slotsResponse] = await Promise.all([
 		PatientService.getMyProfile(),
 		DoctorService.getPublicDoctorById(doctorId)
@@ -51,7 +48,6 @@ async function BookingContent({ searchParams }: Pick<PageProps<"/portal/book">, 
 	const profile = profileResponse.data;
 	if (!profile.profileComplete) return <ProfileIncompleteCard returnTo={bookingPageHref(doctorId, slotId)} />;
 
-	// slot-এর সময় URL থেকে না, api থেকে নিই। না পেলে = আর খালি নেই (booked, blocked বা সময় পেরিয়েছে)
 	const openSlots: BookingSlot[] = (slotsResponse?.data.days ?? [])
 		.flatMap((day) => day.slots)
 		.filter((slot) => slot.status === "AVAILABLE")

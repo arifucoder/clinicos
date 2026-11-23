@@ -9,7 +9,6 @@ import type { PublicDoctor } from "@/types/doctor.types";
 import { CalendarDays, MapPin } from "lucide-react";
 import Link from "next/link";
 
-// grid card: উপরে ছবি + তথ্য, নিচে ধূসর band-এ fee আর Book
 export function DoctorCard({ doctor, today }: { doctor: PublicDoctor; today: string }) {
 	const profileHref = `${FIND_DOCTOR_PATH}/${doctor.id}`;
 	const [primary, ...others] = doctor.specialties;
@@ -26,7 +25,6 @@ export function DoctorCard({ doctor, today }: { doctor: PublicDoctor; today: str
 							{getInitials(doctor.name)}
 						</AvatarFallback>
 					</Avatar>
-					{/* teal = আজই খালি, নীল = পরে খালি; রং ছাড়াও নিচের লেখায় একই তথ্য আছে */}
 					{next && (
 						<span
 							aria-hidden="true"

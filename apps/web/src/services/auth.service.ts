@@ -22,7 +22,6 @@ interface VerifyEmailResult {
 	emailVerified: boolean;
 }
 
-// এগুলোর কোনোটাতেই login cookie লাগে না → auth: false
 const registerPatient = (payload: RegisterPayload) =>
 	httpClient.post<RegisterResult>("/auth/register", payload, { auth: false });
 
@@ -39,14 +38,12 @@ export interface LoginResult {
 	needPasswordChange: boolean;
 }
 
-// login-এ api-র Set-Cookie header লাগে → postWithCookies
 const login = (payload: LoginPayload) =>
 	httpClient.postWithCookies<LoginResult>("/auth/login", payload, { auth: false });
 
 const forgetPassword = (payload: ForgetPasswordPayload) =>
 	httpClient.post<null>("/auth/forget-password", payload, { auth: false });
 
-// api এখানে cookie মোছে, কিন্তু BFF-এ সেটা browser-এ পৌঁছায় না → action নিজে মুছবে
 const resetPassword = (payload: ResetPasswordPayload) =>
 	httpClient.post<null>("/auth/reset-password", payload, { auth: false });
 
@@ -57,16 +54,13 @@ export interface MeResult {
 	image: string | null;
 	role: UserRole;
 	needPasswordChange: boolean;
-	// শুধু DOCTOR-এর থাকে; বাকিদের null
 	doctorProfile: { id: string; photoUrl: string | null } | null;
 }
 
-// auth: true (default) → accessToken + sessionToken cookie api-তে যায়
 const getMe = () => httpClient.get<MeResult>("/auth/me");
 
 const logout = () => httpClient.post<null>("/auth/logout", null);
 
-// login লাগে (auth: true)। api এই session রাখে, বাকি সব device-এর session মুছে দেয়
 const changePassword = (payload: ChangePasswordPayload) => httpClient.post<null>("/auth/change-password", payload);
 
 export const AuthService = {

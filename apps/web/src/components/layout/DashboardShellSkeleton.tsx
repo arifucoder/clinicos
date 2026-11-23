@@ -1,6 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
-// user fetch হওয়ার আগে এক ঝলক: একই কাঠামো, তাই layout লাফাবে না
 export function DashboardShellSkeleton() {
 	return (
 		<div role="status" aria-busy="true" className="flex min-h-svh flex-1 bg-canvas">

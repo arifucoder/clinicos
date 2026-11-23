@@ -6,7 +6,6 @@ import Link from "next/link";
 
 export const metadata: Metadata = { title: "New patient" };
 
-// request data (searchParams/cookies) পড়ি না → Suspense লাগে না
 export default function NewPatientPage() {
 	return (
 		<div className="space-y-5">

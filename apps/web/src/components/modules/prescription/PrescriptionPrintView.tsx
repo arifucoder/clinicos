@@ -25,7 +25,6 @@ export function PrescriptionPrintView({ appointment, today, backHref, backLabel 
 
 	return (
 		<div className="space-y-6">
-			{/* screen-only toolbar */}
 			<div className="space-y-2 print:hidden">
 				<Button variant="ghost" size="sm" render={<Link href={backHref} />} nativeButton={false} className="-ml-2">
 					<ArrowLeft aria-hidden="true" />

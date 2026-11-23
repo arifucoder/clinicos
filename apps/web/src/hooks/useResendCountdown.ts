@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
 
-// "Resend code" button-এর countdown: secondsLeft ০ হলে আবার পাঠানো যায়
 export function useResendCountdown(initialSeconds = 60) {
 	const [secondsLeft, setSecondsLeft] = useState(initialSeconds);
 

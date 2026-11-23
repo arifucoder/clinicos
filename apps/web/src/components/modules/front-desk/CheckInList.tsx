@@ -19,7 +19,6 @@ import { UndoCheckInDialog } from "./UndoCheckInDialog";
 interface CheckInListProps {
 	appointments: Appointment[];
 	searchTerm?: string;
-	/** doctor বা "All" filter চালু আছে কিনা (empty state-এর লেখা বদলায়) */
 	hasFilters: boolean;
 }
 
@@ -31,7 +30,6 @@ export function CheckInList({ appointments, searchTerm, hasFilters }: CheckInLis
 	const [undoOpen, setUndoOpen] = useState(false);
 	const [, startTransition] = useTransition();
 
-	// toast-এর "Undo": সাথে সাথে ভুল ধরলে confirm ছাড়াই ফেরত
 	const quickUndo = (appointment: Appointment) => {
 		setBusyId(appointment.id);
 		startTransition(async () => {
@@ -51,7 +49,6 @@ export function CheckInList({ appointments, searchTerm, hasFilters }: CheckInLis
 				toast.error(result.message);
 				return;
 			}
-			// SDLC: "Checked in · Dr. X · 10:30" + ভুল click-এর জন্য Undo
 			toast.success(
 				`${appointment.patient.fullName} checked in · ${appointment.doctor.user.name} · ${formatClinicTime(appointment.startAt)}`,
 				{ action: { label: "Undo", onClick: () => quickUndo(appointment) }, duration: 8000 },
@@ -130,7 +127,6 @@ interface CheckInCardProps {
 function CheckInCard({ appointment, busy, onCheckIn, onCollectFee, onUndo }: CheckInCardProps) {
 	const { patient, doctor } = appointment;
 	const isCheckedIn = appointment.status === "CHECKED_IN";
-	// doctor prescription শুরু করলে undo চলবে না (api 409 দেয়; button-ও লুকাই)
 	const canUndo = isCheckedIn && appointment.prescription === null;
 	const paid = paidLabel(appointment);
 
@@ -141,7 +137,6 @@ function CheckInCard({ appointment, busy, onCheckIn, onCollectFee, onUndo }: Che
 				isCheckedIn && "bg-muted/40",
 			)}
 		>
-			{/* সময় = রোগীর serial (slot-ই queue) */}
 			<div className="flex shrink-0 items-baseline gap-2 sm:w-28 sm:flex-col sm:gap-0.5">
 				<time dateTime={appointment.startAt} className="font-heading text-xl font-bold text-foreground tabular-nums">
 					{formatClinicTime(appointment.startAt)}

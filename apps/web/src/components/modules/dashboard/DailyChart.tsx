@@ -5,11 +5,9 @@ import { formatCents } from "@/lib/format";
 import type { DailyStat } from "@/types/stats.types";
 import { Bar, CartesianGrid, ComposedChart, Legend, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
-// "2026-11-22" → "22 Nov" (date-only, তাই UTC)
 const axisDayFormatter = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
 const axisDay = (day: string) => axisDayFormatter.format(new Date(`${day}T00:00:00Z`));
 
-// cents → "$1.2K"
 const compactMoney = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", notation: "compact" });
 
 const COLLECTED = "Collected";

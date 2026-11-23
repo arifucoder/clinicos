@@ -31,7 +31,6 @@ export function ResetPasswordForm({ email }: { email: string }) {
 			setFormError(null);
 			setServerErrors({});
 
-			// confirmPassword পাঠাই না — ওটা শুধু টাইপের ভুল ধরার জন্য
 			const result = await resetPasswordAction({ email, otp: value.otp, newPassword: value.newPassword });
 
 			if (!result.success) {

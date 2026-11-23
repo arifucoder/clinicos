@@ -18,16 +18,13 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 interface PatientRegisterFormProps {
-	/** দিলে card-এ "Continue booking" দেখায় (Book for patient page); না দিলে আগের মতো */
 	onContinue?: (result: RegisteredPatient) => void;
-	/** Cancel button কোথায় নেবে */
 	cancelHref?: string;
 }
 
 export function PatientRegisterForm({ onContinue, cancelHref = "/admin/patients" }: PatientRegisterFormProps) {
 	const [registered, setRegistered] = useState<RegisteredPatient | null>(null);
 
-	// card দেখালে form unmount হয় → "Register another"-এ নতুন, খালি form আসে
 	if (registered) {
 		return (
 			<RegisteredCard
@@ -99,7 +96,6 @@ function RegisterForm({ onRegistered, cancelHref }: RegisterFormProps) {
 				</p>
 			)}
 
-			{/* ---------- Personal ---------- */}
 			<fieldset className="space-y-4">
 				<legend className={sectionTitle}>Personal details</legend>
 				<div className="grid gap-5 sm:grid-cols-2">
@@ -153,7 +149,6 @@ function RegisterForm({ onRegistered, cancelHref }: RegisterFormProps) {
 										value={field.state.value}
 										onValueChange={(value) => {
 											field.handleChange(value ?? "");
-											// Select-এ আসল blur নেই → বাছাই করলেই touched ধরি, যাতে error মুছে যায়
 											field.handleBlur();
 											clearServerError("gender");
 										}}
@@ -180,7 +175,6 @@ function RegisterForm({ onRegistered, cancelHref }: RegisterFormProps) {
 				</div>
 			</fieldset>
 
-			{/* ---------- Contact ---------- */}
 			<fieldset className="space-y-4">
 				<legend className={sectionTitle}>Contact</legend>
 				<div className="grid gap-5 sm:grid-cols-2">
@@ -256,7 +250,6 @@ function RegisterForm({ onRegistered, cancelHref }: RegisterFormProps) {
 				</div>
 			</fieldset>
 
-			{/* ---------- Medical ---------- */}
 			<fieldset className="space-y-4">
 				<legend className={sectionTitle}>Medical</legend>
 				<div className="grid gap-5 sm:grid-cols-2">
@@ -322,7 +315,6 @@ function RegisterForm({ onRegistered, cancelHref }: RegisterFormProps) {
 				</div>
 			</fieldset>
 
-			{/* ---------- Emergency contact ---------- */}
 			<fieldset className="space-y-4">
 				<legend className={sectionTitle}>Emergency contact</legend>
 				<div className="grid gap-5 sm:grid-cols-2">
@@ -389,14 +381,12 @@ function RegisterForm({ onRegistered, cancelHref }: RegisterFormProps) {
 interface RegisteredCardProps {
 	result: RegisteredPatient;
 	onRegisterAnother: () => void;
-	/** থাকলে booking flow: শুধু "Continue booking" দেখাই */
 	onContinue?: () => void;
 }
 
 function RegisteredCard({ result, onRegisterAnother, onContinue }: RegisteredCardProps) {
 	const headingRef = useRef<HTMLHeadingElement>(null);
 
-	// screen reader আর keyboard user-কে নতুন content-এ নিয়ে যাই
 	useEffect(() => headingRef.current?.focus(), []);
 
 	return (

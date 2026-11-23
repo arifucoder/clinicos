@@ -14,7 +14,6 @@ export function Navbar() {
 			<div className="mx-auto flex h-16 w-full max-w-7xl items-center gap-2 px-5 md:h-18 md:gap-10 md:px-8">
 				<Logo className="flex-1 lg:flex-none" />
 
-				{/* tablet (md)-এ চারটা link আর Book button একসাথে ধরে না → lg থেকে খোলা menu, তার নিচে hamburger */}
 				<nav aria-label="Main" className="hidden flex-1 lg:block">
 					<NavLinks items={publicNavItems} />
 				</nav>
@@ -35,7 +34,6 @@ export function Navbar() {
 						<ArrowRight className="hidden md:block" />
 					</Button>
 
-					{/* fallback: user আসার আগেই menu button কাজ করে (logged-out version) */}
 					<Suspense fallback={<MobileNav />}>
 						<MobileNavAuth />
 					</Suspense>

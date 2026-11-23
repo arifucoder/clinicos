@@ -1,6 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
-// doctor আর portal দুই print page-এর loading অবস্থা
 export function PrintSkeleton() {
 	return (
 		<div className="space-y-6">

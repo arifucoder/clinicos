@@ -1,6 +1,5 @@
 import type { AppointmentStatus } from "@/types/appointment.types";
 
-// api-র StatsService.getAdminStats-এর return (stats.service.ts)। তারিখগুলো "YYYY-MM-DD" (clinic-এর দিন)।
 export interface DailyStat {
 	day: string;
 	total: number;
@@ -34,7 +33,6 @@ export interface AdminStats {
 	byDoctor: DoctorStat[];
 }
 
-// api-র StatsService.getDoctorStats-এর return (stats.service.ts)
 export interface DoctorStats {
 	today: {
 		date: string;
@@ -59,7 +57,6 @@ export interface DoctorStats {
 	last7Days: { day: string; completed: number }[];
 }
 
-// api-র StatsService.getPatientStats-এর return (GET /patient/stats; রোগী session থেকে)
 export interface PatientStats {
 	nextAppointment: {
 		id: string;

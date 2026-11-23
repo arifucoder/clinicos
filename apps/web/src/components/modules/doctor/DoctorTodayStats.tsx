@@ -3,7 +3,6 @@ import type { DoctorStats } from "@/types/stats.types";
 import { CalendarCheck, CalendarRange, CheckCircle2, Clock, UserCheck, Users } from "lucide-react";
 
 export function DoctorTodayStats({ stats }: { stats: DoctorStats }) {
-	// api ৭ দিনের প্রতিদিনের হিসাব দেয় → card-এ মোট
 	const weekCompleted = stats.last7Days.reduce((sum, day) => sum + day.completed, 0);
 
 	const items: StatItem[] = [

@@ -18,8 +18,6 @@ import { cache, Suspense } from "react";
 
 type Params = PageProps<"/doctors/[id]">["params"];
 
-// cache(): metadata আর page দুজনেই ডাকে, কিন্তু api call একবার।
-// ভুল id বা না-থাকা/বন্ধ doctor → null (404 page)
 const getDoctor = cache(async (id: string) => {
 	if (!doctorIdSchema.safeParse(id).success) return null;
 	await connection(); // request-time data (prerender না)
@@ -45,7 +43,6 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 
 export default function DoctorProfilePage({ params }: PageProps<"/doctors/[id]">) {
 	return (
-		// mobile-এ নিচের booking bar কনটেন্ট ঢেকে না দেয় → pb-32
 		<div className="mx-auto w-full max-w-7xl px-4 pt-4 pb-32 md:px-8 md:pt-6 lg:pb-24">
 			<Suspense fallback={<DoctorProfileSkeleton />}>
 				<DoctorProfileContent params={params} />

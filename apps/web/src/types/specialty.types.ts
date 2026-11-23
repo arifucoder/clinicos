@@ -1,4 +1,3 @@
-// api-র Specialty (isDeleted/deletedAt api নিজেই বাদ দেয়)। Date JSON হয়ে string আসে।
 export interface Specialty {
 	id: string;
 	name: string;
@@ -10,7 +9,6 @@ export interface Specialty {
 	updatedAt: string;
 }
 
-// GET /public/specialties — শুধু যেগুলোতে অন্তত একজন active doctor আছে
 export interface PublicSpecialty {
 	name: string;
 	slug: string;

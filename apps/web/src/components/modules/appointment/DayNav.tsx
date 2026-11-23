@@ -8,7 +8,6 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export function DayNav({ date, today }: { date: string; today: string }) {
 	const { setParams, isPending } = useTableUrlState();
-	// আজ হলে URL থেকে date মুছি (default = আজ)
 	const go = (next: string) => setParams({ date: next === today ? null : next }, { resetPage: true });
 
 	return (

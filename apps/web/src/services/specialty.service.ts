@@ -6,7 +6,6 @@ import type { CreateSpecialtyPayload, SpecialtyListQuery, UpdateSpecialtyPayload
 
 const getSpecialties = (query: SpecialtyListQuery) =>
 	httpClient.get<Specialty[]>("/specialties", {
-		// "" পাঠালে URL-এ ?searchTerm= যায়; undefined হলে axios নিজেই বাদ দেয়
 		params: { ...query, searchTerm: query.searchTerm || undefined },
 	});
 
@@ -17,7 +16,6 @@ const updateSpecialty = (id: string, payload: UpdateSpecialtyPayload) =>
 
 const deleteSpecialty = (id: string) => httpClient.delete<null>(`/specialties/${id}`);
 
-// find-doctor filter: শুধু যেসব specialty-তে doctor আছে (doctor-এর সংখ্যাসহ)। login লাগে না
 const getPublicSpecialties = () => httpClient.get<PublicSpecialty[]>("/public/specialties", { auth: false });
 
 export const SpecialtyService = { getSpecialties, getPublicSpecialties, createSpecialty, updateSpecialty, deleteSpecialty };

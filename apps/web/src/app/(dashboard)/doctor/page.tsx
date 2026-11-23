@@ -27,15 +27,12 @@ export default function DoctorDashboardPage({ searchParams }: PageProps<"/doctor
 }
 
 async function TodayContent({ searchParams }: { searchParams: SearchParams }) {
-	// ভুল URL (?tab=xyz&page=-3) → crash না করে default
 	const query = doctorTodayQuerySchema.parse(await searchParams);
 
-	// request-time-এ চালাও → এর পরে new Date() নিরাপদ
 	await connection();
 	const today = clinicToday(new Date());
 	const config = DOCTOR_TAB_CONFIG[query.tab];
 
-	// api doctor-এর জন্য নিজে থেকেই শুধু নিজের appointment দেয় (doctorId পাঠাই না)
 	const [statsResponse, appointmentsResponse] = await Promise.all([
 		StatsService.getDoctorStats(),
 		AppointmentService.getAppointments({
@@ -58,7 +55,6 @@ async function TodayContent({ searchParams }: { searchParams: SearchParams }) {
 
 	return (
 		<div className="space-y-6">
-			{/* ৫ সেকেন্ড পরপর নতুন data; URL-এ state থাকায় page/search হারায় না */}
 			<AutoRefresh />
 
 			<div className="space-y-1">

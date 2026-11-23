@@ -14,7 +14,6 @@ export function LastVisitCard({ visit, today }: LastVisitCardProps) {
 	if (!visit) return null; // প্রথম visit-এর আগে কিছু দেখানোর নেই
 
 	const followUp = visit.prescription?.followUpDate ?? null;
-	// @db.Date → "YYYY-MM-DD" অংশ তুলনা করলেই হয়; আজ বা পরে হলে "আসন্ন"
 	const followUpDue = followUp !== null && followUp.slice(0, 10) >= today;
 
 	return (
@@ -45,7 +44,6 @@ export function LastVisitCard({ visit, today }: LastVisitCardProps) {
 					}
 				>
 					<CalendarClock className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
-					{/* calendar date, কোনো মুহূর্ত না → UTC formatter (formatDateOfBirth-এর মতো) */}
 					{followUpDue ? "Follow-up due on " : "Follow-up was on "}
 					{formatDateOfBirth(followUp)}
 				</p>

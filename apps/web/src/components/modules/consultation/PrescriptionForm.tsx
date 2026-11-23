@@ -18,10 +18,7 @@ import { toast } from "sonner";
 
 const MAX_ITEMS = 30;
 
-// শেষবার save হওয়া মানের ছাপ; এখনকার মানের সাথে না মিললে = unsaved
 const snapshot = (values: PrescriptionFormValues) => JSON.stringify(values);
-
-// ---------- ছোট field helper (FieldShell + aria একবারে) ----------
 
 interface FieldBaseProps {
 	field: AnyFieldApi;
@@ -81,8 +78,6 @@ function FormTextarea({
 		</div>
 	);
 }
-
-// ---------- form ----------
 
 interface PrescriptionFormProps {
 	appointment: Appointment;
@@ -148,7 +143,6 @@ export function PrescriptionForm({ appointment, today }: PrescriptionFormProps) 
 				</p>
 			)}
 
-			{/* ---------- Diagnosis ---------- */}
 			<fieldset className="space-y-4">
 				<legend className={sectionTitle}>Diagnosis</legend>
 				<form.Field name="symptoms">
@@ -178,7 +172,6 @@ export function PrescriptionForm({ appointment, today }: PrescriptionFormProps) 
 				</form.Field>
 			</fieldset>
 
-			{/* ---------- Medicines (array field) ---------- */}
 			<form.Field name="items" mode="array">
 				{(itemsField) => (
 					<fieldset className="space-y-3">
@@ -286,7 +279,6 @@ export function PrescriptionForm({ appointment, today }: PrescriptionFormProps) 
 				)}
 			</form.Field>
 
-			{/* ---------- Advice ---------- */}
 			<fieldset className="grid gap-4 sm:grid-cols-[1fr_220px]">
 				<legend className={`${sectionTitle} mb-4`}>Advice</legend>
 				<form.Field name="advice">
@@ -307,12 +299,10 @@ export function PrescriptionForm({ appointment, today }: PrescriptionFormProps) 
 				</form.Field>
 			</fieldset>
 
-			{/* ---------- Save + Complete ---------- */}
 			<form.Subscribe selector={(state) => [state.values, state.isSubmitting] as const}>
 				{([values, isSubmitting]) => {
 					const hasUnsaved = snapshot(values) !== savedSnapshot;
 					const isBusy = isSubmitting || isCompleting;
-					// SDLC FR-4: save-এর আগে Complete disabled (আসল নিয়ম api-তে)
 					const canComplete = !isCompleted && savedSnapshot !== null && !hasUnsaved;
 
 					const statusText = isCompleted
@@ -330,7 +320,6 @@ export function PrescriptionForm({ appointment, today }: PrescriptionFormProps) 
 							<p className="text-xs text-muted-foreground sm:mr-auto" aria-live="polite">
 								{statusText}
 							</p>
-							{/* save হওয়া data-ই কাগজে যায় → unsaved থাকলে Print বন্ধ */}
 							{savedSnapshot !== null && !hasUnsaved ? (
 								<Button
 									variant="outline"

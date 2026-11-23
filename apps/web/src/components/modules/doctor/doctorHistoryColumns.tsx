@@ -14,7 +14,6 @@ export const DOCTOR_HISTORY_MOBILE_COLUMNS = ["startAt", "patient", "actions"] a
 
 const consultationHref = (id: string) => `/doctor/appointments/${id}`;
 
-// browser-এর timezone না, clinic-এর দিন (রাত ১১:৩০-এর appointment অন্য দিনে না যায়)
 const formatClinicDay = (iso: string) => formatDayLabel(clinicToday(new Date(iso)));
 
 function HistoryStatusPill({ appointment }: { appointment: Appointment }) {
@@ -22,7 +21,6 @@ function HistoryStatusPill({ appointment }: { appointment: Appointment }) {
 	return <StatusPill tone={meta.tone}>{meta.label}</StatusPill>;
 }
 
-// column id = api-র sortBy নাম ("startAt"); শুধু এটাই sortable
 export const doctorHistoryColumns: ColumnDef<DataTableFeatures, Appointment>[] = [
 	{
 		accessorKey: "startAt",
@@ -49,7 +47,6 @@ export const doctorHistoryColumns: ColumnDef<DataTableFeatures, Appointment>[] =
 					<p className="truncate text-xs text-muted-foreground tabular-nums">{patient.phone ?? patient.user.email}</p>
 					<div className="flex flex-wrap items-center gap-2">
 						<AllergyBadge allergies={patient.allergies} />
-						{/* mobile-এ status column লুকানো → এখানে দেখাই */}
 						<span className="md:hidden">
 							<HistoryStatusPill appointment={row.original} />
 						</span>

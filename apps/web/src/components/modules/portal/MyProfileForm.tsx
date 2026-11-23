@@ -23,7 +23,6 @@ import { toast } from "sonner";
 
 type TextFieldName = "phone" | "dateOfBirth" | "address" | "emergencyContactName" | "emergencyContactPhone";
 
-// api-র null → form-এর "" (input সবসময় string চায়); জন্মতারিখ ISO → "YYYY-MM-DD"
 const toFormValues = (profile: MyPatientProfile): MyPatientProfileFormValues => ({
 	phone: profile.phone ?? "",
 	dateOfBirth: profile.dateOfBirth?.slice(0, 10) ?? "",
@@ -66,7 +65,6 @@ export function MyProfileForm({ profile, returnTo }: { profile: MyPatientProfile
 		},
 	});
 
-	// একই রকম text input-গুলোর জন্য একটা helper (Select দুটো আলাদা, নিচে)
 	const renderTextField = (
 		name: TextFieldName,
 		label: string,
@@ -113,7 +111,6 @@ export function MyProfileForm({ profile, returnTo }: { profile: MyPatientProfile
 				</p>
 			)}
 
-			{/* ---------- Personal ---------- */}
 			<fieldset className="space-y-4">
 				<legend className={sectionTitle}>Personal details</legend>
 				<div className="grid gap-5 sm:grid-cols-2">
@@ -128,7 +125,6 @@ export function MyProfileForm({ profile, returnTo }: { profile: MyPatientProfile
 										value={field.state.value}
 										onValueChange={(value) => {
 											field.handleChange(value ?? "");
-											// Select-এ আসল blur নেই → বাছাই করলেই touched
 											field.handleBlur();
 											clearServerError("gender");
 										}}
@@ -186,7 +182,6 @@ export function MyProfileForm({ profile, returnTo }: { profile: MyPatientProfile
 				</div>
 			</fieldset>
 
-			{/* ---------- Contact ---------- */}
 			<fieldset className="space-y-4">
 				<legend className={sectionTitle}>Contact</legend>
 				<div className="grid gap-5 sm:grid-cols-2">
@@ -201,7 +196,6 @@ export function MyProfileForm({ profile, returnTo }: { profile: MyPatientProfile
 				</div>
 			</fieldset>
 
-			{/* ---------- Emergency contact ---------- */}
 			<fieldset className="space-y-4">
 				<legend className={sectionTitle}>Emergency contact</legend>
 				<div className="grid gap-5 sm:grid-cols-2">

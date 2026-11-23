@@ -22,7 +22,6 @@ async function VerifyEmailContent({ searchParams }: Pick<PageProps<"/verify-emai
 	const { email: rawEmail, next } = await searchParams;
 	const safeNext = isSafeRelativePath(next) ? next : undefined;
 
-	// URL-ও user input — বিশ্বাস না করে যাচাই
 	const parsed = resendOtpSchema.shape.email.safeParse(typeof rawEmail === "string" ? rawEmail : "");
 	if (!parsed.success) return <MissingEmail />;
 

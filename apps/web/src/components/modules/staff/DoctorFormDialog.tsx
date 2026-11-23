@@ -37,7 +37,6 @@ export function DoctorFormDialog({ open, onOpenChange, doctor, specialties }: Do
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			{/* field অনেক → ছোট screen-এ dialog-এর ভেতরে scroll */}
 			<DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-2xl">
 				<DialogHeader>
 					<DialogTitle>{isEdit ? "Edit doctor" : "New doctor"}</DialogTitle>
@@ -73,7 +72,6 @@ function DoctorForm({ doctor, specialties, onDone }: DoctorFormProps) {
 		else setFormError(result.message);
 	};
 
-	// বন্ধ হয়ে যাওয়া specialty তালিকায় নেই; রেখে দিলে save-এ api 400 দিত
 	const activeIds = new Set(specialties.map((specialty) => specialty.id));
 
 	const form = useForm({

@@ -34,11 +34,9 @@ export default function PortalProfilePage({ searchParams }: PageProps<"/portal/p
 }
 
 async function ProfileContent({ searchParams }: Pick<PageProps<"/portal/profile">, "searchParams">) {
-	// booking থেকে এলে save-এর পরে সেখানেই ফেরত (শুধু নিজের booking page — open redirect না)
 	const { next } = await searchParams;
 	const returnTo = isSafeRelativePath(next) && next.startsWith(`${PATIENT_BOOK_PATH}?`) ? next : undefined;
 
-	// id পাঠাই না: api session থেকে নিজের record দেয়। না পেলে error boundary (নিজের profile হারানোর কথা না)
 	const response = await PatientService.getMyProfile();
 	const profile = response.data;
 
@@ -57,7 +55,6 @@ async function ProfileContent({ searchParams }: Pick<PageProps<"/portal/profile"
 			)}
 
 			<AccountCard profile={profile} />
-			{/* key: save-এর পর server নতুন data দিলে form নতুন default নিয়ে বসে */}
 			<MyProfileForm key={profile.updatedAt} profile={profile} returnTo={returnTo} />
 		</>
 	);
@@ -72,7 +69,6 @@ function InfoRow({ label, children }: { label: string; children: ReactNode }) {
 	);
 }
 
-// রোগী নিজে বদলাতে পারে না: নাম/email account-এর পরিচয়, allergy ডাক্তারি তথ্য → front desk বদলায়
 function AccountCard({ profile }: { profile: MyPatientProfile }) {
 	return (
 		<section

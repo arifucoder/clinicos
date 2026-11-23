@@ -11,7 +11,6 @@ interface HoldCountdownProps {
 
 const pad = (value: number) => String(value).padStart(2, "0");
 
-// "Pay within 12:48 to keep this slot" — প্রতি সেকেন্ডে কমে; শেষ হলে page নতুন করে আনে (hold বাতিল)
 export function HoldCountdown({ expiresAt, serverNowMs }: HoldCountdownProps) {
 	const router = useRouter();
 	const expiresMs = new Date(expiresAt).getTime();

@@ -42,14 +42,12 @@ export function AppointmentRowActions({
 	const hasTopGroup = can.canSendPaymentLink || can.canUndoCheckIn;
 	const hasMenu = hasTopGroup || can.canCancel;
 
-	// শেষ হয়ে যাওয়া appointment (completed/cancelled/…) → কোনো কাজ নেই
 	if (!can.canCheckIn && !can.canCollectFee && !hasMenu) {
 		return <span className="text-xs text-muted-foreground">—</span>;
 	}
 
 	return (
 		<div className="flex items-center justify-end gap-2">
-			{/* পরের মূল কাজটা সরাসরি button, বাকিগুলো menu-তে */}
 			{can.canCheckIn && (
 				<Button size="sm" onClick={() => onCheckIn(appointment)} disabled={busy} aria-label={`Check in ${name}`}>
 					{busy ? <Loader2 className="animate-spin" aria-hidden="true" /> : <UserCheck aria-hidden="true" />}

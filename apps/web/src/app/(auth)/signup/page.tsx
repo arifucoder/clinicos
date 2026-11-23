@@ -17,7 +17,6 @@ export default function SignupPage({ searchParams }: PageProps<"/signup">) {
 				<p className="text-[15px] text-slate-700">Book faster and keep every visit in one place.</p>
 			</div>
 
-			{/* searchParams (request data) → Suspense */}
 			<Suspense fallback={<SignupSkeleton />}>
 				<SignupWithParams searchParams={searchParams} />
 			</Suspense>
@@ -31,7 +30,6 @@ export default function SignupPage({ searchParams }: PageProps<"/signup">) {
 
 async function SignupWithParams({ searchParams }: Pick<PageProps<"/signup">, "searchParams">) {
 	const { next } = await searchParams;
-	// booking থেকে এলে: signup → verify → login → ঠিক সেই booking-এ ফেরে
 	const safeNext = isSafeRelativePath(next) ? next : undefined;
 
 	return (

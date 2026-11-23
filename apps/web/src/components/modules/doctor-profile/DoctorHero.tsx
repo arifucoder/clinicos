@@ -31,7 +31,6 @@ export function DoctorHero({ doctor, today }: { doctor: PublicDoctor; today: str
 							{getInitials(doctor.name)}
 						</AvatarFallback>
 					</Avatar>
-					{/* mobile: নাম ছবির পাশে */}
 					<div className="flex min-w-0 flex-col gap-1 sm:hidden">
 						<h1 className="font-heading text-[22px] leading-tight font-bold tracking-tight text-foreground">
 							{doctor.name}

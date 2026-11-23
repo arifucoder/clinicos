@@ -48,7 +48,6 @@ async function LoginFormWithParams({ searchParams }: Pick<PageProps<"/login">, "
 				</p>
 			)}
 			<LoginForm defaultEmail={parsedEmail.success ? parsedEmail.data : ""} next={safeNext} />
-			{/* signup-এও next পাঠাই → verify → login → আবার booking-এ */}
 			<p className="text-center text-sm text-muted-foreground">
 				New patient?{" "}
 				<Link

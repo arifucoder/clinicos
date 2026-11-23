@@ -8,7 +8,6 @@ interface ProfileProgressBannerProps {
 	missingRequired: string[];
 }
 
-// booking-এর আগে phone, জন্মতারিখ, gender লাগে → না থাকলে উপরে দেখাই
 export function ProfileProgressBanner({ percent, missingRequired }: ProfileProgressBannerProps) {
 	return (
 		<section

@@ -3,7 +3,6 @@ import { profileHrefFor } from "@/lib/myBooking";
 import { UserRoundPen } from "lucide-react";
 import Link from "next/link";
 
-// api booking-এর আগে phone, জন্মতারিখ আর gender চায় (isProfileComplete)
 export function ProfileIncompleteCard({ returnTo }: { returnTo: string }) {
 	return (
 		<section className="flex flex-col gap-4 rounded-xl border border-border bg-card p-5 shadow-card md:p-7">

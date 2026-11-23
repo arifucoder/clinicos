@@ -45,7 +45,6 @@ export function SignupForm({ next }: { next?: string }) {
 		},
 	});
 
-	// server error আগে, তারপর Zod error (শুধু field ছোঁয়া হলে)
 	const getError = (name: FieldName, meta: AnyFieldMeta): string | undefined => {
 		if (serverErrors[name]) return serverErrors[name];
 		if (!meta.isTouched) return undefined;

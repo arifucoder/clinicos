@@ -1,6 +1,5 @@
 import * as z from "zod";
 
-// api-র slot.config.ts আর slot.validation.ts-এর সাথে মিল
 export const SLOT_MINUTES = ["10", "15", "20", "30"] as const;
 export const MAX_DATES_PER_REQUEST = 14;
 export const OPEN_MAX_DAYS_AHEAD = 30;
@@ -17,8 +16,6 @@ const breakSchema = z
 		path: ["endTime"],
 	});
 
-// ---------- Form (browser) ----------
-// end < start ভুল না: রাতের shift (22:00–06:00)। শুধু সমান হলে error
 export const openSlotsFormSchema = z
 	.object({
 		dates: z
@@ -41,7 +38,6 @@ export const blockSlotsFormSchema = z.object({
 });
 export type BlockSlotsFormValues = z.input<typeof blockSlotsFormSchema>;
 
-// ---------- Action (server): api যে আকার চায় ----------
 export const openSlotsSchema = openSlotsFormSchema.transform(({ slotMinutes, ...rest }) => ({
 	...rest,
 	slotMinutes: Number(slotMinutes), // form-এ Select string দেয়, api number চায়
@@ -49,7 +45,6 @@ export const openSlotsSchema = openSlotsFormSchema.transform(({ slotMinutes, ...
 export type OpenSlotsPayload = z.output<typeof openSlotsSchema>;
 
 export const slotIdsSchema = z.array(z.uuid("Invalid slot")).min(1, "Select at least one slot").max(1000);
-// delete এক এক করে api-তে যায় → একবারে বেশি না
 export const deleteSlotIdsSchema = z.array(z.uuid("Invalid slot")).min(1).max(50, "Delete up to 50 slots at a time");
 
 export const blockSlotsSchema = blockSlotsFormSchema.extend({ slotIds: slotIdsSchema });
@@ -57,7 +52,6 @@ export type BlockSlotsPayload = z.output<typeof blockSlotsSchema>;
 
 export const slotDoctorIdSchema = z.union([z.literal("me"), z.uuid("Invalid doctor")]);
 
-// ---------- URL ----------
 export const slotPageQuerySchema = z.object({
 	doctorId: z.uuid().optional().catch(undefined),
 	from: clinicDateSchema.optional().catch(undefined),

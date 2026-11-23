@@ -26,7 +26,6 @@ export default function AdminDashboardPage({ searchParams }: PageProps<"/admin">
 async function DashboardContent({ searchParams }: { searchParams: SearchParams }) {
 	const { days } = adminStatsQuerySchema.parse(await searchParams);
 
-	// "আজ" কোন দিন সেটা api ঠিক করে (CLINIC_TIME_ZONE) → এখানে new Date() লাগে না
 	const { data: stats } = await StatsService.getAdminStats(days);
 
 	return (

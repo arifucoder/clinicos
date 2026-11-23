@@ -1,4 +1,3 @@
-// api-র slot.service.ts (getManageSlots, openSlots, blockSlots, unblockSlots)
 export type SlotState = "OPEN" | "BOOKED" | "BLOCKED";
 
 export type AppointmentStatus =
@@ -49,7 +48,6 @@ export interface SlotDoctorOption {
 	specialties: string;
 }
 
-// GET /doctors/:id/slots (public) — booked slot api দেখায়ই না; BLOCKED আসে কারণসহ
 export interface PublicSlot {
 	id: string;
 	startAt: string;

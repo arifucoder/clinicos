@@ -9,7 +9,6 @@ interface SidebarContentProps {
 	onNavigate?: () => void; // mobile sheet বন্ধ করার জন্য
 }
 
-// desktop sidebar আর mobile sheet: দুই জায়গায় একই ভেতরের অংশ (DRY)
 export function SidebarContent({ user, onNavigate }: SidebarContentProps) {
 	return (
 		<>

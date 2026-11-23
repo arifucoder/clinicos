@@ -15,7 +15,6 @@ import { isAxiosError } from "axios";
 import { revalidatePath } from "next/cache";
 import type * as z from "zod";
 
-// admin আর doctor দুজনের page একই data দেখায়
 const SLOT_PATHS = ["/admin/slots", "/doctor/slots"] as const;
 const revalidateSlots = () => {
 	for (const path of SLOT_PATHS) revalidatePath(path);
@@ -25,11 +24,9 @@ const toSlotError = (error: unknown): ActionError => {
 	if (isAxiosError<ApiErrorResponse>(error) && error.response?.status === 404) {
 		return { success: false, message: "This doctor or slot no longer exists. Refresh the page." };
 	}
-	// 409 overlap / 400 past: errorSources খালি → শুধু message (ওতে সময় লেখা থাকে)
 	const result = toActionError(error);
 	if (!result.fieldErrors) return result;
 
-	// api-র path "breaks.0" → form-এর field "breaks"
 	const fieldErrors: Record<string, string> = {};
 	for (const [key, message] of Object.entries(result.fieldErrors)) {
 		fieldErrors[key.split(".")[0] ?? key] ??= message;
@@ -92,7 +89,6 @@ export async function unblockSlotsAction(doctorId: unknown, slotIds: unknown): P
 	}
 }
 
-// api-তে bulk delete নেই → প্রতিটা আলাদা; কিছু fail করলেও বাকিগুলো মুছে যায়
 export async function deleteSlotsAction(
 	doctorId: unknown,
 	slotIds: unknown,

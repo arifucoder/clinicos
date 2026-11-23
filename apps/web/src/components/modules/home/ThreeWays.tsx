@@ -3,7 +3,6 @@ import { CircleCheck, DoorOpen, Mail, MonitorSmartphone, Phone } from "lucide-re
 import type { ReactNode } from "react";
 import { bigH2Class, eyebrowClass, sectionClass } from "./homeStyles";
 
-// id="how-it-works": navbar-এর "How it works"। তিনটা পথ, একই appointment (SDLC: online, front desk, walk-in)
 export function ThreeWays() {
 	return (
 		<section id="how-it-works" aria-labelledby="ways-heading" className="scroll-mt-20 border-t border-border">
@@ -119,7 +118,6 @@ function WayCard({ icon, iconTone = "blue", title, text, dark, children }: WayCa
 			</span>
 			<h3 className="font-heading text-xl font-bold text-foreground">{title}</h3>
 			<p className="text-[15px] leading-relaxed text-body">{text}</p>
-			{/* ছোট illustration — শুধু দেখানোর জন্য */}
 			<div
 				aria-hidden="true"
 				className={

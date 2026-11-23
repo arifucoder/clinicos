@@ -4,7 +4,6 @@ export interface SpecialtyRef {
 	slug: string;
 }
 
-// api-র doctorSelect + toDoctorResponse (doctor.service.ts)
 export interface StaffDoctor {
 	id: string; // doctorProfile-এর id — /doctors/:id এটাই চায়, user.id না
 	licenseNumber: string;
@@ -26,14 +25,12 @@ export interface StaffDoctor {
 	specialties: SpecialtyRef[];
 }
 
-// POST /users/doctors → { user, doctorProfile, emailSent }; এখানে যেটুকু লাগে
 export interface CreateDoctorResult {
 	user: { id: string; name: string; email: string };
 	doctorProfile: { id: string };
 	emailSent: boolean;
 }
 
-// api-র publicDoctorSelect + toPublicDoctor (GET /public/doctors) — email/phone/license নেই
 export interface PublicSpecialtyRef {
 	name: string;
 	slug: string;

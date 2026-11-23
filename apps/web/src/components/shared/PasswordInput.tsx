@@ -13,7 +13,6 @@ export function PasswordInput({ className, ...props }: PasswordInputProps) {
 
 	return (
 		<div className="relative">
-			{/* pr-11 শেষে: নাহলে বাইরে থেকে আসা px-* এটাকে মুছে দিত */}
 			<Input type={visible ? "text" : "password"} className={cn(className, "pr-11")} {...props} />
 			<Button
 				type="button"

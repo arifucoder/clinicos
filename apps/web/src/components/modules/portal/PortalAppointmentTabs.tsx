@@ -13,9 +13,7 @@ interface PortalAppointmentTabsProps {
 	query: Pick<PortalAppointmentsQuery, "searchTerm" | "year" | "month">;
 }
 
-// Link-ভিত্তিক tab (DoctorTodayTabs-এর মতো): URL-এ থাকে, back বাটনে ফেরা যায়
 export function PortalAppointmentTabs({ active, counts, query }: PortalAppointmentTabsProps) {
-	// search আর বছর/মাস tab বদলালেও থাকে; page, sort আর payment banner থাকে না
 	const keep = Object.fromEntries(
 		Object.entries({ searchTerm: query.searchTerm, year: query.year, month: query.month }).filter(
 			([, value]) => value !== undefined,
