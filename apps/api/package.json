@@ -15,6 +15,7 @@
 		"generate": "prisma generate",
 		"migrate": "prisma migrate dev",
 		"migrate:reset": "prisma migrate reset",
+		"migrate:deploy": "prisma migrate deploy",
 		"validate": "prisma validate",
 		"format": "prisma format",
 		"seed": "tsx prisma/schema/seed.ts",
@@ -52,7 +53,6 @@
 		"@types/pg": "^8.23.1",
 		"oxlint": "^1.92.0",
 		"oxlint-tsgolint": "^7.0.2006",
-		"prisma": "^7.10.1",
 		"tsdown": "^0.23.7",
 		"tsx": "^4.23.15",
 		"typescript": "^7.0.2",
@@ -79,6 +79,7 @@
 		"node-cron": "^4.6.0",
 		"nodemailer": "^10.5.0",
 		"pg": "^8.23.1",
+		"prisma": "7.10.1",
 		"stripe": "^23.1.0",
 		"zod": "^4.6.7"
 	}
