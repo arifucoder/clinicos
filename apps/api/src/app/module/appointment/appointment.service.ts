@@ -404,8 +404,8 @@ const getMyAppointmentPeriods = async (userId: string, statuses?: AppointmentSta
 	}
 
 	return [...byYear.entries()]
-		.sort(([a], [b]) => b - a)
-		.map(([year, months]) => ({ year, months: [...months].sort((a, b) => b - a) }));
+		.toSorted(([a], [b]) => b - a)
+		.map(([year, months]) => ({ year, months: [...months].toSorted((a, b) => b - a) }));
 };
 
 const getMyAppointmentById = async (userId: string, id: string) => {
