@@ -213,7 +213,9 @@ const seedPatientHistory = async (patient: { id: string; userId: string }, docto
 };
 
 const seedDemo = async () => {
-	if (envVars.NODE_ENV === "production") throw new Error("Refusing to seed demo data in production");
+	if (envVars.NODE_ENV === "production" && process.env.ALLOW_DEMO_SEED !== "true") {
+		throw new Error("Refusing to seed demo data in production (set ALLOW_DEMO_SEED=true for a demo server)");
+	}
 
 	const hashedPassword = await hashPassword(DEMO_PASSWORD);
 	const specialties = await seedSpecialties();

@@ -1,7 +1,7 @@
 import { defineConfig } from "tsdown";
 
 export default defineConfig({
-	entry: ["src/server.ts"],
+	entry: { server: "src/server.ts", seed: "prisma/seed.ts", "seed-demo": "prisma/seed-demo.ts" },
 	format: "esm",
 	platform: "node",
 	target: "node24",
