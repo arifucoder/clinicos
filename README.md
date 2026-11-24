@@ -2,8 +2,8 @@
 
 A full-stack clinic management system for a small to mid-sized clinic. Patients find doctors and book online, the front desk books walk-ins and checks patients in, and doctors run their day, write prescriptions and keep patient records.
 
-**Live demo:** https://clinicos.arifuddincoder.site
-**API health:** https://clinicosapi.arifuddincoder.site/api/v1/health
+**Live demo:** https://clinicos.dev.cv/
+**API health:** https://api.clinicos.dev.cv/api/v1/health
 
 ![ClinicOS home page](docs/screenshots/home.png)
 
