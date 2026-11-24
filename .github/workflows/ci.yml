@@ -1,0 +1,88 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_call: # reused by deploy.yml
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: clinicos_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U test"
+          --health-interval 5s
+          --health-retries 10
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://test:test@localhost:5432/clinicos_test
+      FRONTEND_URL: http://localhost:3000
+      BETTER_AUTH_URL: http://localhost:5000
+      CLINIC_TIME_ZONE: Asia/Dhaka
+      BETTER_AUTH_SECRET: ci-better-auth-secret-0123456789abcdef
+      ACCESS_TOKEN_SECRET: ci-access-token-secret-0123456789abcdef
+      ACCESS_TOKEN_EXPIRES_IN: 1d
+      REFRESH_TOKEN_SECRET: ci-refresh-token-secret-0123456789abcdef
+      REFRESH_TOKEN_EXPIRES_IN: 7d
+      STRIPE_SECRET_KEY: sk_test_ci
+      STRIPE_WEBHOOK_SECRET: whsec_ci
+      SMTP_HOST: localhost
+      SMTP_PORT: "1025"
+      SMTP_USER: ci
+      SMTP_PASS: ci
+      EMAIL_FROM: "ClinicOS <no-reply@example.com>"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: apps/api/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: apps/api/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm generate
+      - run: pnpm check
+      - run: pnpm migrate:deploy
+      - run: pnpm test --passWithNoTests
+      - run: pnpm build
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    env:
+      API_BASE_URL: http://localhost:5000/api/v1
+      NEXT_PUBLIC_CLINIC_TIME_ZONE: Asia/Dhaka
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: apps/web/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: apps/web/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      - run: pnpm build

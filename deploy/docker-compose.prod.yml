@@ -1,0 +1,36 @@
+# Production (VPS): db + api + web. Images are built by GitHub Actions and pulled from GHCR.
+# NEVER run `docker compose down -v` here — it deletes the database volume.
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    env_file: .env.db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      retries: 10
+
+  api:
+    image: ghcr.io/arifucoder/clinicos-api:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    env_file: .env.api
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:5100:5000" # only the host's nginx can reach it
+
+  web:
+    image: ghcr.io/arifucoder/clinicos-web:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    env_file: .env.web
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:3100:3000"
+
+volumes:
+  pgdata:
