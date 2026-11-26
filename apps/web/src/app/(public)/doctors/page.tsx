@@ -1,7 +1,6 @@
 import { DataTableSearch } from "@/components/shared/data-table/DataTableSearch";
-import { DoctorCard } from "@/components/modules/find-doctor/DoctorCard";
 import { DoctorFilters } from "@/components/modules/find-doctor/DoctorFilters";
-import { DoctorPagination } from "@/components/modules/find-doctor/DoctorPagination";
+import { DoctorInfiniteList } from "@/components/modules/find-doctor/DoctorInfiniteList";
 import { DoctorSortSelect } from "@/components/modules/find-doctor/DoctorSortSelect";
 import { FindDoctorSkeleton } from "@/components/modules/find-doctor/FindDoctorSkeleton";
 import { NoDoctors } from "@/components/modules/find-doctor/NoDoctors";
@@ -90,7 +89,8 @@ async function FindDoctorContent({ searchParams }: { searchParams: SearchParams 
 	const parsed = publicDoctorListQuerySchema.parse(await searchParams);
 	await connection();
 	const bookingWindow = getBookingWindow(new Date());
-	const query = { ...parsed, date: clampToWindow(parsed.date, bookingWindow) };
+	// infinite scroll: the server renders page 1, the list loads the rest
+	const query = { ...parsed, page: 1, date: clampToWindow(parsed.date, bookingWindow) };
 
 	const [doctorsResponse, specialtiesResponse] = await Promise.all([
 		DoctorService.getPublicDoctors(query, DOCTOR_GRID_PAGE_SIZE),
@@ -131,18 +131,16 @@ async function FindDoctorContent({ searchParams }: { searchParams: SearchParams 
 			</div>
 
 			{doctors.length > 0 ? (
-				<ul aria-labelledby="results-heading" className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-					{doctors.map((doctor) => (
-						<li key={doctor.id}>
-							<DoctorCard doctor={doctor} today={bookingWindow.today} />
-						</li>
-					))}
-				</ul>
+				<DoctorInfiniteList
+					key={JSON.stringify(query)}
+					initialDoctors={doctors}
+					initialMeta={meta}
+					query={query}
+					today={bookingWindow.today}
+				/>
 			) : (
 				<NoDoctors query={query} bookingWindow={bookingWindow} total={meta.total} />
 			)}
-
-			<DoctorPagination meta={meta} query={query} />
 		</div>
 	);
 }

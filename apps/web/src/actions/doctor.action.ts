@@ -2,12 +2,15 @@
 
 import { toActionError, zodFieldErrors } from "@/lib/actionError";
 import { DoctorService } from "@/services/doctor.service";
-import type { ActionError, ActionResult, ApiErrorResponse } from "@/types/api.types";
+import { DOCTOR_GRID_PAGE_SIZE } from "@/lib/findDoctor";
+import type { ActionError, ActionResult, ApiErrorResponse, PaginationMeta } from "@/types/api.types";
+import type { PublicDoctor } from "@/types/doctor.types";
 import {
 	createDoctorSchema,
 	doctorIdSchema,
 	PHOTO_MAX_BYTES,
 	PHOTO_TYPES,
+	publicDoctorListQuerySchema,
 	updateDoctorSchema,
 	updateMyProfileSchema,
 } from "@/zod/doctor.validation";
@@ -150,6 +153,30 @@ export async function removeMyPhotoAction(): Promise<ActionResult> {
 		const response = await DoctorService.removeMyPhoto();
 		revalidatePath(PROFILE_PATH);
 		return { success: true, message: response.message, data: null };
+	} catch (error) {
+		return toActionError(error);
+	}
+}
+
+// Find a doctor: next page for infinite scroll (the browser never calls the API directly)
+export async function loadPublicDoctorsAction(
+	query: unknown,
+	page: unknown,
+): Promise<ActionResult<{ doctors: PublicDoctor[]; meta: PaginationMeta }>> {
+	const parsedPage = z.coerce.number().int().min(1).max(500).safeParse(page);
+	if (!parsedPage.success) return { success: false, message: "Invalid page." };
+
+	const parsed = publicDoctorListQuerySchema.parse(query);
+
+	try {
+		const response = await DoctorService.getPublicDoctors({ ...parsed, page: parsedPage.data }, DOCTOR_GRID_PAGE_SIZE);
+		const meta = response.meta ?? {
+			page: parsedPage.data,
+			limit: DOCTOR_GRID_PAGE_SIZE,
+			total: response.data.length,
+			totalPages: parsedPage.data,
+		};
+		return { success: true, message: response.message, data: { doctors: response.data, meta } };
 	} catch (error) {
 		return toActionError(error);
 	}
