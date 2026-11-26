@@ -3,6 +3,7 @@
 import type { UserRole } from "@/lib/authRedirect";
 import { dashboardNavItems, isNavItemActive } from "@/lib/dashboardNavItems";
 import { cn } from "@/lib/utils";
+import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -53,6 +54,20 @@ export function SidebarNav({ role, onNavigate }: SidebarNavProps) {
 					})}
 				</div>
 			))}
+
+			<div role="group" aria-label="Site" className="flex flex-col gap-0.5">
+				<span className="px-3 pb-1.5 text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
+					Site
+				</span>
+				<Link
+					href="/"
+					onClick={onNavigate}
+					className="flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium text-sidebar-foreground transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring"
+				>
+					<ExternalLink className="size-[18px] shrink-0" strokeWidth={1.8} aria-hidden="true" />
+					View public site
+				</Link>
+			</div>
 		</nav>
 	);
 }

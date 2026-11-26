@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { CHANGE_PASSWORD_PATH, getHomeForRole } from "@/lib/authRedirect";
 import type { ShellUser } from "@/lib/userDisplay";
-import { ChevronDown, KeyRound, LayoutDashboard, LogOut } from "lucide-react";
+import { ChevronDown, ExternalLink, KeyRound, LayoutDashboard, LogOut } from "lucide-react";
 import Link from "next/link";
 import { useTransition } from "react";
 import { UserAvatar } from "./UserAvatar";
@@ -60,6 +60,12 @@ export function UserMenu({ user, showDashboardLink = false }: UserMenuProps) {
 					<KeyRound />
 					Change password
 				</DropdownMenuItem>
+				{!showDashboardLink && (
+					<DropdownMenuItem render={<Link href="/" />}>
+						<ExternalLink />
+						View public site
+					</DropdownMenuItem>
+				)}
 
 				<DropdownMenuSeparator />
 				<DropdownMenuItem
